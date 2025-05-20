@@ -34,6 +34,16 @@ result = navigation_model_vec(triallength, environment, plotting, ntrials);
 
 For parameter sweeps, use `runmodel.m` to systematically vary model parameters across trials.
 
+### Loading parameters from a configuration file
+
+You can also store simulation parameters in a JSON file and load them in MATLAB
+using the `load_config` helper:
+
+```matlab
+cfg = load_config(fullfile('tests', 'sample_config.json'));
+result = navigation_model_vec(cfg.triallength, cfg.environment, cfg.plotting, cfg.ntrials);
+```
+
 ### Using custom plume videos
 
 To run the model with your own plume movies, convert the `.avi` file to a

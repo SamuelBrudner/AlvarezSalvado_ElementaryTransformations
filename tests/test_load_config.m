@@ -1,11 +1,12 @@
-classdef test_load_config < matlab.unittest.TestCase
-    methods(Test)
-        function testSampleConfig(testCase)
-            cfg = load_config('tests/sample_config.json');
-            testCase.verifyEqual(cfg.environment, 'gaussian');
-            testCase.verifyEqual(cfg.triallength, 100);
-            testCase.verifyEqual(cfg.plotting, 0);
-            testCase.verifyEqual(cfg.ntrials, 5);
-        end
-    end
+function tests = test_load_config
+    tests = functiontests(localfunctions);
+end
+
+function testLoadSampleConfig(testCase)
+    cfg = load_config(fullfile('tests','sample_config.json'));
+    verifyEqual(testCase, cfg.environment, "gaussian");
+    verifyEqual(testCase, cfg.triallength, 100);
+    verifyEqual(testCase, cfg.plotting, 0);
+    verifyEqual(testCase, cfg.ntrials, 5);
+
 end
