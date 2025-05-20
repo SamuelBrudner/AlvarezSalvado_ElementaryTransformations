@@ -10,15 +10,15 @@ function setupOnce(testCase)
     open(vw);
     writeVideo(vw, uint8(zeros(2,2,3)));
     close(vw);
-    meta.output_directory = tmpDir;
-    meta.output_filename = 'dummy.avi';
-    meta.vid_mm_per_px = 0.5;
-    meta.fps = 30;
-    fid = fopen(fullfile(tmpDir, 'meta.json'), 'w');
-    fwrite(fid, jsonencode(meta));
+    meta_path = fullfile(tmpDir, 'meta.yaml');
+    fid = fopen(meta_path, 'w');
+    fprintf(fid, 'output_directory: %s\n', tmpDir);
+    fprintf(fid, 'output_filename: dummy.avi\n');
+    fprintf(fid, 'vid_mm_per_px: 0.5\n');
+    fprintf(fid, 'fps: 30\n');
     fclose(fid);
     testCase.TestData.tmpDir = tmpDir;
-    testCase.TestData.metaFile = fullfile(tmpDir, 'meta.json');
+    testCase.TestData.metaFile = meta_path;
 end
 
 function teardownOnce(testCase)

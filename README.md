@@ -66,13 +66,13 @@ The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and
 durations.
 
-Alternatively, if you have a metadata JSON file describing the processed
+Alternatively, if you have a metadata YAML file describing the processed
 video, you can load the plume directly using `load_custom_plume` and run the
 simulation via `run_navigation_cfg`:
 
 ```matlab
-plume = load_custom_plume('my_plume_metadata.json');
-cfg.plume_metadata = 'my_plume_metadata.json';
+plume = load_custom_plume('my_plume_metadata.yaml');
+cfg.plume_metadata = 'my_plume_metadata.yaml';
 cfg.plotting = 0;
 cfg.ntrials = 1;
 result = run_navigation_cfg(cfg);
