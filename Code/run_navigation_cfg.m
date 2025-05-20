@@ -1,10 +1,10 @@
 function out = run_navigation_cfg(cfg)
 %RUN_NAVIGATION_CFG Wrapper around navigation_model_vec with config struct.
 %   OUT = RUN_NAVIGATION_CFG(CFG) runs the navigation model according to the
-%   fields of CFG. If CFG contains a field `plume_video`, the video file is
-%   loaded using `load_plume_video` and the model is invoked with the 'video'
-%   environment. Otherwise the environment specified in CFG.environment is
-%   used directly.
+%   fields of CFG. If CFG contains a field `plume_video` or `plume_metadata`,
+%   the corresponding video file is loaded using `load_plume_video` or
+%   `load_custom_plume` and the model is invoked with the 'video' environment.
+%   Otherwise the environment specified in CFG.environment is used directly.
 %
 %   Required fields:
 %       environment - plume type name or 'video'
@@ -19,7 +19,16 @@ function out = run_navigation_cfg(cfg)
 %   When using video plumes, triallength is determined from the video unless
 %   CFG specifies a triallength to override.
 
-if isfield(cfg, 'plume_video')
+if isfield(cfg, 'plume_metadata')
+    plume = load_custom_plume(cfg.plume_metadata);
+    if isfield(cfg, 'triallength')
+        tl = cfg.triallength;
+    else
+        tl = size(plume.data, 3);
+    end
+    out = navigation_model_vec(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+
+elseif isfield(cfg, 'plume_video')
     if ~isfield(cfg, 'px_per_mm') || ~isfield(cfg, 'frame_rate')
         error('px_per_mm and frame_rate must be specified for video plumes');
     end
