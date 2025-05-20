@@ -49,6 +49,7 @@ The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and
 durations.
 
+
 ## Repository Layout
 
 ```
@@ -56,6 +57,7 @@ Code/                            MATLAB scripts for simulations and analysis
    navigation_model_vec.m        Main navigation model
    runmodel.m                    Run batches of simulations
    load_plume_video.m            Convert .avi movies for custom plumes
+
    import functions feb2017/     Utilities to load raw experimental data
 Arena 4f/                        LabVIEW files for behavioral assays
 FlyTracker 3.6.vi                Data acquisition software
