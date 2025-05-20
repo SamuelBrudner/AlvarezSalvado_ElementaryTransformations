@@ -29,4 +29,5 @@ function testGaussianConfig(~)
     catch
         assert(false, 'run_navigation_cfg failed on gaussian config');
     end
+
 end

@@ -15,3 +15,10 @@ function testLoadSampleConfig(testCase)
     verifyEqual(testCase, cfg.ntrials, 5);
 
 end
+
+function testLoadPaperConfig(testCase)
+    cfg = load_config(fullfile('configs','alvarez_salvado_2018.yaml'));
+    verifyEqual(testCase, cfg.beta, 0.01, 'AbsTol', 1e-8);
+    verifyEqual(testCase, cfg.tau_Aon, 490);
+    verifyEqual(testCase, cfg.kdown, 0.5);
+end

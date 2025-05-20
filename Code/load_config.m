@@ -4,6 +4,7 @@ function cfg = load_config(path)
 %   returns a struct with the decoded parameters. The parser supports simple
 %   key:value pairs where values are numeric or strings.
 
+
 fid = fopen(path, 'r');
 if fid == -1
     error('Could not open configuration file: %s', path);

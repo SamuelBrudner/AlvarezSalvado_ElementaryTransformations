@@ -1,0 +1,7 @@
+{
+  "environment": "gaussian",
+  "triallength": 100,
+  "plotting": 0,
+  "ntrials": 5,
+  "bilateral": true
+}

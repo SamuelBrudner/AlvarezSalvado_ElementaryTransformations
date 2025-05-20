@@ -30,6 +30,7 @@ if isfield(cfg, 'plume_video')
         tl = size(plume.data, 3);
     end
     out = navigation_model_vec(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+
 else
     out = navigation_model_vec(cfg.triallength, cfg.environment, ...
         cfg.plotting, cfg.ntrials);
