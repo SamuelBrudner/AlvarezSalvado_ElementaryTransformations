@@ -8,4 +8,5 @@ function testLoadSampleConfig(testCase)
     verifyEqual(testCase, cfg.triallength, 100);
     verifyEqual(testCase, cfg.plotting, 0);
     verifyEqual(testCase, cfg.ntrials, 5);
+
 end

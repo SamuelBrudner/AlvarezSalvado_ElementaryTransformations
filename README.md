@@ -59,6 +59,17 @@ The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and
 durations.
 
+### Loading simulation parameters from JSON
+
+Common simulation options can be stored in a JSON configuration file and loaded
+with `load_config.m`:
+
+```matlab
+cfg = load_config('tests/sample_config.json');
+result = navigation_model_vec(cfg.triallength, cfg.environment, ...
+    cfg.plotting, cfg.ntrials);
+```
+
 
 ## Repository Layout
 
