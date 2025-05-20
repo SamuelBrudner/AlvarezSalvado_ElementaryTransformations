@@ -31,6 +31,7 @@ for i = 1:numel(lines{1})
             valStr = valStr(2:end-1);
         end
         cfg.(key) = valStr;
+
     end
 end
 end
