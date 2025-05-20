@@ -9,6 +9,7 @@ function setupOnce(~)
     testDir = fileparts(mfilename('fullpath'));
     repoRoot = fileparts(testDir);
     addpath(fullfile(repoRoot, 'Code'));
+
 end
 
 function testLoadSampleConfig(testCase)
