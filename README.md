@@ -36,11 +36,11 @@ For parameter sweeps, use `runmodel.m` to systematically vary model parameters a
 
 ### Loading parameters from a configuration file
 
-You can also store simulation parameters in a JSON file and load them in MATLAB
+You can also store simulation parameters in a YAML file and load them in MATLAB
 using the `load_config` helper:
 
 ```matlab
-cfg = load_config(fullfile('tests', 'sample_config.json'));
+cfg = load_config(fullfile('tests', 'sample_config.yaml'));
 result = navigation_model_vec(cfg.triallength, cfg.environment, cfg.plotting, cfg.ntrials);
 ```
 
@@ -59,13 +59,13 @@ The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and
 durations.
 
-### Loading simulation parameters from JSON
+### Loading simulation parameters from YAML
 
-Common simulation options can be stored in a JSON configuration file and loaded
+Common simulation options can be stored in a YAML configuration file and loaded
 with `load_config.m`:
 
 ```matlab
-cfg = load_config('tests/sample_config.json');
+cfg = load_config('tests/sample_config.yaml');
 result = navigation_model_vec(cfg.triallength, cfg.environment, ...
     cfg.plotting, cfg.ntrials);
 ```
