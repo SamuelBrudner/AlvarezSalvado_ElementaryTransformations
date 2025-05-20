@@ -4,7 +4,12 @@ function tests = test_load_config
 end
 
 function setupOnce(~)
-    addpath(fullfile(pwd, 'Code'));
+    % Add the repository Code directory to the MATLAB path regardless of
+    % the current working directory when the tests are invoked.
+    testDir = fileparts(mfilename('fullpath'));
+    repoRoot = fileparts(testDir);
+    addpath(fullfile(repoRoot, 'Code'));
+
 end
 
 function testLoadSampleConfig(testCase)

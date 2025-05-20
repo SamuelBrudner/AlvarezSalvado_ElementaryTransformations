@@ -37,9 +37,11 @@ For parameter sweeps, use `runmodel.m` to systematically vary model parameters a
 ### Loading parameters from a configuration file
 
 You can also store simulation parameters in a JSON file and load them in MATLAB
-using the `load_config` helper:
+using the `load_config` helper. Add the `Code` directory to the path first so
+that MATLAB can locate the function:
 
 ```matlab
+addpath('Code');
 cfg = load_config(fullfile('tests', 'sample_config.json'));
 result = navigation_model_vec(cfg.triallength, cfg.environment, cfg.plotting, cfg.ntrials);
 ```
@@ -65,6 +67,7 @@ Common simulation options can be stored in a JSON configuration file and loaded
 with `load_config.m`:
 
 ```matlab
+addpath('Code');
 cfg = load_config('tests/sample_config.json');
 result = navigation_model_vec(cfg.triallength, cfg.environment, ...
     cfg.plotting, cfg.ntrials);
