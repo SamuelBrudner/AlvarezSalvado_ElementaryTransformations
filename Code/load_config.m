@@ -14,19 +14,24 @@ cfg = struct();
 for i = 1:numel(lines{1})
     line = strtrim(lines{1}{i});
     if isempty(line) || startsWith(line, '#')
-        continue
+        continue;
     end
-    tokens = strsplit(line, ':', 2);
-    if numel(tokens) < 2
-        continue
+    tokens = regexp(line, '^([^:]+):\s*(.*)$', 'tokens', 'once');
+    if isempty(tokens)
+        continue;
     end
     key = strtrim(tokens{1});
-    value = strtrim(tokens{2});
-    numval = str2double(value);
-    if ~isnan(numval)
-        cfg.(key) = numval;
+    valStr = strtrim(tokens{2});
+    numVal = str2double(valStr);
+    if ~isnan(numVal)
+        cfg.(key) = numVal;
     else
-        cfg.(key) = value;
+        if (startsWith(valStr, '"') && endsWith(valStr, '"')) || ...
+           (startsWith(valStr, '''') && endsWith(valStr, ''''))
+            valStr = valStr(2:end-1);
+        end
+        cfg.(key) = valStr;
+
     end
 end
 end
