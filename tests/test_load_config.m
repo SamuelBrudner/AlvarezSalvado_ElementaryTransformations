@@ -1,5 +1,10 @@
+
 function tests = test_load_config
     tests = functiontests(localfunctions);
+end
+
+function setupOnce(~)
+    addpath(fullfile(pwd, 'Code'));
 end
 
 function testLoadSampleConfig(testCase)
