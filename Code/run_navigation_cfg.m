@@ -3,7 +3,8 @@ function out = run_navigation_cfg(cfg)
 %   OUT = RUN_NAVIGATION_CFG(CFG) runs the navigation model according to the
 %   fields of CFG. If CFG contains a field `plume_video` or `plume_metadata`,
 %   the corresponding video file is loaded using `load_plume_video` or
-%   `load_custom_plume` and the model is invoked with the 'video' environment.
+%   `load_custom_plume` (for YAML metadata) and the model is invoked with the
+%   'video' environment.
 %   Otherwise the environment specified in CFG.environment is used directly.
 %
 %   Required fields:
