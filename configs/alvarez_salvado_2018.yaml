@@ -1,0 +1,17 @@
+beta: 0.01
+tau_Aon: 490
+tau_Aoff: 504
+tau_ON: 36
+tau_OFF1: 31
+tau_OFF2: 242
+scaleON: 1
+scaleOFF: 1
+turnbase: 0.12
+tsigma: 20
+vbase: 6
+tmodON: 0.03
+tmodOFF: 0.75
+vmodON: 0.45
+vmodOFF: 0.8
+kup: 5
+kdown: 0.5
