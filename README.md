@@ -70,8 +70,16 @@ result = navigation_model_vec(cfg.triallength, cfg.environment, ...
     cfg.plotting, cfg.ntrials);
 ```
 
-The repository includes `configs/alvarez_salvado_2018.yaml` containing the
-parameters reported in Álvarez‑Salvado et al. (2018).
+### Running the bilateral model
+
+To include bilateral odor sensing, set the `bilateral` flag in your
+configuration and invoke `run_navigation_cfg`:
+
+```matlab
+cfg = load_config('tests/sample_config_bilateral.json');
+result = run_navigation_cfg(cfg);
+```
+
 
 
 ## Repository Layout
