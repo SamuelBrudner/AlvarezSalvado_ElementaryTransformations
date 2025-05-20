@@ -1,37 +1,35 @@
 function cfg = load_config(path)
 %LOAD_CONFIG Load simulation parameters from a YAML file.
 %   CFG = LOAD_CONFIG(PATH) reads the YAML file specified by PATH and
-%   returns a struct with the decoded parameters.
+%   returns a struct with the decoded parameters. The parser supports simple
+%   key:value pairs where values are numeric or strings.
+
 
 fid = fopen(path, 'r');
 if fid == -1
     error('Could not open configuration file: %s', path);
 end
-lines = textscan(fid, '%s', 'Delimiter', '\n');
+lines = textscan(fid, '%s', 'Delimiter', '\n', 'Whitespace', '');
 fclose(fid);
+lines = lines{1};
 
 cfg = struct();
-for i = 1:numel(lines{1})
-    line = strtrim(lines{1}{i});
+for i = 1:numel(lines)
+    line = strtrim(lines{i});
     if isempty(line) || startsWith(line, '#')
         continue;
     end
-    tokens = regexp(line, '^([^:]+):\s*(.*)$', 'tokens', 'once');
-    if isempty(tokens)
+    tokens = split(line, ':');
+    if numel(tokens) < 2
         continue;
     end
     key = strtrim(tokens{1});
-    valStr = strtrim(tokens{2});
-    numVal = str2double(valStr);
-    if ~isnan(numVal)
-        cfg.(key) = numVal;
+    value = strtrim(strjoin(tokens(2:end), ':'));
+    num = str2double(value);
+    if ~isnan(num)
+        cfg.(key) = num;
     else
-        if (startsWith(valStr, '"') && endsWith(valStr, '"')) || ...
-           (startsWith(valStr, '''') && endsWith(valStr, ''''))
-            valStr = valStr(2:end-1);
-        end
-        cfg.(key) = valStr;
-
+        cfg.(key) = value;
     end
 end
 end

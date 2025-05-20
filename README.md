@@ -41,7 +41,7 @@ using the `load_config` helper:
 
 ```matlab
 cfg = load_config(fullfile('tests', 'sample_config.yaml'));
-result = navigation_model_vec(cfg.triallength, cfg.environment, cfg.plotting, cfg.ntrials);
+result = run_navigation_cfg(cfg);
 ```
 
 ### Using custom plume videos
@@ -62,12 +62,11 @@ durations.
 ### Loading simulation parameters from YAML
 
 Common simulation options can be stored in a YAML configuration file and loaded
-with `load_config.m`:
+with `load_config.m` or passed directly to `run_navigation_cfg`:
 
 ```matlab
 cfg = load_config('tests/sample_config.yaml');
-result = navigation_model_vec(cfg.triallength, cfg.environment, ...
-    cfg.plotting, cfg.ntrials);
+result = run_navigation_cfg(cfg);
 ```
 
 ### Running the bilateral model
@@ -87,6 +86,7 @@ result = run_navigation_cfg(cfg);
 ```
 Code/                            MATLAB scripts for simulations and analysis
    navigation_model_vec.m        Main navigation model
+   run_navigation_cfg.m          Wrapper for running simulations from configs
    runmodel.m                    Run batches of simulations
    load_plume_video.m            Convert .avi movies for custom plumes
 
