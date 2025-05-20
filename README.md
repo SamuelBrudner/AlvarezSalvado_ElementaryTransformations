@@ -17,7 +17,14 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 ## Requirements
 
 - MATLAB (tested on R2017b or later).
-- For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the repository root.
+- For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
+
+## Data Directory
+
+All plume data files should be stored inside the `data/` directory located at the
+repository root. Custom plume movies or processed MATLAB files can also be kept
+in this folder so that configuration files can reference them with a relative
+path.
 
 ## Running Simulations
 
