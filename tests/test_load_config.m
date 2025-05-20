@@ -5,6 +5,7 @@ end
 
 function setupOnce(~)
     addpath(fullfile(pwd, 'Code'));
+
 end
 
 function testLoadSampleConfig(testCase)

@@ -41,6 +41,7 @@ using the `load_config` helper:
 
 ```matlab
 cfg = load_config(fullfile('tests', 'sample_config.yaml'));
+
 result = navigation_model_vec(cfg.triallength, cfg.environment, cfg.plotting, cfg.ntrials);
 ```
 
@@ -66,6 +67,7 @@ with `load_config.m`:
 
 ```matlab
 cfg = load_config('tests/sample_config.yaml');
+
 result = navigation_model_vec(cfg.triallength, cfg.environment, ...
     cfg.plotting, cfg.ntrials);
 ```
