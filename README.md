@@ -10,6 +10,7 @@ The code simulates walking fruit flies navigating in different odor plumes. Seve
 - **openlooppulse** – a single square odor pulse with constant wind.
 - **openlooppulsewb** – the same pulse without wind.
 - **openlooppulse15** and **openlooppulsewb15** – low-frequency versions of the above.
+- **video** – load a custom plume movie using `load_plume_video.m`.
 
 Model parameters are defined in `Code/navigation_model_vec.m`. Data import functions for analyzing experimental trials are located in `Code/import functions feb2017`.
 
@@ -33,12 +34,30 @@ result = navigation_model_vec(triallength, environment, plotting, ntrials);
 
 For parameter sweeps, use `runmodel.m` to systematically vary model parameters across trials.
 
+### Using custom plume videos
+
+To run the model with your own plume movies, convert the `.avi` file to a
+MATLAB structure using `load_plume_video.m`:
+
+```matlab
+plume = load_plume_video('my_plume.avi', 20, 40); % 20 px/mm, 40 Hz
+triallength = size(plume.data, 3);
+result = navigation_model_vec(triallength, 'video', 1, 1, plume);
+```
+
+The spatial scale (pixels per millimeter) and frame rate are supplied when
+loading the movie so that the simulation can handle different resolutions and
+durations.
+
+
 ## Repository Layout
 
 ```
 Code/                            MATLAB scripts for simulations and analysis
    navigation_model_vec.m        Main navigation model
    runmodel.m                    Run batches of simulations
+   load_plume_video.m            Convert .avi movies for custom plumes
+
    import functions feb2017/     Utilities to load raw experimental data
 Arena 4f/                        LabVIEW files for behavioral assays
 FlyTracker 3.6.vi                Data acquisition software

@@ -1,11 +1,11 @@
 
 
-function out = navigation_model_vec(triallength, environment, plotting,ntrials)
+function out = navigation_model_vec(triallength, environment, plotting, ntrials, plume)
 
 % [x,y,heading,odor,successrate,latency,start,odorON,odorOFF]...
 %     = navigation_model_vec(triallength, environment, plotting,ntrials)
 
-% [x,y,heading,odor,odorON,odorOFF] = navigation_model_vec(triallength, environment, plotting,ntrials)
+% [x,y,heading,odor,odorON,odorOFF] = navigation_model_vec(triallength, environment, plotting,ntrials, plume)
 %
 %   triallength -> Length of each trial in samples
 %   environment -> String specifying the environment of the simulation.
@@ -28,6 +28,7 @@ function out = navigation_model_vec(triallength, environment, plotting,ntrials)
 %  ntrials -> number of trials (added by JDV)
 %    if ntrials>1, x, y,heading, odor* are returned as arrays, with each
 %    column corresponding to a separate trial.
+%  plume -> structure describing a video plume when environment is 'video'
 %
 % This program simulates one trial of a navigation model developed by the
 % Nagel lab, based on walking Drosophila behavior. It generates
@@ -75,11 +76,14 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
  kdown = 0.5;       % strength of downwind drive (deg/samp)
 
  
- if (nargin<=3)
-     ntrials=1;
- end
-  switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
-     
+if (nargin<=3)
+    ntrials=1;
+end
+if nargin < 5
+    plume = struct([]);
+end
+switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
+
     case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
         tau_Aon = tau_Aon*tscale;
         tau_Aoff = tau_Aoff*tscale;
@@ -93,6 +97,24 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
         turnbase = turnbase/tscale;
         tmodON = tmodON/tscale;
         tmodOFF = tmodOFF/tscale;
+    case {'video'}
+        if isempty(plume)
+            error('A plume structure must be provided for video environment');
+        end
+        tscale = plume.frame_rate/50;
+        tau_Aon = tau_Aon*tscale;
+        tau_Aoff = tau_Aoff*tscale;
+        tau_ON = tau_ON*tscale;
+        tau_OFF1 = tau_OFF1*tscale;
+        tau_OFF2 = tau_OFF2*tscale;
+
+        kup = kup/tscale;
+        kdown = kdown/tscale;
+
+        turnbase = turnbase/tscale;
+        tmodON = tmodON/tscale;
+        tmodOFF = tmodOFF/tscale;
+        pxscale = 1 / plume.px_per_mm; % convert pixels to mm
   end
 
 %allocate space for results
@@ -142,6 +164,9 @@ switch environment
     case {'gaussian', 'Gaussian'} % Gaussian odor gradient without any wind
         x(1,:) = 20*rand(1,ntrials)-10;
         y(1,:) = 20*rand(1,ntrials)-10;
+    case {'video'}
+        x(1,:) = 0; y(1,:) = 0;
+        triallength = size(plume.data,3);
 end
 heading = 360*rand(1,ntrials); % starts with a random heading
 
@@ -197,7 +222,18 @@ for i = 1:triallength
             odor(i,:) = pmax*exp(-(x(i,:).^2+y(i,:).^2)/(2*sigma^2));
             ws = 0;
             p(i,:) = odor(i,:);
-         
+        case {'video'}
+            tind = min(i, size(plume.data,3));
+            xind = round(10*x(i,:)*plume.px_per_mm)+1;
+            yind = round(-10*y(i,:)*plume.px_per_mm)+1;
+            out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))),union(find(yind<1),find(yind>size(plume.data,1))));
+            within = setdiff(1:ntrials,out_of_plume);
+            odor(i,out_of_plume) = 0;
+            for it = within
+                odor(i,it) = plume.data(yind(it), xind(it), tind);
+            end
+            ws = 0;
+        
     end
 
     % Adaptation
@@ -264,7 +300,11 @@ odorOFF(end,:) = [];
 x(end,:) = []; y(end,:) = [];
 heading(end,:) = [];
 heading = heading-90;           % rotate h so upwind is 90 deg for display
-t = (1:length(odorON))/50;
+if strcmp(environment, 'video')
+    t = (1:length(odorON))/plume.frame_rate;
+else
+    t = (1:length(odorON))/50;
+end
 
 
 start = [x(1,:)', y(1,:)'];
