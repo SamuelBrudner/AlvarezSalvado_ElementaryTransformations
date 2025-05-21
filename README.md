@@ -58,9 +58,13 @@ MATLAB structure using `load_plume_video.m`:
 
 ```matlab
 plume = load_plume_video('my_plume.avi', 20, 40); % 20 px/mm, 40 Hz
-triallength = size(plume.data, 3);
+triallength = 3500; % can exceed movie length to loop the plume
 result = navigation_model_vec(triallength, 'video', 1, 1, plume);
 ```
+
+When `triallength` is longer than the number of frames in the plume movie, the
+video frames automatically repeat so that the simulation continues for the full
+duration.
 
 The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and
@@ -95,6 +99,12 @@ configuration and invoke `run_navigation_cfg`:
 
 ```matlab
 cfg = load_config('tests/sample_config_bilateral.json');
+result = run_navigation_cfg(cfg);
+```
+The same options are available in YAML format:
+
+```matlab
+cfg = load_config('tests/sample_config_bilateral.yaml');
 result = run_navigation_cfg(cfg);
 ```
 

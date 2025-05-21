@@ -31,3 +31,14 @@ function testGaussianConfig(~)
     end
 
 end
+
+function testBilateralConfig(~)
+    cfg = load_config(fullfile('tests','sample_config_bilateral.yaml'));
+    try
+        run_navigation_cfg(cfg);
+        assert(true);
+    catch
+        assert(false, 'run_navigation_cfg failed on bilateral config');
+    end
+
+end
