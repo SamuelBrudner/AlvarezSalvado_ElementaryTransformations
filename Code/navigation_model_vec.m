@@ -166,7 +166,6 @@ switch environment
         y(1,:) = 20*rand(1,ntrials)-10;
     case {'video'}
         x(1,:) = 0; y(1,:) = 0;
-        triallength = size(plume.data,3);
 end
 heading = 360*rand(1,ntrials); % starts with a random heading
 
@@ -223,7 +222,7 @@ for i = 1:triallength
             ws = 0;
             p(i,:) = odor(i,:);
         case {'video'}
-            tind = min(i, size(plume.data,3));
+            tind = mod(i-1, size(plume.data,3)) + 1;
             xind = round(10*x(i,:)*plume.px_per_mm)+1;
             yind = round(-10*y(i,:)*plume.px_per_mm)+1;
             out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))),union(find(yind<1),find(yind>size(plume.data,1))));

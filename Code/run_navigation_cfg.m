@@ -17,8 +17,16 @@ function out = run_navigation_cfg(cfg)
 %       px_per_mm   - pixels per millimeter for the video
 %       frame_rate  - frame rate (Hz)
 %
+%   Optional fields:
+%       bilateral   - true to run the bilateral model
+%
 %   When using video plumes, triallength is determined from the video unless
 %   CFG specifies a triallength to override.
+
+model_fn = @navigation_model_vec;
+if isfield(cfg, 'bilateral') && cfg.bilateral
+    model_fn = @Elifenavmodel_bilateral;
+end
 
 if isfield(cfg, 'plume_metadata')
     plume = load_custom_plume(cfg.plume_metadata);
@@ -27,7 +35,7 @@ if isfield(cfg, 'plume_metadata')
     else
         tl = size(plume.data, 3);
     end
-    out = navigation_model_vec(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume);
 
 elseif isfield(cfg, 'plume_video')
     if ~isfield(cfg, 'px_per_mm') || ~isfield(cfg, 'frame_rate')
@@ -39,10 +47,10 @@ elseif isfield(cfg, 'plume_video')
     else
         tl = size(plume.data, 3);
     end
-    out = navigation_model_vec(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume);
 
 else
-    out = navigation_model_vec(cfg.triallength, cfg.environment, ...
+    out = model_fn(cfg.triallength, cfg.environment, ...
         cfg.plotting, cfg.ntrials);
 end
 end
