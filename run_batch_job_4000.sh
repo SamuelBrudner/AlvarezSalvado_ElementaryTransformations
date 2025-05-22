@@ -2,21 +2,22 @@
 set -euo pipefail  # Exit on error, undefined variable, and pipe failure
 
 #SBATCH --begin=now
-#SBATCH --job-name=${EXPERIMENT_NAME}_sim
-#SBATCH --mem-per-cpu=${SLURM_MEM}
-#SBATCH --cpus-per-task=${SLURM_CPUS_PER_TASK}
-#SBATCH --partition=${SLURM_PARTITION}
+# Default SLURM directives are intentionally minimal to avoid
+# variable expansion issues. Specify job parameters at submission time, e.g.:
+#   sbatch --job-name=${EXPERIMENT_NAME}_sim \
+#          --mem-per-cpu=${SLURM_MEM:-16G} \
+#          --cpus-per-task=${SLURM_CPUS_PER_TASK:-1} \
+#          --partition=${SLURM_PARTITION:-day} \
+#          --time=${SLURM_TIME:-6:00:00} \
+#          "$0"
 # ───────────────────────────────────────────────────────────
-# Submit with:  sbatch --array=0-$((TOTAL_JOBS-1))%${SLURM_ARRAY_CONCURRENT} $0
+# Submit with:  sbatch --job-name=${EXPERIMENT_NAME}_sim \
+#                     --array=0-$((TOTAL_JOBS-1))%${SLURM_ARRAY_CONCURRENT} "$0"
 # ⇧ the "%N" part limits to N concurrent tasks (cores) to prevent overloading
 # ───────────────────────────────────────────────────────────
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
-#SBATCH --time=${SLURM_TIME}
-# Email notifications (uncomment and customize as needed)
-#SBATCH --mail-user=${USER}@yale.edu
-#SBATCH --mail-type=ALL
 
 # Cleanup function to run on exit or error
 cleanup() {
