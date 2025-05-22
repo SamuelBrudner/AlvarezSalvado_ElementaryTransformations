@@ -95,7 +95,8 @@ MATLAB_CMD=""
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT + i))
     SEED=${RANDOM_SEEDS[$i]}
-    AGENT_DIR="data/raw/${CONDITION_NAME}_${AGENT_INDEX}"
+    AGENT_DIR="data/raw/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
+    mkdir -p "$AGENT_DIR"
     
     # Add command to run this agent
     MATLAB_CMD+="config = struct(); "
