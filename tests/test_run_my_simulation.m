@@ -3,7 +3,7 @@ function tests = test_run_my_simulation
 end
 
 function setupOnce(testCase)
-    addpath(fullfile(pwd, 'Code'));
+    testCase.TestData.rootDir = pwd;
     cfgFile = fullfile('configs', 'my_complex_plume_config.yaml');
     fid = fopen(cfgFile, 'w');
     fprintf(fid, 'environment: gaussian\n');
@@ -21,4 +21,14 @@ end
 function testRunScript(~)
     run_my_simulation;
     assert(true); % ensure no error
+end
+
+function testRunScriptInDifferentDir(testCase)
+    tmpDir = tempname;
+    mkdir(tmpDir);
+    oldDir = cd(tmpDir);
+    run(fullfile(testCase.TestData.rootDir, 'Code', 'run_my_simulation.m'));
+    cd(oldDir);
+    rmdir(tmpDir, 's');
+    assert(true);
 end

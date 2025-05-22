@@ -27,7 +27,9 @@ remains untouched and configuration files can refer to them reliably.
 
 ## Running Simulations
 
-Add the `Code` directory to your MATLAB path and call `navigation_model_vec`:
+When MATLAB starts in this repository it automatically executes `startup.m`,
+which adds the `Code` directory to your path. You can then call
+`navigation_model_vec` directly:
 
 ```matlab
 triallength = 3500;       % number of timesteps
