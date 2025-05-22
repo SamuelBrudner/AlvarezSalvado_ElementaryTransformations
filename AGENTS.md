@@ -1,6 +1,6 @@
 # AGENTS.md
 
-These instructions apply to the entire repository.
+These instructions apply to the entire MATLAB codebase for the Alvarez-Salvado Elementary Transformations project.
 
 ## 1. Commit Discipline
 - **Conventional Commits** are mandatory (e.g., `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`).
@@ -8,77 +8,86 @@ These instructions apply to the entire repository.
 - Write clear, descriptive commit messages in the imperative mood.
 - Reference relevant issues or pull requests when applicable.
 
-## 2. Environment Setup
-- Use `conda` for environment management with an `environment.yml` file.
-- The environment should be installed in the project directory (e.g., `.env`).
-- All Python commands must be run within the activated environment.
-- Dependencies should be explicitly versioned in `environment.yml`.
-- A `conda-lock.yml` file should pin exact versions for reproducibility.
+## 2. MATLAB Environment Setup
+- Use MATLAB R2021a or later for compatibility.
+- Maintain a `startup.m` file in the root directory for path configuration.
+- Document all MATLAB toolboxes required in `README.md`.
+- Use MATLAB's built-in dependency analysis tools to track function dependencies.
+- Keep a record of any external MATLAB toolboxes used.
 
-## 3. Code Quality & Testing
-- Follow PEP 8 style guidelines for Python code.
-- Write unit tests for all new functionality using `pytest`.
-- Maintain test coverage above 90%.
-- Use type hints throughout the codebase.
-- Document all public functions and classes with docstrings.
+## 3. Code Organization
+- Organize code into logical directories (e.g., `Code/` for main scripts, `tests/` for test files).
+- Follow MATLAB's naming conventions:
+  - Function names: `camelCase`
+  - Script names: `lowercase_with_underscores.m`
+  - Class names: `PascalCase`
+- Keep functions focused on a single task.
+- Use MATLAB's function validation blocks for input validation.
 
-## 4. Pre-commit Hooks
-- Install pre-commit hooks with `pre-commit install`.
-- Hooks must include:
-  - `ruff` for linting
-  - `black` for code formatting
-  - `isort` for import sorting
-  - `mypy` for static type checking
-  - `interrogate` for docstring coverage
-  - `pre-commit-hooks` for trailing whitespace and other checks
-- CI will run `pre-commit run --all-files` on all pull requests.
+## 4. Code Quality
+- Use the MATLAB Code Analyzer (mlint) to check code quality.
+- Follow the MATLAB Style Guidelines 2.0.
+- Document all functions using MATLAB's help text format.
+- Include example usage in function help text.
+- Use meaningful variable names that indicate purpose and units where applicable.
 
-## 5. Documentation
-- Maintain up-to-date documentation in the `docs/` directory.
-- Use Markdown for all documentation.
-- Keep the `README.md` up-to-date with:
-  - Project description and purpose
-  - Installation instructions
-  - Basic usage examples
-  - Contribution guidelines
-  - License information
-- Document all major design decisions in `docs/decisions/`.
+## 5. Testing
+- Write unit tests using MATLAB's testing framework.
+- Place test files in the `tests/` directory.
+- Name test files with a `test_` prefix.
+- Aim for high test coverage, especially for critical functions.
+- Run all tests before committing changes.
 
 ## 6. Data Management
-- Follow FAIR principles for all data (Findable, Accessible, Interoperable, Reusable).
-- Store raw data in `data/raw/` and never modify it directly.
-- Store processed data in `data/processed/`.
-- Document all data processing steps in `notebooks/`.
-- Provide a `CITATION.cff` file for proper attribution.
+- Follow FAIR principles (Findable, Accessible, Interoperable, Reusable).
+- Store raw data separately from processed data.
+- Use `.mat` files for MATLAB-specific data storage.
+- Document data formats and structures in `docs/data_formats.md`.
+- Include a `data_dictionary.csv` for all data files.
 
-## 7. Development Workflow
-1. Create a new branch for each feature or bugfix.
-2. Write tests for new functionality.
-3. Implement the feature or fix.
-4. Ensure all tests pass.
+## 7. Documentation
+- Maintain a comprehensive `README.md` with:
+  - Project overview
+  - Setup instructions
+  - Usage examples
+  - Directory structure
+- Use MATLAB's built-in publishing tools for generating documentation.
+- Document all major design decisions in `docs/decisions/`.
+- Include a `CITATION.cff` file for proper attribution.
+
+## 8. Development Workflow
+1. Create a feature branch from `main`.
+2. Implement changes with clear, focused commits.
+3. Write or update tests for new functionality.
+4. Run all tests to ensure nothing is broken.
 5. Update documentation as needed.
-6. Submit a pull request for review.
+6. Submit a pull request for code review.
 7. Address all review comments.
-8. Squash and merge when approved.
+8. Merge to `main` when approved.
 
-## 8. Versioning & Releases
+## 9. Version Control
 - Use Semantic Versioning (MAJOR.MINOR.PATCH).
-- Create a changelog entry for each release.
 - Tag releases with `vMAJOR.MINOR.PATCH`.
-- Update version numbers in all relevant files.
+- Update version numbers in relevant files.
+- Maintain a `CHANGELOG.md` following Keep a Changelog format.
 
-## 9. Continuous Integration
-- All tests must pass before merging to main.
-- Code coverage must not decrease.
-- Documentation builds must succeed.
-- Type checking must pass.
+## 10. Performance & Optimization
+- Profile code using MATLAB's Profiler before optimizing.
+- Pre-allocate arrays when possible.
+- Use vectorized operations instead of loops when appropriate.
+- Document any performance considerations in the code.
 
-## 10. Security
-- Never commit sensitive information (API keys, passwords, etc.).
+## 11. Dependencies
+- List all MATLAB toolboxes and external dependencies in `DEPENDENCIES.md`.
+- Include minimum version requirements.
+- Document any platform-specific considerations.
+
+## 12. Security
+- Never commit sensitive information (API keys, credentials).
 - Use environment variables for configuration.
-- Keep dependencies up-to-date and audit for vulnerabilities.
-- Follow the principle of least privilege for all services.
+- Follow the principle of least privilege for all system interactions.
+- Validate all external inputs.
 
 ---
 
-*Last updated: May 21, 2025*
+*Last updated: May 22, 2025*
