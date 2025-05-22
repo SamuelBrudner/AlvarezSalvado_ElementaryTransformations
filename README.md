@@ -13,20 +13,59 @@ The code simulates walking fruit flies navigating in different odor plumes. Seve
 - **video** – load a custom plume movie using `load_plume_video.m`.
 
 Model parameters are defined in `Code/navigation_model_vec.m`. Data import functions for analyzing experimental trials are located in `Code/import functions feb2017`.
-
 ## Requirements
 
 - MATLAB (tested on R2017b or later).
 - For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
 
-## Data Directory
+## Data Organization
 
-Place raw plume files in `data/raw/` and store any processed outputs in
-`data/processed/`. Simulation results for each agent are written to
-`data/raw/<condition>/<agentIndex>_<seed>/` to avoid collisions when rerunning
-the same agent under different conditions. Keeping these folders separate
-ensures the original data remains untouched and configuration files can refer
-to them reliably.
+### Directory Structure
+
+- `data/raw/` - Store raw plume files here
+- `data/processed/` - Store processed outputs here
+- `data/raw/<condition>/<agentIndex>_<seed>/` - Simulation results (auto-created)
+  - `config_used.yaml` - Exact configuration used for the run
+  - `result.mat` - Simulation output (see below)
+
+### Output Data
+
+#### In-Memory Structure
+Every model call returns a structure with these fields:
+
+| Field | Size | Description |
+|-------|------|-------------|
+| `x`, `y` | T × N | Arena coordinates (cm) for each timestep T and agent N |
+| `theta` | T × N | Heading angle (°; 0 = down-wind, +90 = up-wind) |
+| `odor` | T × N | Raw odor concentration (0–1) at agent's centroid |
+| `ON`, `OFF` | T × N | Temporal filters of the odor signal |
+| `turn` | T × N | Boolean: 1 = stochastic turn executed that frame |
+| `start` | N × 2 | Initial x,y positions for each agent |
+| `successrate` | 1×1 | Fraction of agents that reached the 2 cm goal (Crimaldi/Gaussian only) |
+| `latency` | 1 × N | Time to goal for successful agents (s) |
+| `params` | struct | Snapshot of all model parameters |
+
+**Tip:** Save results with `save('result.mat','out','-v7.3')` for portable HDF5 format.
+
+### Naming Conventions
+
+- `<condition>`: `bilateral` or `unilateral` (from `cfg.bilateral`)
+- `<agentIndex>`: 1-based index for agent grouping
+- `<seed>`: PRNG seed for reproducible simulations
+
+### Example Usage
+
+```matlab
+% Load a single agent result
+r = load('data/raw/bilateral/17_17/result.mat');
+x = r.out.x;          % trajectories
+pars = r.out.params;  % model parameters
+
+% Aggregate success rates across multiple runs
+files = dir('data/raw/*/*/result.mat');
+succ = arrayfun(@(f) load(fullfile(f.folder,f.name),'out'), files);
+success_rate = mean(arrayfun(@(s) s.out.successrate, succ));
+```
 
 ## Running Simulations
 
