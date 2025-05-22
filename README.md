@@ -67,6 +67,61 @@ succ = arrayfun(@(f) load(fullfile(f.folder,f.name),'out'), files);
 success_rate = mean(arrayfun(@(s) s.out.successrate, succ));
 ```
 
+## Data Conversion to Open Formats
+
+The `convert_mat_results.py` script converts MATLAB `.mat` output files into more accessible formats for analysis in Python, R, or other languages.
+
+### Features
+
+- Converts binary MATLAB files to open, columnar Parquet format
+- Preserves all simulation metadata in human-readable YAML
+- Handles both single and multi-trial simulations
+- Option to output CSV for compatibility with legacy tools
+
+### Installation
+
+```bash
+# Install required Python packages
+pip install pandas pyyaml pyarrow scipy
+```
+
+### Usage
+
+```bash
+# Basic conversion
+python convert_mat_results.py /path/to/result.mat --out-dir data/processed
+
+# Keep trials in a MultiIndex (useful for panel data)
+python convert_mat_results.py result.mat --out-dir output --split-trials
+
+# Generate CSV alongside Parquet (larger files)
+python convert_mat_results.py result.mat --out-dir output --csv
+```
+
+### Output Files
+
+- `trajectories.parquet` - Time series data with columns: t, trial, x, y, theta, odor, ON, OFF, turn
+- `params.yaml` - Complete model parameters used in the simulation
+- `summary.yaml` - High-level statistics (success rate, latency, etc.)
+
+### Example: Loading in Python
+
+```python
+import pandas as pd
+import yaml
+
+# Load trajectory data
+df = pd.read_parquet('data/processed/trajectories.parquet')
+
+# Load parameters
+with open('data/processed/params.yaml') as f:
+    params = yaml.safe_load(f)
+
+# Analyze away!
+print(f"Success rate: {params.get('successrate', 'N/A')}")
+print(f"Number of trials: {df['trial'].nunique()}")
+```
+
 ## Running Simulations
 
 When MATLAB starts in this repository it automatically executes `startup.m`,
