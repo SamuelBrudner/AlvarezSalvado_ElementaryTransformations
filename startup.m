@@ -6,9 +6,10 @@ function startup
 rootDir = fileparts(mfilename('fullpath'));
 
 % ── Code directory ─────────────────────────────────────────────
-codeDir = fullfile(rootDir,'Code');
+codeDir = fullfile(rootDir, 'Code');
 if isfolder(codeDir)
-    addpath(codeDir);
+    addpath(genpath(codeDir));
+    path(path); % remove potential duplicates
 end
 
 % ── YAML-Matlab toolbox ───────────────────────────────────────
