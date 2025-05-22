@@ -16,9 +16,9 @@ n = 1;
 for i = range1 % Iterates through each pair of parameters
     for j = range2
            
-        % Calls the model to run one simulation with the current pair of
-        % parameters. Make sure it calls your desired model function.
-        results = Elifenavmodel_binaral_local(triallength, environment,0,ntrials,i,j);
+        % Calls the bilateral navigation model with the current parameter pair.
+        params = struct('OFF', i, 'Kbin', j);
+        results = Elifenavmodel_bilateral(triallength, environment,0,ntrials, params);
         
         % It saves the current values of the two parameters in the results
         % structure.
