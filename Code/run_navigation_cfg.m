@@ -28,6 +28,10 @@ if isfield(cfg, 'bilateral') && cfg.bilateral
     model_fn = @Elifenavmodel_bilateral;
 end
 
+if isfield(cfg, 'randomSeed')
+    rng(cfg.randomSeed, 'twister');
+end
+
 if isfield(cfg, 'plume_metadata')
     plume = load_custom_plume(cfg.plume_metadata);
     if isfield(cfg, 'triallength')
