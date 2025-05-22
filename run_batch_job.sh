@@ -20,9 +20,9 @@ trap cleanup EXIT INT TERM
 
 #SBATCH --begin=now
 #SBATCH --job-name=matlab_nav_sim
-#SBATCH --mem-per-cpu=${SLURM_MEM}
-#SBATCH --cpus-per-task=${SLURM_CPUS_PER_TASK}
-#SBATCH --partition=${SLURM_PARTITION}
+#SBATCH --mem-per-cpu=16G
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=day
 # ============================================
 # SLURM Configuration - DO NOT MODIFY
 # Array size is set when submitting the job
@@ -31,15 +31,19 @@ trap cleanup EXIT INT TERM
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
-#SBATCH --time=${SLURM_TIME}
+#SBATCH --time=6:00:00
 # Set email for job notifications. Replace with your address or comment out to disable
 #SBATCH --mail-user=your_email@example.com
 #SBATCH --mail-type=ALL
 
 # Centralized configuration file and output base. These can be overridden
 # by exporting the variables before calling sbatch.
+# Configuration for plume type
 : ${PLUME_CONFIG:="configs/my_complex_plume_config.yaml"}
 : ${OUTPUT_BASE:="data/raw"}
+
+# Derive plume name from configuration file path (without extension)
+PLUME_NAME="$(basename "${PLUME_CONFIG%.*}")"
 
 # Create output directories if they don't exist
 mkdir -p slurm_out slurm_err data/raw data/processed logs
@@ -133,6 +137,7 @@ done
 
 echo "=== Simulation Parameters ===" | tee -a "$JOB_LOG"
 echo "Job ID: $SLURM_ARRAY_TASK_ID" | tee -a "$JOB_LOG"
+echo "Plume: $PLUME_NAME" | tee -a "$JOB_LOG"
 echo "Condition: $CONDITION_NAME ($CONDITION)" | tee -a "$JOB_LOG"
 echo "Agents: $START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
 echo "Random seeds: ${RANDOM_SEEDS[*]}" | tee -a "$JOB_LOG"
@@ -146,7 +151,7 @@ MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT+i))
     SEED=${RANDOM_SEEDS[$i]}
-    AGENT_DIR="${OUTPUT_BASE}/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
+    AGENT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
 
     mkdir -p "$AGENT_DIR"
 

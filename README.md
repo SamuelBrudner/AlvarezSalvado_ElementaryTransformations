@@ -14,7 +14,7 @@ cfg = load_config('tests/sample_config.yaml');
 result = run_navigation_cfg(cfg);
 
 % Export results to CSV and JSON
-export_results('data/raw/bilateral/1_1/result.mat', 'data/processed');
+export_results('data/raw/gaussian_bilateral/1_1/result.mat', 'data/processed');
 ```
 
 This will:
@@ -45,7 +45,7 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 - `data/raw/` - Store raw plume files here
 - `data/processed/` - Store processed outputs here
 - `logs/` - Log files for each batch job
-- `data/raw/<condition>/<agentIndex>_<seed>/` - Simulation results (auto-created)
+- `data/raw/<plume>_<sensing>/<agentIndex>_<seed>/` - Simulation results (auto-created)
   - `config_used.yaml` - Exact configuration used for the run
   - `result.mat` - Simulation output (see below)
 
@@ -83,7 +83,8 @@ Every model call returns a structure with these fields:
 
 ### Naming Conventions
 
-- `<condition>`: `bilateral` or `unilateral` (from `cfg.bilateral`)
+- `<plume>`: Name of the plume configuration (from `PLUME_CONFIG`)
+- `<sensing>`: `bilateral` or `unilateral` (from `cfg.bilateral`)
 - `<agentIndex>`: 1-based index for agent grouping
 - `<seed>`: PRNG seed for reproducible simulations
 
@@ -91,7 +92,7 @@ Every model call returns a structure with these fields:
 
 ```matlab
 % Load a single agent result
-r = load('data/raw/bilateral/17_17/result.mat');
+r = load('data/raw/gaussian_bilateral/17_17/result.mat');
 x = r.out.x;          % trajectories
 pars = r.out.params;  % model parameters
 
@@ -275,9 +276,21 @@ result = run_navigation_cfg(cfg);
 The batch script `run_batch_job.sh` also accepts this `bilateral` flag when
 creating configuration structures for large simulation runs.
 
+
 > **Important**: `run_batch_job.sh` contains a `--mail-user` directive for
 > SLURM job notifications. Replace the placeholder email address with your own,
 > or comment out the line to disable email alerts before submitting jobs.
+
+### `run_batch_job_4000.sh`
+
+`run_batch_job_4000.sh` drops environment variable expansion from its `SBATCH`
+headers. Specify job parameters when launching the job:
+
+```bash
+sbatch --job-name=${EXPERIMENT_NAME}_sim \
+       --array=0-$((TOTAL_JOBS-1))%${SLURM_ARRAY_CONCURRENT} \
+       run_batch_job_4000.sh
+```
 
 
 

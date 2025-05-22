@@ -1,20 +1,29 @@
 function config = load_config(config_path, default_config)
-% LOAD_CONFIG Load and validate a YAML configuration file
-%   config = LOAD_CONFIG(config_path) loads the YAML file at config_path
-%   config = LOAD_CONFIG(config_path, default_config) uses default_config for missing values
+% LOAD_CONFIG Load and validate simulation configuration
+%   CONFIG = LOAD_CONFIG(CONFIG_PATH) loads configuration from YAML or key-value text file
+%   CONFIG = LOAD_CONFIG(CONFIG_PATH, DEFAULT_CONFIG) merges with default values
 %
-%   Throws an error if the config file is invalid or missing required fields
+%   Supports both YAML (if yaml toolbox is available) and simple key:value format
+%   Automatically detects file format based on extension or content
 
-    % Check if YAML toolbox is available
-    if ~exist('yaml.ReadYaml', 'file')
-        error('YAML toolbox not found. Please run startup.m first');
+    % Check if file exists and is readable
+    if ~exist(config_path, 'file')
+        error('Configuration file not found: %s', config_path);
     end
-
-    % Load the YAML file
-    try
-        config = yaml.ReadYaml(config_path);
-    catch ME
-        error('Failed to load config file %s: %s', config_path, ME.message);
+    
+    % Try to load as YAML first if available
+    [~, ~, ext] = fileparts(config_path);
+    use_yaml = strcmpi(ext, '.yaml') || strcmpi(ext, '.yml');
+    
+    if use_yaml && exist('yaml.ReadYaml', 'file')
+        try
+            config = yaml.ReadYaml(config_path);
+        catch ME
+            warning('Failed to load as YAML, falling back to simple parser: %s', ME.message);
+            config = load_simple_config(config_path);
+        end
+    else
+        config = load_simple_config(config_path);
     end
     
     % Apply defaults if provided
@@ -23,10 +32,78 @@ function config = load_config(config_path, default_config)
     end
     
     % Validate required fields
-    required_fields = {'experiment', 'plume_types', 'sensing_modes', 'agents_per_condition'};
+    validate_config(config);
+    
+    % Convert numeric strings to numbers where appropriate
+    config = convert_numeric_fields(config);
+end
+
+function config = load_simple_config(config_path)
+% LOAD_SIMPLE_CONFIG Load simple key:value config file
+    fid = fopen(config_path, 'r');
+    if fid == -1
+        error('Could not open configuration file: %s', config_path);
+    end
+    
+    lines = textscan(fid, '%s', 'Delimiter', '\n', 'Whitespace', '');
+    fclose(fid);
+    lines = lines{1};
+    
+    config = struct();
+    for i = 1:numel(lines)
+        line = strtrim(lines{i});
+        % Skip comments and empty lines
+        if isempty(line) || line(1) == '#'
+            continue;
+        end
+        
+        % Split on first colon
+        colon_pos = strfind(line, ':');
+        if isempty(colon_pos)
+            continue;
+        end
+        
+        key = strtrim(line(1:colon_pos(1)-1));
+        value = strtrim(line(colon_pos(1)+1:end));
+        
+        % Convert value to appropriate type
+        if isempty(value)
+            config.(key) = '';
+        elseif strcmpi(value, 'true')
+            config.(key) = true;
+        elseif strcmpi(value, 'false')
+            config.(key) = false;
+        else
+            % Try to convert to number
+            num = str2double(value);
+            if ~isnan(num) && ~isnan(str2double(value(1)))
+                config.(key) = num;
+            else
+                config.(key) = value;
+            end
+        end
+    end
+end
+
+function validate_config(config)
+% VALIDATE_CONFIG Check for required fields
+    required_fields = {'experiment_name', 'plume_type', 'sensing_mode'};
     for i = 1:length(required_fields)
         if ~isfield(config, required_fields{i})
-            error('Missing required field in config: %s', required_fields{i});
+            warning('Missing recommended field in config: %s', required_fields{i});
+        end
+    end
+end
+
+function config = convert_numeric_fields(config)
+% CONVERT_NUMERIC_FIELDS Convert string numbers to numeric
+    fields = fieldnames(config);
+    for i = 1:length(fields)
+        if ischar(config.(fields{i}))
+            num = str2double(config.(fields{i}));
+            if ~isnan(num)
+                config.(fields{i}) = num;
+            end
         end
     end
 end
@@ -34,15 +111,18 @@ end
 function out = merge_structs(defaults, overrides)
 % MERGE_STRUCTS Recursively merge two structs
     out = defaults;
-    if isstruct(overrides)
-        fields = fieldnames(overrides);
-        for i = 1:length(fields)
-            field = fields{i};
-            if isfield(defaults, field) && isstruct(defaults.(field)) && isstruct(overrides.(field))
-                out.(field) = merge_structs(defaults.(field), overrides.(field));
-            else
-                out.(field) = overrides.(field);
-            end
+    if ~isstruct(overrides)
+        return;
+    end
+    
+    fields = fieldnames(overrides);
+    for i = 1:length(fields)
+        field = fields{i};
+        if isfield(defaults, field) && isstruct(defaults.(field)) && isstruct(overrides.(field))
+            out.(field) = merge_structs(defaults.(field), overrides.(field));
+        else
+            out.(field) = overrides.(field);
         end
     end
+end
 end

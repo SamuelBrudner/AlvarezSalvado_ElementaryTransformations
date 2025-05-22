@@ -29,18 +29,26 @@ catch ME
 end
 
 % Calculate agent parameters
-seed = agent_id;  % Use agent_id as seed for reproducibility
 plume_idx = mod((job_id - 1) ./ cfg.experiment.jobs_per_condition, cfg.experiment.num_plumes) + 1;
 sensing_idx = mod(floor((job_id - 1) ./ cfg.experiment.jobs_per_condition ./ cfg.experiment.num_plumes), ...
                   cfg.experiment.num_sensing) + 1;
-              
+
 plume_name = cfg.experiment.plume_types{plume_idx};
 sensing_name = cfg.experiment.sensing_modes{sensing_idx};
+
+% Seed includes plume and sensing names for reproducibility across conditions
+seed = sum(double(plume_name)) + sum(double(sensing_name)) + agent_id;
 
 % Create output directory
 output_dir = cfg.get_output_dir(plume_name, sensing_name, agent_id, seed);
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
+end
+% Skip simulation if result already exists
+result_file = fullfile(output_dir, 'result.mat');
+if exist(result_file, 'file')
+    warning('Result exists, skipping: %s', output_dir);
+    return;
 end
 
 fprintf('Starting simulation for job %d, agent %d (%s, %s)\n', ...
@@ -60,8 +68,9 @@ try
     % Run the simulation
     result = run_navigation_cfg(sim_cfg);
     
-    % Save the results
-    save(fullfile(output_dir, 'result.mat'), '-struct', 'result');
+    % Save the results under a top-level ''out'' field for downstream tools
+    out = result;
+    save(fullfile(output_dir, 'result.mat'), 'out', '-v7');
     fprintf('Successfully completed simulation for agent %d (seed %d)\n', agent_id, seed);
     
     % Clear large variables to save memory
