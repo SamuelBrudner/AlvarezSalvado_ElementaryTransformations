@@ -115,8 +115,8 @@ NUM_CONDITIONS=$((NUM_PLUMES * NUM_SENSING))
 JOBS_PER_CONDITION=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB - 1) / AGENTS_PER_JOB ))
 TOTAL_JOBS=$((NUM_CONDITIONS * JOBS_PER_CONDITION))
 
-# Calculate required disk space (400KB per agent with 20% buffer)
-BYTES_PER_AGENT=400000  # 400KB per agent
+# Calculate required disk space (50MB per agent with 20% buffer)
+BYTES_PER_AGENT=50000000  # 50MB per agent
 REQUIRED_SPACE_KB=$(( (AGENTS_PER_CONDITION * NUM_CONDITIONS * BYTES_PER_AGENT * 12 / 10) / 1024 ))
 
 # ───────────────────────────────────────────────────────────

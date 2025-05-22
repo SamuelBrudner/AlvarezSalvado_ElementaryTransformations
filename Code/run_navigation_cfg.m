@@ -83,6 +83,11 @@ elseif isfield(cfg,'plume_video')
     assert(all(isfield(cfg,{'px_per_mm','frame_rate'})), ...
         'px_per_mm and frame_rate are required for video plumes');
 
+    % Auto-enable streaming on SLURM clusters when not specified
+    if ~isfield(cfg,'use_streaming') && isSlurmCluster()
+        cfg.use_streaming = true;
+    end
+
     if isfield(cfg,'use_streaming') && cfg.use_streaming
         % ~~~ streaming mode (placeholder implementation) ~~~
         vr = VideoReader(cfg.plume_video);
@@ -118,14 +123,3 @@ function tl = chooseTrialLength(cfg, defaultTL)
     end
 end
 
-% ──────────────────────────────────────────────────────────────────────────
-function out = navigation_model_vec_stream(~,~,~,~,~,~) %#ok<INUSD>
-%NAVIGATION_MODEL_VEC_STREAM  Placeholder for future streaming backend.
-%
-%   Replace this stub with an implementation that consumes frames from a
-%   VideoReader object on-the-fly (to save memory with very large, lossless
-%   plume movies).  For the moment we raise a readable error so users know
-%   what to do.
-    error(['navigation_model_vec_stream not yet implemented. ' ...
-           'Set cfg.use_streaming = false or add the implementation.']);
-end

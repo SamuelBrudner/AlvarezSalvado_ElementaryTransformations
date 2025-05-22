@@ -86,11 +86,16 @@ function config = load_simple_config(config_path)
 end
 
 function validate_config(config)
-% VALIDATE_CONFIG Check for required fields
-    required_fields = {'experiment_name', 'plume_type', 'sensing_mode'};
-    for i = 1:length(required_fields)
-        if ~isfield(config, required_fields{i})
-            warning('Missing recommended field in config: %s', required_fields{i});
+% VALIDATE_CONFIG Check for recommended experiment fields
+%   Only warn about missing fields if any of them are present.
+    recommended_fields = {'experiment_name', 'plume_type', 'sensing_mode'};
+
+    has_any = any(isfield(config, recommended_fields));
+    if has_any
+        for i = 1:numel(recommended_fields)
+            if ~isfield(config, recommended_fields{i})
+                warning('Missing recommended field in config: %s', recommended_fields{i});
+            end
         end
     end
 end
