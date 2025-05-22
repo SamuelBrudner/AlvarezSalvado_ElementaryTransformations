@@ -47,9 +47,15 @@ JOBS_PER_CONDITION=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB - 1) / AGENTS_PER_
 TOTAL_JOBS=$((NUM_CONDITIONS * JOBS_PER_CONDITION))
 
 # ============================================
-# SLURM Configuration - Array size is set here
+# SLURM Configuration - Array size is set when submitting
+# Example: sbatch --array=0-$((TOTAL_JOBS-1)) run_batch_job.sh
 # ============================================
-#SBATCH --array=0-$((TOTAL_JOBS - 1))  # Auto-calculated number of jobs
+
+# Exit early if this task index exceeds TOTAL_JOBS
+if [[ -n "$SLURM_ARRAY_TASK_ID" && "$SLURM_ARRAY_TASK_ID" -ge "$TOTAL_JOBS" ]]; then
+    echo "SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID exceeds TOTAL_JOBS $TOTAL_JOBS. Exiting."
+    exit 0
+fi
 
 # ============================================
 # Job Parameter Calculation
