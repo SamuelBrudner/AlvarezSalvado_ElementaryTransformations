@@ -117,3 +117,4 @@ function tl = chooseTrialLength(cfg, defaultTL)
         tl = defaultTL;
     end
 end
+
