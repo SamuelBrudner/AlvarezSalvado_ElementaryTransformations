@@ -74,8 +74,11 @@ else
     CONDITION_NAME="unilateral"
 fi
 
-# Set random seed based on replicate for reproducibility
-RANDOM_SEED=$((REPLICATE + 1))  # +1 to avoid seed 0
+# Set random seeds for each agent in this job
+RANDOM_SEEDS=()
+for s in $(seq $START_AGENT $END_AGENT); do
+    RANDOM_SEEDS+=($s)
+done
 
 # ============================================
 # Run Simulation
