@@ -67,60 +67,59 @@ succ = arrayfun(@(f) load(fullfile(f.folder,f.name),'out'), files);
 success_rate = mean(arrayfun(@(s) s.out.successrate, succ));
 ```
 
-## Data Conversion to Open Formats
+## Exporting Results to Open Formats
 
-The `convert_mat_results.py` script converts MATLAB `.mat` output files into more accessible formats for analysis in Python, R, or other languages.
+The `export_results.m` function converts MATLAB `.mat` output files into more accessible formats (CSV/JSON) for analysis in other tools or for long-term storage.
 
 ### Features
 
-- Converts binary MATLAB files to open, columnar Parquet format
-- Preserves all simulation metadata in human-readable YAML
+- Converts binary MATLAB files to standard CSV and JSON formats
+- Preserves all simulation metadata in human-readable JSON
 - Handles both single and multi-trial simulations
-- Option to output CSV for compatibility with legacy tools
-
-### Installation
-
-```bash
-# Install required Python packages
-pip install pandas pyyaml pyarrow scipy
-```
+- Provides flexible output format options
+- Maintains data relationships and structure
 
 ### Usage
 
-```bash
-# Basic conversion
-python convert_mat_results.py /path/to/result.mat --out-dir data/processed
+```matlab
+% Basic usage (exports both CSV and JSON)
+export_results('result.mat', 'output_dir');
 
-# Keep trials in a MultiIndex (useful for panel data)
-python convert_mat_results.py result.mat --out-dir output --split-trials
+% Export only CSV
+export_results('result.mat', 'output_dir', 'Format', 'csv');
 
-# Generate CSV alongside Parquet (larger files)
-python convert_mat_results.py result.mat --out-dir output --csv
+% Export only JSON
+export_results('result.mat', 'output_dir', 'Format', 'json');
 ```
 
 ### Output Files
 
-- `trajectories.parquet` - Time series data with columns: t, trial, x, y, theta, odor, ON, OFF, turn
-- `params.yaml` - Complete model parameters used in the simulation
-- `summary.yaml` - High-level statistics (success rate, latency, etc.)
+- `trajectories.csv` - Time series data with columns: t, trial, x, y, theta, odor, ON, OFF, turn
+- `params.json` - Complete model parameters used in the simulation
+- `summary.json` - High-level statistics (success rate, latency, etc.)
 
-### Example: Loading in Python
+### Example: Loading the Data
 
-```python
-import pandas as pd
-import yaml
+```matlab
+% Load trajectory data
+trajectories = readtable('output_dir/trajectories.csv');
 
-# Load trajectory data
-df = pd.read_parquet('data/processed/trajectories.parquet')
+% Load parameters
+fid = fopen('output_dir/params.json');
+raw = fread(fid, inf, 'uint8=>char')';
+fclose(fid);
+params = jsondecode(raw);
 
-# Load parameters
-with open('data/processed/params.yaml') as f:
-    params = yaml.safe_load(f)
-
-# Analyze away!
-print(f"Success rate: {params.get('successrate', 'N/A')}")
-print(f"Number of trials: {df['trial'].nunique()}")
+% Display summary
+fprintf('Success rate: %.2f\n', params.successrate);
+fprintf('Number of trials: %d\n', max(trajectories.trial) + 1);
 ```
+
+### Notes
+
+- The function automatically creates the output directory if it doesn't exist
+- Timesteps are 0-indexed in the output files
+- Boolean values are converted to 0/1 in CSV output
 
 ## Running Simulations
 

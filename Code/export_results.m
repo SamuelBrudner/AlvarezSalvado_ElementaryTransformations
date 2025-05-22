@@ -1,0 +1,110 @@
+function export_results(input_file, output_dir, varargin)
+%EXPORT_RESULTS Export simulation results to open formats (CSV/JSON)
+%   EXPORT_RESULTS(INPUT_FILE, OUTPUT_DIR) exports the simulation results from
+%   INPUT_FILE to CSV and JSON files in OUTPUT_DIR.
+%   
+%   EXPORT_RESULTS(..., 'Format', 'csv') exports only CSV files.
+%   EXPORT_RESULTS(..., 'Format', 'json') exports only JSON files.
+%   
+%   Example:
+%     % Export to both formats (default)
+%     export_results('result.mat', 'output')
+%     
+%     % Export only CSV
+%     export_results('result.mat', 'output', 'Format', 'csv')
+% 
+%   Output files:
+%     - trajectories.csv: Time series data (t, trial, x, y, theta, odor, ON, OFF, turn)
+%     - params.json: Model parameters
+%     - summary.json: Simulation summary (success rate, latency, etc.)
+
+% Parse input arguments
+p = inputParser;
+addRequired(p, 'input_file', @ischar);
+addRequired(p, 'output_dir', @ischar);
+addParameter(p, 'Format', 'both', @(x) any(validatestring(lower(x), {'csv', 'json', 'both'})));
+parse(p, input_file, output_dir, varargin{:});
+
+% Create output directory if it doesn't exist
+if ~exist(output_dir, 'dir')
+    mkdir(output_dir);
+end
+
+% Load the result file
+fprintf('Loading %s...\n', input_file);
+result = load(input_file, 'out');
+result = result.out;  % Extract the 'out' struct
+
+% Prepare output data
+data = struct();
+
+% Extract trajectories
+[T, N] = size(result.x);
+t = (1:T)' - 1;  % 0-based time indices
+
+% Create a table for trajectory data
+trajectories = table();
+for i = 1:N
+    trial_data = table(repmat(t, 1, 1), ...  % Time
+                      repmat(i-1, T, 1), ... % 0-based trial index
+                      result.x(:,i), ...     % X position
+                      result.y(:,i), ...     % Y position
+                      result.theta(:,i), ... % Heading angle
+                      result.odor(:,i), ...  % Odor concentration
+                      result.ON(:,i), ...    % ON filter
+                      result.OFF(:,i), ...   % OFF filter
+                      logical(result.turn(:,i)), ... % Turn events
+                      'VariableNames', {'t', 'trial', 'x', 'y', 'theta', 'odor', 'ON', 'OFF', 'turn'});
+    trajectories = [trajectories; trial_data];
+end
+
+% Create parameter structure
+params = struct();
+if isfield(result, 'params')
+    params = result.params;
+end
+
+% Create summary structure
+summary = struct();
+summary.successrate = 0;
+summary.latency = [];
+summary.n_trials = N;
+summary.timesteps = T;
+
+if isfield(result, 'successrate')
+    summary.successrate = result.successrate;
+end
+if isfield(result, 'latency')
+    summary.latency = result.latency(:)';
+end
+
+% Export data based on requested format
+export_csv = strcmpi(p.Results.Format, 'both') || strcmpi(p.Results.Format, 'csv');
+export_json = strcmpi(p.Results.Format, 'both') || strcmpi(p.Results.Format, 'json');
+
+if export_csv
+    % Write trajectories to CSV
+    traj_file = fullfile(output_dir, 'trajectories.csv');
+    writetable(trajectories, traj_file);
+    fprintf('Wrote trajectories to %s\n', traj_file);
+end
+
+if export_json
+    % Write parameters to JSON
+    param_file = fullfile(output_dir, 'params.json');
+    fid = fopen(param_file, 'w');
+    fprintf(fid, '%s', jsonencode(params, 'PrettyPrint', true));
+    fclose(fid);
+    fprintf('Wrote parameters to %s\n', param_file);
+    
+    % Write summary to JSON
+    summary_file = fullfile(output_dir, 'summary.json');
+    fid = fopen(summary_file, 'w');
+    fprintf(fid, '%s', jsonencode(summary, 'PrettyPrint', true));
+    fclose(fid);
+    fprintf('Wrote summary to %s\n', summary_file);
+end
+
+fprintf('Export completed successfully.\n');
+
+end
