@@ -6,6 +6,12 @@ function startup
 % so that it works regardless of the current working directory.
 
 rootDir = fileparts(mfilename('fullpath'));
-addpath(fullfile(rootDir, 'Code'));
+codeDir = fullfile(rootDir, 'Code');
+if isfolder(codeDir)
+    entries = strsplit(path, pathsep);
+    if ~any(strcmp(entries, codeDir))
+        addpath(codeDir);
+    end
+end
 end
 
