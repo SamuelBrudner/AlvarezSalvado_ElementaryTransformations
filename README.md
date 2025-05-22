@@ -68,8 +68,8 @@ result = navigation_model_vec(triallength, 'video', 1, 1, plume);
 
 When `triallength` exceeds the number of frames in the plume movie, the odor
 frames automatically repeat so that the simulation continues for the full
-duration. The video plume does not contain wind information, so wind speed
-remains zero throughout the simulation.
+duration. Currently wind speed is assumed zero for video plumes because the
+plume data does not include wind information.
 
 The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and
