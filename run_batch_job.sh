@@ -1,10 +1,17 @@
 #!/bin/bash
 
+# Default SLURM settings if not provided as environment variables
+: ${SLURM_PARTITION:="day"}
+: ${SLURM_TIME:="6:00:00"}
+: ${SLURM_MEM:="16G"}
+: ${SLURM_CPUS_PER_TASK:=1}
+: ${SLURM_ARRAY_CONCURRENT:=100}
+
 #SBATCH --begin=now
 #SBATCH --job-name=matlab_nav_sim
-#SBATCH --mem-per-cpu=16G
-#SBATCH --cpus-per-task=1
-#SBATCH --partition=day
+#SBATCH --mem-per-cpu=${SLURM_MEM}
+#SBATCH --cpus-per-task=${SLURM_CPUS_PER_TASK}
+#SBATCH --partition=${SLURM_PARTITION}
 # ============================================
 # SLURM Configuration - DO NOT MODIFY
 # Array size is set when submitting the job
@@ -13,7 +20,7 @@
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
-#SBATCH --time=6:00:00
+#SBATCH --time=${SLURM_TIME}
 # Set email for job notifications. Replace with your address or comment out to disable
 #SBATCH --mail-user=your_email@example.com
 #SBATCH --mail-type=ALL
@@ -66,7 +73,7 @@ TOTAL_JOBS=$((NUM_CONDITIONS * JOBS_PER_CONDITION))
 
 # ============================================
 # SLURM Configuration - Array size is set when submitting
-# Example: sbatch --array=0-$((TOTAL_JOBS-1)) run_batch_job.sh
+# Example: sbatch --array=0-$((TOTAL_JOBS-1))%${SLURM_ARRAY_CONCURRENT} run_batch_job.sh
 # ============================================
 
 # Exit early if this task index exceeds TOTAL_JOBS
