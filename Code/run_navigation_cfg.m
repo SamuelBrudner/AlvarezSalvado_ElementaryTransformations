@@ -106,3 +106,15 @@ else
 end
 end
 % ===== end main function =================================================
+
+
+% ──────────────────────────────────────────────────────────────────────────
+function tl = chooseTrialLength(cfg, defaultTL)
+% Return cfg.triallength if present, otherwise fall back to defaultTL.
+    if isfield(cfg,'triallength') && ~isempty(cfg.triallength)
+        tl = cfg.triallength;
+    else
+        tl = defaultTL;
+    end
+end
+
