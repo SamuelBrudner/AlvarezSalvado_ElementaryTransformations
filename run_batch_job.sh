@@ -103,26 +103,23 @@ echo "============================"
 # Create a temporary MATLAB script to run all agents for this job
 MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 
-# Loop over each seed and agent assigned to this job
-for i in "${!RANDOM_SEEDS[@]}"; do
-    AGENT_INDEX=$((START_AGENT + i))
+for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
+    AGENT_INDEX=$((START_AGENT+i))
     SEED=${RANDOM_SEEDS[$i]}
     AGENT_DIR="data/raw/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
+
     mkdir -p "$AGENT_DIR"
 
     cat >> "$MATLAB_SCRIPT" <<EOF
-config = struct();
-config.bilateralSensing = $BILATERAL;
-config.randomSeed = $SEED;
-config.outputDir = '$AGENT_DIR';
-config.condition = $CONDITION;
-config.agentIndex = $AGENT_INDEX;
-fprintf('Running agent %d with seed %d\n', $AGENT_INDEX, $SEED);
+cfg = struct();
+cfg.bilateral = $BILATERAL;
+cfg.randomSeed = $SEED;
+cfg.outputDir = '$AGENT_DIR';
+
 try
-    run_navigation_cfg(config);
-catch e
-    disp(getReport(e));
-    exit(1);
+    run_navigation_cfg(cfg);
+catch ME
+    disp(getReport(ME));
 end
 
 EOF
