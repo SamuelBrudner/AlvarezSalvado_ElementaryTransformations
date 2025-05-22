@@ -48,20 +48,33 @@ data = struct();
 [T, N] = size(result.x);
 t = (1:T)' - 1;  % 0-based time indices
 
+% Determine which optional columns to include
+includeON = isfield(result, 'ON') && ~isempty(result.ON);
+includeOFF = isfield(result, 'OFF') && ~isempty(result.OFF);
+
 % Create a table for trajectory data
 trajectories = table();
 for i = 1:N
     % Each trial shares the same time vector, so repmat is unnecessary
-    trial_data = table(t, ...                 % Time
-                      repmat(i-1, T, 1), ... % 0-based trial index
-                      result.x(:,i), ...     % X position
-                      result.y(:,i), ...     % Y position
-                      result.theta(:,i), ... % Heading angle
-                      result.odor(:,i), ...  % Odor concentration
-                      getField(result,'ON',T,i), ...  % ON filter
-                      getField(result,'OFF',T,i), ... % OFF filter
-                      logical(result.turn(:,i)), ... % Turn events
-                      'VariableNames', {'t', 'trial', 'x', 'y', 'theta', 'odor', 'ON', 'OFF', 'turn'});
+    varNames = {'t', 'trial', 'x', 'y', 'theta', 'odor'};
+    vars = {t, ...                     % Time
+            repmat(i-1, T, 1), ...    % 0-based trial index
+            result.x(:,i), ...        % X position
+            result.y(:,i), ...        % Y position
+            result.theta(:,i), ...    % Heading angle
+            result.odor(:,i)};        % Odor concentration
+    if includeON
+        vars{end+1} = getField(result,'ON',T,i); %#ok<AGROW>
+        varNames{end+1} = 'ON';
+    end
+    if includeOFF
+        vars{end+1} = getField(result,'OFF',T,i); %#ok<AGROW>
+        varNames{end+1} = 'OFF';
+    end
+    vars{end+1} = logical(result.turn(:,i));
+    varNames{end+1} = 'turn';
+
+    trial_data = table(vars{:}, 'VariableNames', varNames);
     trajectories = [trajectories; trial_data];
 end
 
