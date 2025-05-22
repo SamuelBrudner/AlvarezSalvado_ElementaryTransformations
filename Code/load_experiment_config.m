@@ -143,9 +143,7 @@ if ~isnumeric(cfg.experiment.agents_per_condition) || cfg.experiment.agents_per_
     error('agents_per_condition must be a positive number');
 end
 
-if ~isnumeric(cfg.experiment.agents_per_job) || cfg.experiment.agents_per_job <= 0
-    error('agents_per_job must be a positive number');
-end
+validateAgentsPerJob(cfg.experiment.agents_per_job);
 
 % Ensure output directory exists
 if ~exist(cfg.experiment.output_base, 'dir')
