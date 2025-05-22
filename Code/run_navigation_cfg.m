@@ -57,7 +57,7 @@ if isfield(cfg, 'plume_metadata')
     else
         tl = size(plume.data, 3);
     end
-    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume, cfg);
 
 elseif isfield(cfg, 'plume_video')
     if ~isfield(cfg, 'px_per_mm') || ~isfield(cfg, 'frame_rate')
@@ -69,10 +69,10 @@ elseif isfield(cfg, 'plume_video')
     else
         tl = size(plume.data, 3);
     end
-    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume, cfg);
 
 else
     out = model_fn(cfg.triallength, cfg.environment, ...
-        cfg.plotting, cfg.ntrials);
+        cfg.plotting, cfg.ntrials, struct(), cfg);
 end
 end

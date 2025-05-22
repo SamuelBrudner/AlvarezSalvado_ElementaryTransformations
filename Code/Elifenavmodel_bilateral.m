@@ -1,6 +1,6 @@
 
 
-function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials) 
+function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials, params)
 
 
 
@@ -82,6 +82,14 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
                     % gets set to 0 below for Gaussian environment
  if (nargin<=3)
      ntrials=1;
+ end
+ if nargin < 5
+     params = struct();
+ end
+
+ fields = intersect(fieldnames(params), who);
+ for f = fields'
+     eval([f{1} ' = params.(f{1});']);
  end
   switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
      
