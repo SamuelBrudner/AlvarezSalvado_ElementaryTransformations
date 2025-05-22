@@ -99,7 +99,7 @@ for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     
     # Add command to run this agent
     MATLAB_CMD+="config = struct(); "
-    MATLAB_CMD+="config.bilateralSensing = $BILATERAL; "
+    MATLAB_CMD+="config.bilateral = $BILATERAL; "
     MATLAB_CMD+="config.randomSeed = $SEED; "
     MATLAB_CMD+="config.outputDir = '$AGENT_DIR'; "
     MATLAB_CMD+="config.condition = $CONDITION; "

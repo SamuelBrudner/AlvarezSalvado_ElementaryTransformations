@@ -107,6 +107,9 @@ cfg = load_config('tests/sample_config_bilateral.yaml');
 result = run_navigation_cfg(cfg);
 ```
 
+The batch script `run_batch_job.sh` also accepts this `bilateral` flag when
+creating configuration structures for large simulation runs.
+
 
 
 ## Repository Layout
