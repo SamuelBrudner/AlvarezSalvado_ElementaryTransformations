@@ -7,14 +7,15 @@
 #SBATCH --partition=day
 # ============================================
 # SLURM Configuration - DO NOT MODIFY
-# The array size is calculated automatically below
+# Array size is set when submitting the job
+# See example below for sbatch syntax
 # ============================================
-# Array will be set after calculating required jobs
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
 #SBATCH --time=6:00:00
-#SBATCH --mail-user=samuel.brudner@yale.edu
+# Set email for job notifications. Replace with your address or comment out to disable
+#SBATCH --mail-user=your_email@example.com
 #SBATCH --mail-type=ALL
 
 # Create output directories if they don't exist
@@ -102,35 +103,7 @@ echo "============================"
 # Create a temporary MATLAB script to run all agents for this job
 MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 
-for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
-    AGENT_INDEX=$((START_AGENT + i))
-    SEED=${RANDOM_SEEDS[$i]}
-    AGENT_DIR="data/raw/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
-
-    mkdir -p "$AGENT_DIR"
-    
-    # Add command to run this agent
-    MATLAB_CMD+="config = struct(); "
-    MATLAB_CMD+="config.bilateral = $BILATERAL; "
-    MATLAB_CMD+="config.randomSeed = $SEED; "
-    MATLAB_CMD+="config.outputDir = '$AGENT_DIR'; "
-    MATLAB_CMD+="config.condition = $CONDITION; "
-    MATLAB_CMD+="config.agentIndex = $AGENT_INDEX; "
-    MATLAB_CMD+="fprintf('Running agent %d with seed %d\\n', $AGENT_INDEX, $SEED); "
-    MATLAB_CMD+="run_navigation_cfg(config); "
-    
-    # Add error handling for this agent
-    if [ $i -eq 0 ]; then
-        MATLAB_CMD+="try, "
-    fi
-    
-    # Add separator between agents
-    if [ $i -lt $(( ${#RANDOM_SEEDS[@]} - 1 )) ]; then
-        MATLAB_CMD+="try, "
-    fi
-done
-
-    cat >> "$MATLAB_SCRIPT" <<EOF
+cat >> "$MATLAB_SCRIPT" <<EOF
 config = struct();
 config.bilateralSensing = $BILATERAL;
 config.randomSeed = $SEED;
@@ -145,7 +118,6 @@ catch e
     exit(1);
 end
 EOF
-done
 
 echo "exit(0);" >> "$MATLAB_SCRIPT"
 
