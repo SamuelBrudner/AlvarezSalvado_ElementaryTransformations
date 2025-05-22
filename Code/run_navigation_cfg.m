@@ -83,6 +83,11 @@ elseif isfield(cfg,'plume_video')
     assert(all(isfield(cfg,{'px_per_mm','frame_rate'})), ...
         'px_per_mm and frame_rate are required for video plumes');
 
+    % Auto-enable streaming on SLURM clusters when not specified
+    if ~isfield(cfg,'use_streaming') && isSlurmCluster()
+        cfg.use_streaming = true;
+    end
+
     if isfield(cfg,'use_streaming') && cfg.use_streaming
         % ~~~ streaming mode (placeholder implementation) ~~~
         vr = VideoReader(cfg.plume_video);
