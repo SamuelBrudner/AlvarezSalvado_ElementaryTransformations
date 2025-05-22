@@ -7,9 +7,9 @@
 #SBATCH --partition=day
 # ============================================
 # SLURM Configuration - DO NOT MODIFY
-# The array size is calculated automatically below
+# Array size is set when submitting the job
+# See example below for sbatch syntax
 # ============================================
-# Array will be set after calculating required jobs
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
