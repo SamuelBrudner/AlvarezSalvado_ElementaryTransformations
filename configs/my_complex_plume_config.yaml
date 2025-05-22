@@ -1,7 +1,7 @@
 # Type of environment used for simulation
 environment: video
 # Path to the plume video file
-plume_video: data/smoke_1a_bgsub_lossless.mov
+plume_video: data/smoke_1a_bgsub_raw.avi
 # Pixels per millimeter conversion factor
 px_per_mm: 6.536
 # Frame rate of the video in Hz

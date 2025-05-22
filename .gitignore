@@ -72,3 +72,4 @@ data/*
 !data/processed/**
 results/
 figures/
+tmp_*
