@@ -115,11 +115,13 @@ cfg = struct();
 cfg.bilateral = $BILATERAL;
 cfg.randomSeed = $SEED;
 cfg.outputDir = '$AGENT_DIR';
+
 try
     run_navigation_cfg(cfg);
 catch ME
     disp(getReport(ME));
 end
+
 EOF
 done
 
