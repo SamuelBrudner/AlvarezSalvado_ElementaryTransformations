@@ -8,4 +8,8 @@ cfg = load_yaml(path);
 if ~isstruct(cfg)
     cfg = struct(cfg);
 end
+
+if isfield(cfg, 'agents_per_job')
+    validateAgentsPerJob(cfg.agents_per_job);
+end
 end
