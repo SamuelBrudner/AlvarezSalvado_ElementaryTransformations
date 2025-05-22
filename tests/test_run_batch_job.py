@@ -1,0 +1,15 @@
+import os
+import re
+
+def test_run_batch_job_exists():
+    assert os.path.isfile('run_batch_job.sh'), 'run_batch_job.sh does not exist'
+
+
+def test_run_batch_job_contents():
+    with open('run_batch_job.sh') as f:
+        content = f.read()
+    assert '#SBATCH --partition=' in content
+    assert 'conda activate .env' in content
+    assert re.search(r"matlab .*run_my_simulation", content)
+    assert 'plotting' in content.lower()
+
