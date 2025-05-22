@@ -44,6 +44,12 @@ output_dir = cfg.get_output_dir(plume_name, sensing_name, agent_id, seed);
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end
+% Skip simulation if result already exists
+result_file = fullfile(output_dir, 'result.mat');
+if exist(result_file, 'file')
+    warning('Result exists, skipping: %s', output_dir);
+    return;
+end
 
 fprintf('Starting simulation for job %d, agent %d (%s, %s)\n', ...
         job_id, agent_id, plume_name, sensing_name);
