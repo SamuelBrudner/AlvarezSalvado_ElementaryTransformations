@@ -1,0 +1,33 @@
+# Default configuration for plume simulation
+experiment:
+  name: "default_experiment"
+  output_base: "data/raw"
+  agents_per_condition: 1000
+  agents_per_job: 100
+  matlab_version: "R2021a"
+  slurm:
+    partition: "day"
+    time: "6:00:00"
+    mem: "16G"
+    cpus_per_task: 1
+    array_concurrent: 100
+
+# Simulation parameters
+plume_types: ["crimaldi", "custom"]
+sensing_modes: ["bilateral", "unilateral"]
+plume_config: "configs/my_complex_plume_config.yaml"
+
+# MATLAB options
+matlab_options: "-nodisplay -nosplash"
+
+# Output settings
+output:
+  save_mat: true
+  save_figures: false
+  verbose: true
+
+# Debugging
+debug:
+  enable: false
+  level: 1
+  log_file: "simulation_debug.log"

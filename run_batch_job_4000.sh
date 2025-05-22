@@ -277,7 +277,16 @@ echo "exit(0);" >> "$MATLAB_SCRIPT"
 # 8.  Launch MATLAB to run the generated file
 # ───────────────────────────────────────────────────────────
 echo "Running MATLAB with script: $MATLAB_SCRIPT"
-if ! matlab ${MATLAB_OPTIONS} -r "run('$MATLAB_SCRIPT')"; then
+if ! matlab ${MATLAB_OPTIONS} -r \
+    "try, "\
+    "  addpath('Code'); "\
+    "  startup; "\
+    "  run('$MATLAB_SCRIPT'); "\
+    "catch ME, "\
+    "  fprintf('Error in MATLAB script: %s\\n', getReport(ME)); "\
+    "  exit(1); "\
+    "end, "\
+    "exit;"; then
     echo "ERROR: MATLAB execution failed" >&2
     exit 1
 fi
