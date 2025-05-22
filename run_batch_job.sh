@@ -37,11 +37,12 @@ module load matlab/R2021a
 NUM_CONDITIONS=2
 
 # Number of agents per condition (total agents = NUM_CONDITIONS * AGENTS_PER_CONDITION)
-AGENTS_PER_CONDITION=50  # e.g., 50 agents per condition = 100 total agents
+# Allow override via environment variable
+: "${AGENTS_PER_CONDITION:=50}"  # e.g., 50 agents per condition = 100 total agents
 
 # Agents to run per job (for parallelization)
 # Each agent will get a unique random seed
-AGENTS_PER_JOB=1  # Set higher to run multiple agents per job
+: "${AGENTS_PER_JOB:=1}"  # Set higher to run multiple agents per job
 
 # Calculate derived values
 JOBS_PER_CONDITION=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB - 1) / AGENTS_PER_JOB ))
