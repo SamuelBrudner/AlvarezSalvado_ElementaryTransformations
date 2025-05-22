@@ -25,7 +25,7 @@ matlab:
 slurm:
   partition: "day"
   time: "6:00:00"
-  mem: "16G"
+  mem: "64G" # Complex plume is loaded in full and takes up a lot of memory
   cpus_per_task: 1
   array_concurrent: 100
   mail_user: "${USER}@yale.edu"
