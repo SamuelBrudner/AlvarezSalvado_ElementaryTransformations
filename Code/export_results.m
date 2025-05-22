@@ -45,7 +45,8 @@ t = (1:T)' - 1;  % 0-based time indices
 % Create a table for trajectory data
 trajectories = table();
 for i = 1:N
-    trial_data = table(repmat(t, 1, 1), ...  % Time
+    % Each trial shares the same time vector, so repmat is unnecessary
+    trial_data = table(t, ...                 % Time
                       repmat(i-1, T, 1), ... % 0-based trial index
                       result.x(:,i), ...     % X position
                       result.y(:,i), ...     % Y position
