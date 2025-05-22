@@ -18,8 +18,13 @@
 #SBATCH --mail-user=your_email@example.com
 #SBATCH --mail-type=ALL
 
+# Centralized configuration file and output base. These can be overridden
+# by exporting the variables before calling sbatch.
+: ${PLUME_CONFIG:="configs/my_complex_plume_config.yaml"}
+: ${OUTPUT_BASE:="data/raw"}
+
 # Create output directories if they don't exist
-mkdir -p slurm_out slurm_err data/raw data/processed
+mkdir -p slurm_out slurm_err "$OUTPUT_BASE" data/processed
 
 # Disable GUI and plotting for batch jobs
 export DISPLAY=
@@ -106,15 +111,17 @@ MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT+i))
     SEED=${RANDOM_SEEDS[$i]}
-    AGENT_DIR="data/raw/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
+    AGENT_DIR="${OUTPUT_BASE}/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
 
     mkdir -p "$AGENT_DIR"
 
     cat >> "$MATLAB_SCRIPT" <<EOF
-cfg = struct();
+cfg = load_config('$PLUME_CONFIG');
 cfg.bilateral = $BILATERAL;
 cfg.randomSeed = $SEED;
 cfg.outputDir = '$AGENT_DIR';
+cfg.ntrials = 1;
+cfg.plotting = 0;
 
 try
     run_navigation_cfg(cfg);
