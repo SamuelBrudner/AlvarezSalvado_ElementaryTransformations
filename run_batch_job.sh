@@ -20,9 +20,9 @@ trap cleanup EXIT INT TERM
 
 #SBATCH --begin=now
 #SBATCH --job-name=matlab_nav_sim
-#SBATCH --mem-per-cpu=${SLURM_MEM}
-#SBATCH --cpus-per-task=${SLURM_CPUS_PER_TASK}
-#SBATCH --partition=${SLURM_PARTITION}
+#SBATCH --mem-per-cpu=16G
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=day
 # ============================================
 # SLURM Configuration - DO NOT MODIFY
 # Array size is set when submitting the job
@@ -31,7 +31,7 @@ trap cleanup EXIT INT TERM
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
-#SBATCH --time=${SLURM_TIME}
+#SBATCH --time=6:00:00
 # Set email for job notifications. Replace with your address or comment out to disable
 #SBATCH --mail-user=your_email@example.com
 #SBATCH --mail-type=ALL
