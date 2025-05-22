@@ -117,15 +117,3 @@ function tl = chooseTrialLength(cfg, defaultTL)
         tl = defaultTL;
     end
 end
-
-% ──────────────────────────────────────────────────────────────────────────
-function out = navigation_model_vec_stream(~,~,~,~,~,~) %#ok<INUSD>
-%NAVIGATION_MODEL_VEC_STREAM  Placeholder for future streaming backend.
-%
-%   Replace this stub with an implementation that consumes frames from a
-%   VideoReader object on-the-fly (to save memory with very large, lossless
-%   plume movies).  For the moment we raise a readable error so users know
-%   what to do.
-    error(['navigation_model_vec_stream not yet implemented. ' ...
-           'Set cfg.use_streaming = false or add the implementation.']);
-end
