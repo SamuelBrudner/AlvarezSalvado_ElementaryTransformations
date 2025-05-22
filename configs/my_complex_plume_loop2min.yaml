@@ -1,0 +1,16 @@
+# Type of environment used for simulation
+environment: video
+# Path to the plume video file
+plume_video: data/smoke_1a_bgsub_raw.avi
+# Pixels per millimeter conversion factor
+px_per_mm: 6.536
+# Frame rate of the video in Hz
+frame_rate: 60
+# Disable plotting during simulation
+plotting: 0
+# Number of trials to run
+ntrials: 1
+
+# test looping
+loop: true
+triallength: 7200 # 2 min × 60 fps
