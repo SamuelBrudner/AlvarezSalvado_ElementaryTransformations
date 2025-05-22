@@ -25,8 +25,19 @@ mkdir -p slurm_out slurm_err data/raw data/processed
 export DISPLAY=
 unset X11
 
+# Set MATLAB environment variables
+MATLAB_VERSION=${MATLAB_VERSION:-R2021a}
+MATLAB_MODULE=${MATLAB_MODULE:-matlab/${MATLAB_VERSION}}
+MATLAB_OPTIONS=${MATLAB_OPTIONS:--nodisplay -nosplash}
+
+# Setup conda environment if available
+if [ -f setup_env.sh ]; then
+    source setup_env.sh --dev
+    conda activate .env
+fi
+
 # Load MATLAB module
-module load matlab/R2021a
+module load "$MATLAB_MODULE"
 
 # Calculate condition parameters based on job ID
 # ============================================
@@ -128,7 +139,7 @@ done
 echo "exit(0);" >> "$MATLAB_SCRIPT"
 
 # Run MATLAB with the generated script
-matlab -nodisplay -nosplash -r "run('$MATLAB_SCRIPT');"
+matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT'); run_my_simulation;"
 rm "$MATLAB_SCRIPT"
 
 # Optional: Post-processing steps could be added here
