@@ -1,80 +1,131 @@
 function out = run_navigation_cfg(cfg)
-%RUN_NAVIGATION_CFG Wrapper around navigation_model_vec with config struct.
-%   OUT = RUN_NAVIGATION_CFG(CFG) runs the navigation model according to the
-%   fields of CFG. If CFG contains a field `plume_video` or `plume_metadata`,
-%   the corresponding video file is loaded using `load_plume_video` or
-%   `load_custom_plume` (for YAML metadata) and the model is invoked with the
-%   'video' environment.
-%   Otherwise the environment specified in CFG.environment is used directly.
+%RUN_NAVIGATION_CFG  High-level wrapper around the navigation model.
 %
-%   Required fields:
-%       environment - plume type name or 'video'
-%       plotting    - 0 or 1
-%       ntrials     - number of trials
+%   OUT = RUN_NAVIGATION_CFG(CFG) decides which low-level function to call
+%   based on the fields of CFG.
 %
-%   Additional fields for video plumes:
-%       plume_video - path to AVI file
-%       px_per_mm   - pixels per millimeter for the video
-%       frame_rate  - frame rate (Hz)
+%   ── Recognised CFG fields ─────────────────────────────────────────────
+%   • environment     – plume type name or the literal 'video'
+%   • plotting        – 0/1 flag
+%   • ntrials         – number of virtual flies
+%   • bilateral       – (optional) true → use bilateral model
+%   • outputDir       – (optional) folder where config_used.yaml is saved
+%   • randomSeed      – (optional) RNG seed for reproducibility
 %
-%   Optional fields:
-%       bilateral   - true to run the bilateral model
-%       outputDir   - directory where config_used.yaml is written
+%   When environment == 'video' you must ALSO provide either:
 %
-%   When using video plumes, triallength is determined from the video unless
-%   CFG specifies a triallength to override.
+%       (a) plume_video   – path to video file (AVI / MOV / MP4 …)
+%           px_per_mm     – spatial scale
+%           frame_rate    – Hz
+%
+%           + *optional* use_streaming – true → process frames on-the-fly
+%
+%       (b) plume_metadata – YAML file understood by load_custom_plume
+%
+%   Extra helpers:
+%   • loop:true without triallength → movie will repeat automatically.
+%   • triallength overrides the natural movie length.
+%
+%   Note  The streaming backend is only stubbed in this commit; set
+%         cfg.use_streaming = false (or omit the key) until you replace the
+%         placeholder at the bottom of this file.
 
+% -------------------------------------------------------------------------
+% 0. choose which model variant we will call
+% -------------------------------------------------------------------------
 model_fn = @navigation_model_vec;
-if isfield(cfg, 'environment') && strcmp(cfg.environment, 'video') && ...
-        ~isfield(cfg, 'triallength') && ~isfield(cfg, 'loop')
-    warning('Trial truncated to movie length; set cfg.loop=true to repeat.');
-end
-if isfield(cfg, 'bilateral') && cfg.bilateral
+if isfield(cfg,'bilateral') && cfg.bilateral
     model_fn = @Elifenavmodel_bilateral;
 end
 
-if isfield(cfg, 'outputDir')
-    if ~exist(cfg.outputDir, 'dir')
-        mkdir(cfg.outputDir);
-    end
-    cfgPath = fullfile(cfg.outputDir, 'config_used.yaml');
-    if exist('yamlwrite', 'file') == 2
-        yamlwrite(cfgPath, cfg);
-    else
-        fid = fopen(cfgPath, 'w');
-        fwrite(fid, jsonencode(cfg));
-        fclose(fid);
-    end
-
+% guard-rail warning for truncated trials
+if isfield(cfg,'environment') && strcmpi(cfg.environment,'video') && ...
+        ~isfield(cfg,'triallength') && ~isfield(cfg,'loop')
+    warning(['Trial will end exactly at movie length. ' ...
+             'Add cfg.loop=true or cfg.triallength to change this.']);
 end
 
-if isfield(cfg, 'randomSeed')
-    rng(cfg.randomSeed, 'twister');
+% -------------------------------------------------------------------------
+% 1. persist a copy of the configuration used in this run
+% -------------------------------------------------------------------------
+if isfield(cfg,'outputDir') && ~isempty(cfg.outputDir)
+    if ~exist(cfg.outputDir,'dir'), mkdir(cfg.outputDir); end
+    cfgPath = fullfile(cfg.outputDir,'config_used.yaml');
+    try
+        if exist('yamlwrite','file') == 2
+            yamlwrite(cfgPath,cfg);
+        else
+            fid = fopen(cfgPath,'w'); fwrite(fid,jsonencode(cfg)); fclose(fid);
+        end
+    catch ME
+        warning('Could not save cfg copy: %s',ME.message);
+    end
 end
 
-if isfield(cfg, 'plume_metadata')
+% -------------------------------------------------------------------------
+% 2. deterministic randomness if requested
+% -------------------------------------------------------------------------
+if isfield(cfg,'randomSeed') && ~isempty(cfg.randomSeed)
+    rng(cfg.randomSeed,'twister');
+end
+
+% -------------------------------------------------------------------------
+% 3. branch on the type of plume requested
+% -------------------------------------------------------------------------
+if isfield(cfg,'plume_metadata')
+    % ------------ YAML metadata (pre-processed plume) --------------------
     plume = load_custom_plume(cfg.plume_metadata);
-    if isfield(cfg, 'triallength')
-        tl = cfg.triallength;
-    else
-        tl = size(plume.data, 3);
-    end
-    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume, cfg);
+    tl    = chooseTrialLength(cfg,size(plume.data,3));
+    out   = model_fn(tl,'video',cfg.plotting,cfg.ntrials,plume,cfg);
 
-elseif isfield(cfg, 'plume_video')
-    if ~isfield(cfg, 'px_per_mm') || ~isfield(cfg, 'frame_rate')
-        error('px_per_mm and frame_rate must be specified for video plumes');
-    end
-    plume = load_plume_video(cfg.plume_video, cfg.px_per_mm, cfg.frame_rate);
-    if isfield(cfg, 'triallength')
-        tl = cfg.triallength;
+elseif isfield(cfg,'plume_video')
+    % ------------ raw video plume ----------------------------------------
+    assert(all(isfield(cfg,{'px_per_mm','frame_rate'})), ...
+        'px_per_mm and frame_rate are required for video plumes');
+
+    if isfield(cfg,'use_streaming') && cfg.use_streaming
+        % ~~~ streaming mode (placeholder implementation) ~~~
+        vr = VideoReader(cfg.plume_video);
+        tl = chooseTrialLength(cfg, floor(vr.Duration * vr.FrameRate));
+        out = navigation_model_vec_stream( ...
+                    tl,'video',cfg.plotting,cfg.ntrials,vr,cfg);
     else
-        tl = size(plume.data, 3);
+        % ~~~ load full movie into RAM as before ~~~
+        plume = load_plume_video(cfg.plume_video, ...
+                                 cfg.px_per_mm,cfg.frame_rate);
+        tl    = chooseTrialLength(cfg, size(plume.data,3));
+        out   = model_fn(tl,'video',cfg.plotting,cfg.ntrials,plume,cfg);
     end
-    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume, cfg);
 
 else
-    out = model_fn(cfg.triallength, cfg.environment, ...
-        cfg.plotting, cfg.ntrials, struct(), cfg);
+    % ------------ analytical plume environments --------------------------
+    assert(isfield(cfg,'triallength'), ...
+        'cfg.triallength must be specified for non-video environments');
+    out = model_fn(cfg.triallength,cfg.environment, ...
+                   cfg.plotting,cfg.ntrials,struct(),cfg);
 end
+end
+% ===== end main function =================================================
+
+
+% ──────────────────────────────────────────────────────────────────────────
+function tl = chooseTrialLength(cfg, defaultTL)
+% Return cfg.triallength if present, otherwise fall back to defaultTL.
+    if isfield(cfg,'triallength') && ~isempty(cfg.triallength)
+        tl = cfg.triallength;
+    else
+        tl = defaultTL;
+    end
+end
+
+% ──────────────────────────────────────────────────────────────────────────
+function out = navigation_model_vec_stream(~,~,~,~,~,~) %#ok<INUSD>
+%NAVIGATION_MODEL_VEC_STREAM  Placeholder for future streaming backend.
+%
+%   Replace this stub with an implementation that consumes frames from a
+%   VideoReader object on-the-fly (to save memory with very large, lossless
+%   plume movies).  For the moment we raise a readable error so users know
+%   what to do.
+    error(['navigation_model_vec_stream not yet implemented. ' ...
+           'Set cfg.use_streaming = false or add the implementation.']);
 end

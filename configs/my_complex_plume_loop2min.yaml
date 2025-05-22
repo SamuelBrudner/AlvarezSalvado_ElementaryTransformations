@@ -11,6 +11,18 @@ plotting: 0
 # Number of trials to run
 ntrials: 1
 
-# test looping
+# Type of environment used for simulation
+environment: video
+# Path to the plume video file
+plume_video: data/smoke_1a_bgsub_raw.avi
+# Pixels per millimetre
+px_per_mm: 6.536
+# Frame rate (Hz)
+frame_rate: 60
+
+plotting: 0
+ntrials: 1
+
+# test looping – 2 min × 60 fps
 loop: true
-triallength: 7200 # 2 min × 60 fps
+triallength: 7200
