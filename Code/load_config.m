@@ -1,42 +1,11 @@
 function cfg = load_config(path)
 %LOAD_CONFIG Load simulation parameters from a YAML file.
-%   CFG = LOAD_CONFIG(PATH) reads the YAML file specified by PATH and
-%   returns a struct with the decoded parameters. The parser supports simple
-%   key:value pairs where values are numeric or strings.
+%   CFG = LOAD_CONFIG(PATH) reads the YAML file specified by PATH and returns
+%   a struct with the decoded parameters using the YAML toolbox.
 
-
-fid = fopen(path, 'r');
-if fid == -1
-    error('Could not open configuration file: %s', path);
-end
-lines = textscan(fid, '%s', 'Delimiter', '\n', 'Whitespace', '');
-fclose(fid);
-lines = lines{1};
-
-cfg = struct();
-for i = 1:numel(lines)
-    line = strtrim(lines{i});
-    if isempty(line) || startsWith(line, '#')
-        continue;
-    end
-    tokens = split(line, ':');
-    if numel(tokens) < 2
-        continue;
-    end
-    key = strtrim(tokens{1});
-    value = strtrim(strjoin(tokens(2:end), ':'));
-    num = str2double(value);
-    if ~isnan(num)
-        cfg.(key) = num;
-    else
-        lowerVal = lower(value);
-        if strcmp(lowerVal, 'true')
-            cfg.(key) = true;
-        elseif strcmp(lowerVal, 'false')
-            cfg.(key) = false;
-        else
-            cfg.(key) = value;
-        end
-    end
+% Add YAML toolbox path if available via load_yaml
+cfg = load_yaml(path);
+if ~isstruct(cfg)
+    cfg = struct(cfg);
 end
 end
