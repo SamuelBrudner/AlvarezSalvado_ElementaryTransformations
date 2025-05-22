@@ -125,4 +125,3 @@ function out = merge_structs(defaults, overrides)
         end
     end
 end
-end
