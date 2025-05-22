@@ -14,7 +14,8 @@
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
 #SBATCH --time=6:00:00
-#SBATCH --mail-user=samuel.brudner@yale.edu
+# Set email for job notifications. Replace with your address or comment out to disable
+#SBATCH --mail-user=your_email@example.com
 #SBATCH --mail-type=ALL
 
 # Create output directories if they don't exist
