@@ -15,7 +15,7 @@ ntrials: 1
 environment: video
 # Path to the plume video file
 plume_video: data/smoke_1a_bgsub_raw.avi
-# Pixels per millimetre
+# Pixels per millimeter conversion factor
 px_per_mm: 6.536
 # Frame rate (Hz)
 frame_rate: 60
