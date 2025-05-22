@@ -1,17 +1,19 @@
 function startup
-% STARTUP Configure MATLAB path for the Elementary Transformations project.
+% STARTUP  Configure MATLAB path for the Elementary-Transformations project.
 %
-% This file adds the Code directory to the MATLAB path automatically when
-% MATLAB starts in this project. It uses the location of this startup file
-% so that it works regardless of the current working directory.
+% Called automatically when MATLAB starts in this folder.
 
 rootDir = fileparts(mfilename('fullpath'));
-codeDir = fullfile(rootDir, 'Code');
+
+% ── Code directory ─────────────────────────────────────────────
+codeDir = fullfile(rootDir,'Code');
 if isfolder(codeDir)
-    entries = strsplit(path, pathsep);
-    if ~any(strcmp(entries, codeDir))
-        addpath(codeDir);
-    end
-end
+    addpath(codeDir);
 end
 
+% ── YAML-Matlab toolbox ───────────────────────────────────────
+yamlDir = fullfile(rootDir,'external','yamlmatlab');
+if isfolder(yamlDir)
+    addpath(genpath(yamlDir));
+end
+end   % ← nothing may follow this line
