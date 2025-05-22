@@ -74,8 +74,11 @@ else
     CONDITION_NAME="unilateral"
 fi
 
-# Set random seed based on replicate for reproducibility
-RANDOM_SEED=$((REPLICATE + 1))  # +1 to avoid seed 0
+# Set random seeds for each agent in this job
+RANDOM_SEEDS=()
+for s in $(seq $START_AGENT $END_AGENT); do
+    RANDOM_SEEDS+=($s)
+done
 
 # ============================================
 # Run Simulation
@@ -90,8 +93,9 @@ echo "Total agents per condition: $AGENTS_PER_CONDITION"
 echo "Agents per job: $AGENTS_PER_JOB"
 echo "============================"
 
-# Create a MATLAB command that runs all agents for this job
-MATLAB_CMD=""
+# Create a temporary MATLAB script to run all agents for this job
+MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
+
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT + i))
     SEED=${RANDOM_SEEDS[$i]}
@@ -120,13 +124,28 @@ for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     fi
 done
 
-# Close all the try blocks
-for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
-    MATLAB_CMD+="catch e, disp(getReport(e)); exit(1); end; "
+    cat >> "$MATLAB_SCRIPT" <<EOF
+config = struct();
+config.bilateralSensing = $BILATERAL;
+config.randomSeed = $SEED;
+config.outputDir = '$AGENT_DIR';
+config.condition = $CONDITION;
+config.agentIndex = $AGENT_INDEX;
+fprintf('Running agent %d with seed %d\n', $AGENT_INDEX, $SEED);
+try
+    run_navigation_cfg(config);
+catch e
+    disp(getReport(e));
+    exit(1);
+end
+EOF
 done
 
-# Run MATLAB with the generated command
-matlab -nodisplay -nosplash -r "$MATLAB_CMD exit(0);"
+echo "exit(0);" >> "$MATLAB_SCRIPT"
+
+# Run MATLAB with the generated script
+matlab -nodisplay -nosplash -r "run('$MATLAB_SCRIPT');"
+rm "$MATLAB_SCRIPT"
 
 # Optional: Post-processing steps could be added here
 # For example, to process the raw data after simulation completes
