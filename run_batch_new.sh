@@ -45,7 +45,7 @@ echo "Starting job $SLURM_ARRAY_TASK_ID"
 matlab -nodisplay -nosplash -r \
     "addpath('Code'); "\
     "try, "\
-    "  run_batch_job($SLURM_ARRAY_TASK_ID, '$CONFIG_FILE'); "\
+    "  run_batch_job_wrapper($SLURM_ARRAY_TASK_ID, '$CONFIG_FILE'); "\
     "catch ME, "\
     "  disp(getReport(ME)); "\
     "  exit(1); "\
