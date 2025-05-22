@@ -99,8 +99,8 @@ MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT + i))
     SEED=${RANDOM_SEEDS[$i]}
-    AGENT_DIR="data/raw/${CONDITION_NAME}_${AGENT_INDEX}"
-    # Ensure the output directory exists for each agent
+    AGENT_DIR="data/raw/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
+
     mkdir -p "$AGENT_DIR"
     
     # Add command to run this agent

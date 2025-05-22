@@ -22,8 +22,11 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 ## Data Directory
 
 Place raw plume files in `data/raw/` and store any processed outputs in
-`data/processed/`. Keeping these folders separate ensures the original data
-remains untouched and configuration files can refer to them reliably.
+`data/processed/`. Simulation results for each agent are written to
+`data/raw/<condition>/<agentIndex>_<seed>/` to avoid collisions when rerunning
+the same agent under different conditions. Keeping these folders separate
+ensures the original data remains untouched and configuration files can refer
+to them reliably.
 
 ## Running Simulations
 
