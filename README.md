@@ -116,6 +116,10 @@ result = run_navigation_cfg(cfg);
 The batch script `run_batch_job.sh` also accepts this `bilateral` flag when
 creating configuration structures for large simulation runs.
 
+> **Important**: `run_batch_job.sh` contains a `--mail-user` directive for
+> SLURM job notifications. Replace the placeholder email address with your own,
+> or comment out the line to disable email alerts before submitting jobs.
+
 
 
 ## Repository Layout
