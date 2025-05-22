@@ -93,41 +93,36 @@ echo "Total agents per condition: $AGENTS_PER_CONDITION"
 echo "Agents per job: $AGENTS_PER_JOB"
 echo "============================"
 
-# Create a MATLAB command that runs all agents for this job
-MATLAB_CMD=""
+# Create a temporary MATLAB script to run all agents for this job
+MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
+
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT + i))
     SEED=${RANDOM_SEEDS[$i]}
     AGENT_DIR="data/raw/${CONDITION_NAME}_${AGENT_INDEX}"
-    
-    # Add command to run this agent
-    MATLAB_CMD+="config = struct(); "
-    MATLAB_CMD+="config.bilateralSensing = $BILATERAL; "
-    MATLAB_CMD+="config.randomSeed = $SEED; "
-    MATLAB_CMD+="config.outputDir = '$AGENT_DIR'; "
-    MATLAB_CMD+="config.condition = $CONDITION; "
-    MATLAB_CMD+="config.agentIndex = $AGENT_INDEX; "
-    MATLAB_CMD+="fprintf('Running agent %d with seed %d\\n', $AGENT_INDEX, $SEED); "
-    MATLAB_CMD+="run_navigation_cfg(config); "
-    
-    # Add error handling for this agent
-    if [ $i -eq 0 ]; then
-        MATLAB_CMD+="try, "
-    fi
-    
-    # Add separator between agents
-    if [ $i -lt $(( ${#RANDOM_SEEDS[@]} - 1 )) ]; then
-        MATLAB_CMD+="try, "
-    fi
+
+    cat >> "$MATLAB_SCRIPT" <<EOF
+config = struct();
+config.bilateralSensing = $BILATERAL;
+config.randomSeed = $SEED;
+config.outputDir = '$AGENT_DIR';
+config.condition = $CONDITION;
+config.agentIndex = $AGENT_INDEX;
+fprintf('Running agent %d with seed %d\n', $AGENT_INDEX, $SEED);
+try
+    run_navigation_cfg(config);
+catch e
+    disp(getReport(e));
+    exit(1);
+end
+EOF
 done
 
-# Close all the try blocks
-for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
-    MATLAB_CMD+="catch e, disp(getReport(e)); exit(1); end; "
-done
+echo "exit(0);" >> "$MATLAB_SCRIPT"
 
-# Run MATLAB with the generated command
-matlab -nodisplay -nosplash -r "$MATLAB_CMD exit(0);"
+# Run MATLAB with the generated script
+matlab -nodisplay -nosplash -r "run('$MATLAB_SCRIPT');"
+rm "$MATLAB_SCRIPT"
 
 # Optional: Post-processing steps could be added here
 # For example, to process the raw data after simulation completes
