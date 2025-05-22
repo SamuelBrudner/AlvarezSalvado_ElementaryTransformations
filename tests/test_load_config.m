@@ -22,3 +22,8 @@ function testLoadPaperConfig(testCase)
     verifyEqual(testCase, cfg.tau_Aon, 490);
     verifyEqual(testCase, cfg.kdown, 0.5);
 end
+
+function testBooleanParsing(testCase)
+    cfg = load_config(fullfile('tests','sample_config_bilateral.yaml'));
+    verifyTrue(testCase, cfg.bilateral);
+end
