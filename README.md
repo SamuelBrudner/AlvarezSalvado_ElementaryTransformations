@@ -18,6 +18,20 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 - MATLAB (tested on R2017b or later).
 - For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
 
+## Quick Start
+
+The following snippet runs the default configuration and exports the results to
+a CSV/JSON directory. Copy and paste these commands into a MATLAB session:
+
+```matlab
+cfg = load_config(fullfile('configs','my_complex_plume_config.yaml'));
+out = run_navigation_cfg(cfg); save('result.mat','out','-v7.3');
+export_results('result.mat','output');
+```
+
+This produces `output/trajectories.csv`, `output/params.json` and
+`output/summary.json` for immediate analysis.
+
 ## Data Organization
 
 ### Directory Structure
@@ -97,6 +111,21 @@ export_results('result.mat', 'output_dir', 'Format', 'json');
 - `trajectories.csv` - Time series data with columns: t, trial, x, y, theta, odor, ON, OFF, turn
 - `params.json` - Complete model parameters used in the simulation
 - `summary.json` - High-level statistics (success rate, latency, etc.)
+
+### Data Dictionary
+
+| Column  | Units | Description |
+|---------|-------|-------------|
+| `t`     | index | 0-based time step |
+| `trial` | index | 0-based trial number |
+| `x`     | cm    | X position in arena coordinates |
+| `y`     | cm    | Y position in arena coordinates |
+| `theta` | deg   | Heading angle (0 = down-wind, +90 = up-wind) |
+| `odor`  | 0–1   | Odor concentration at the fly |
+| `ON`    | unitless | ON filter output |
+| `OFF`   | unitless | OFF filter output |
+| `turn`  | boolean | 1 if a stochastic turn occurred |
+
 
 ### Example: Loading the Data
 
