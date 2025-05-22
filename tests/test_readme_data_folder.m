@@ -4,6 +4,8 @@ end
 
 function testDataDirectoryMention(testCase)
     txt = fileread('README.md');
-    testCase.verifyTrue(contains(lower(txt), 'data/'), ...
-        'README should mention data directory');
+    hasRaw = contains(lower(txt), 'data/raw/');
+    hasProcessed = contains(lower(txt), 'data/processed/');
+    testCase.verifyTrue(hasRaw && hasProcessed, ...
+        'README should mention raw and processed data directories');
 end

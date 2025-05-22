@@ -64,6 +64,11 @@ tmp/
 
 # Project specific
 notebooks/
-data/
+# Ignore all data except specific subdirectories
+data/*
+!data/raw/
+!data/raw/**
+!data/processed/
+!data/processed/**
 results/
 figures/
