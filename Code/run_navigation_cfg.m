@@ -46,6 +46,8 @@ if isfield(cfg, 'outputDir')
         fclose(fid);
     end
 
+end
+
 if isfield(cfg, 'randomSeed')
     rng(cfg.randomSeed, 'twister');
 end
