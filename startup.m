@@ -11,6 +11,12 @@ if isfolder(codeDir)
     addpath(codeDir);
 end
 
+% Include data import utilities
+importDir = fullfile(codeDir,'import functions feb2017');
+if isfolder(importDir)
+    addpath(importDir);
+end
+
 % ── YAML-Matlab toolbox ───────────────────────────────────────
 yamlDir = fullfile(rootDir,'external','yamlmatlab');
 if isfolder(yamlDir)
