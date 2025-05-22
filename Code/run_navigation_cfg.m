@@ -19,13 +19,35 @@ function out = run_navigation_cfg(cfg)
 %
 %   Optional fields:
 %       bilateral   - true to run the bilateral model
+%       outputDir   - directory where config_used.yaml is written
 %
 %   When using video plumes, triallength is determined from the video unless
 %   CFG specifies a triallength to override.
 
 model_fn = @navigation_model_vec;
+if isfield(cfg, 'environment') && strcmp(cfg.environment, 'video') && ...
+        ~isfield(cfg, 'triallength') && ~isfield(cfg, 'loop')
+    warning('Trial truncated to movie length; set cfg.loop=true to repeat.');
+end
 if isfield(cfg, 'bilateral') && cfg.bilateral
     model_fn = @Elifenavmodel_bilateral;
+end
+
+if isfield(cfg, 'outputDir')
+    if ~exist(cfg.outputDir, 'dir')
+        mkdir(cfg.outputDir);
+    end
+    cfgPath = fullfile(cfg.outputDir, 'config_used.yaml');
+    if exist('yamlwrite', 'file') == 2
+        yamlwrite(cfgPath, cfg);
+    else
+        fid = fopen(cfgPath, 'w');
+        fwrite(fid, jsonencode(cfg));
+        fclose(fid);
+    end
+
+if isfield(cfg, 'randomSeed')
+    rng(cfg.randomSeed, 'twister');
 end
 
 if isfield(cfg, 'plume_metadata')
@@ -35,7 +57,7 @@ if isfield(cfg, 'plume_metadata')
     else
         tl = size(plume.data, 3);
     end
-    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume, cfg);
 
 elseif isfield(cfg, 'plume_video')
     if ~isfield(cfg, 'px_per_mm') || ~isfield(cfg, 'frame_rate')
@@ -47,10 +69,10 @@ elseif isfield(cfg, 'plume_video')
     else
         tl = size(plume.data, 3);
     end
-    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume);
+    out = model_fn(tl, 'video', cfg.plotting, cfg.ntrials, plume, cfg);
 
 else
     out = model_fn(cfg.triallength, cfg.environment, ...
-        cfg.plotting, cfg.ntrials);
+        cfg.plotting, cfg.ntrials, struct(), cfg);
 end
 end

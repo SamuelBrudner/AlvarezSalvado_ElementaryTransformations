@@ -1,0 +1,5 @@
+environment: gaussian
+triallength: 20
+plotting: 0
+ntrials: 1
+turnbase: 0.5

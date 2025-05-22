@@ -22,8 +22,11 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 ## Data Directory
 
 Place raw plume files in `data/raw/` and store any processed outputs in
-`data/processed/`. Keeping these folders separate ensures the original data
-remains untouched and configuration files can refer to them reliably.
+`data/processed/`. Simulation results for each agent are written to
+`data/raw/<condition>/<agentIndex>_<seed>/` to avoid collisions when rerunning
+the same agent under different conditions. Keeping these folders separate
+ensures the original data remains untouched and configuration files can refer
+to them reliably.
 
 ## Running Simulations
 
@@ -108,6 +111,9 @@ The same options are available in YAML format:
 cfg = load_config('tests/sample_config_bilateral.yaml');
 result = run_navigation_cfg(cfg);
 ```
+
+The batch script `run_batch_job.sh` also accepts this `bilateral` flag when
+creating configuration structures for large simulation runs.
 
 
 

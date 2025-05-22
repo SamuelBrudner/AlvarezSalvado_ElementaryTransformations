@@ -1,6 +1,6 @@
 
 
-function out = navigation_model_vec(triallength, environment, plotting, ntrials, plume)
+function out = navigation_model_vec(triallength, environment, plotting, ntrials, plume, params)
 
 % [x,y,heading,odor,successrate,latency,start,odorON,odorOFF]...
 %     = navigation_model_vec(triallength, environment, plotting,ntrials)
@@ -81,6 +81,14 @@ if (nargin<=3)
 end
 if nargin < 5
     plume = struct([]);
+end
+if nargin < 6
+    params = struct();
+end
+
+fields = intersect(fieldnames(params), who);
+for f = fields'
+    eval([f{1} ' = params.(f{1});']);
 end
 switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
 
@@ -232,7 +240,15 @@ for i = 1:triallength
                 odor(i,it) = plume.data(yind(it), xind(it), tind);
             end
             ws = 0;
-        
+
+    end
+
+    if strcmp(environment,'video') && tind == 1 && i > 1
+        Aon(i,:) = 0;
+        Aoff(i,:) = 0;
+        ON(i,:) = 0;
+        R(i,:) = 0;
+        Rh(i,:) = 0;
     end
 
     % Adaptation
@@ -354,6 +370,12 @@ switch environment
         out.successrate = [];
         out.latency = [];
 end
+
+out.params = struct('beta', beta, 'tau_Aon', tau_Aon, 'tau_Aoff', tau_Aoff, ...
+    'tau_ON', tau_ON, 'tau_OFF1', tau_OFF1, 'tau_OFF2', tau_OFF2, ...
+    'scaleON', scaleON, 'scaleOFF', scaleOFF, 'turnbase', turnbase, ...
+    'tsigma', tsigma, 'vbase', vbase, 'tmodON', tmodON, 'tmodOFF', tmodOFF, ...
+    'vmodON', vmodON, 'vmodOFF', vmodOFF, 'kup', kup, 'kdown', kdown);
 
 
 toc
