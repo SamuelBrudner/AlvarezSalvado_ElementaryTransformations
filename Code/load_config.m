@@ -29,7 +29,14 @@ for i = 1:numel(lines)
     if ~isnan(num)
         cfg.(key) = num;
     else
-        cfg.(key) = value;
+        lowerVal = lower(value);
+        if strcmp(lowerVal, 'true')
+            cfg.(key) = true;
+        elseif strcmp(lowerVal, 'false')
+            cfg.(key) = false;
+        else
+            cfg.(key) = value;
+        end
     end
 end
 end
