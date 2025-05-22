@@ -32,8 +32,14 @@ end
 
 % Load the result file
 fprintf('Loading %s...\n', input_file);
-result = load(input_file, 'out');
-result = result.out;  % Extract the 'out' struct
+result = load(input_file);
+if isfield(result, 'out')
+    result = result.out;
+end
+if ~isfield(result, 'x')
+    error('export_results:NoTrajectories', ...
+        'result.mat does not contain trajectories; was it saved with -struct?');
+end
 
 % Prepare output data
 data = struct();
@@ -52,8 +58,8 @@ for i = 1:N
                       result.y(:,i), ...     % Y position
                       result.theta(:,i), ... % Heading angle
                       result.odor(:,i), ...  % Odor concentration
-                      result.ON(:,i), ...    % ON filter
-                      result.OFF(:,i), ...   % OFF filter
+                      getField(result,'ON',T,i), ...  % ON filter
+                      getField(result,'OFF',T,i), ... % OFF filter
                       logical(result.turn(:,i)), ... % Turn events
                       'VariableNames', {'t', 'trial', 'x', 'y', 'theta', 'odor', 'ON', 'OFF', 'turn'});
     trajectories = [trajectories; trial_data];
@@ -108,4 +114,18 @@ end
 
 fprintf('Export completed successfully.\n');
 
+end
+
+function val = getField(s, name, T, idx)
+%GETFIELD Helper to safely extract ON/OFF columns
+    if isfield(s, name) && ~isempty(s.(name))
+        data = s.(name);
+        if size(data,1) >= T
+            val = data(1:T, idx);
+        else
+            val = zeros(T,1);
+        end
+    else
+        val = zeros(T,1);
+    end
 end
