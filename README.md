@@ -44,6 +44,7 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 
 - `data/raw/` - Store raw plume files here
 - `data/processed/` - Store processed outputs here
+- `logs/` - Log files for each batch job
 - `data/raw/<condition>/<agentIndex>_<seed>/` - Simulation results (auto-created)
   - `config_used.yaml` - Exact configuration used for the run
   - `result.mat` - Simulation output (see below)

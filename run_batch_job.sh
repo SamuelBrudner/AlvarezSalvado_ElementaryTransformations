@@ -42,7 +42,12 @@ trap cleanup EXIT INT TERM
 : ${OUTPUT_BASE:="data/raw"}
 
 # Create output directories if they don't exist
-mkdir -p slurm_out slurm_err "$OUTPUT_BASE" data/processed
+mkdir -p slurm_out slurm_err data/raw data/processed logs
+
+# Log file for this job
+JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
+echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
+
 
 # Disable GUI and plotting for batch jobs
 export DISPLAY=
@@ -126,14 +131,14 @@ done
 # Run Simulation
 # ============================================
 
-echo "=== Simulation Parameters ==="
-echo "Job ID: $SLURM_ARRAY_TASK_ID"
-echo "Condition: $CONDITION_NAME ($CONDITION)"
-echo "Agents: $START_AGENT to $END_AGENT"
-echo "Random seeds: ${RANDOM_SEEDS[*]}"
-echo "Total agents per condition: $AGENTS_PER_CONDITION"
-echo "Agents per job: $AGENTS_PER_JOB"
-echo "============================"
+echo "=== Simulation Parameters ===" | tee -a "$JOB_LOG"
+echo "Job ID: $SLURM_ARRAY_TASK_ID" | tee -a "$JOB_LOG"
+echo "Condition: $CONDITION_NAME ($CONDITION)" | tee -a "$JOB_LOG"
+echo "Agents: $START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
+echo "Random seeds: ${RANDOM_SEEDS[*]}" | tee -a "$JOB_LOG"
+echo "Total agents per condition: $AGENTS_PER_CONDITION" | tee -a "$JOB_LOG"
+echo "Agents per job: $AGENTS_PER_JOB" | tee -a "$JOB_LOG"
+echo "============================" | tee -a "$JOB_LOG"
 
 # Create a temporary MATLAB script to run all agents for this job
 MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
@@ -173,6 +178,9 @@ fi
 
 # Optional: Post-processing steps could be added here
 # For example, to process the raw data after simulation completes
+
+# Mark completion in log
+echo "Job ${SLURM_ARRAY_TASK_ID:-0} completed" >> "$JOB_LOG"
 
 # Exit with success code
 exit 0
