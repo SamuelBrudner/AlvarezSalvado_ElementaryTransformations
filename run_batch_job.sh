@@ -100,6 +100,29 @@ for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT + i))
     SEED=${RANDOM_SEEDS[$i]}
     AGENT_DIR="data/raw/${CONDITION_NAME}_${AGENT_INDEX}"
+    # Ensure the output directory exists for each agent
+    mkdir -p "$AGENT_DIR"
+    
+    # Add command to run this agent
+    MATLAB_CMD+="config = struct(); "
+    MATLAB_CMD+="config.bilateralSensing = $BILATERAL; "
+    MATLAB_CMD+="config.randomSeed = $SEED; "
+    MATLAB_CMD+="config.outputDir = '$AGENT_DIR'; "
+    MATLAB_CMD+="config.condition = $CONDITION; "
+    MATLAB_CMD+="config.agentIndex = $AGENT_INDEX; "
+    MATLAB_CMD+="fprintf('Running agent %d with seed %d\\n', $AGENT_INDEX, $SEED); "
+    MATLAB_CMD+="run_navigation_cfg(config); "
+    
+    # Add error handling for this agent
+    if [ $i -eq 0 ]; then
+        MATLAB_CMD+="try, "
+    fi
+    
+    # Add separator between agents
+    if [ $i -lt $(( ${#RANDOM_SEEDS[@]} - 1 )) ]; then
+        MATLAB_CMD+="try, "
+    fi
+done
 
     cat >> "$MATLAB_SCRIPT" <<EOF
 config = struct();
