@@ -1,4 +1,15 @@
 #!/bin/bash
+set -euo pipefail
+
+# Cleanup any temporary MATLAB script on exit
+cleanup() {
+    local exit_code=$?
+    [[ -n "${MATLAB_SCRIPT:-}" && -f "$MATLAB_SCRIPT" ]] && rm -f "$MATLAB_SCRIPT"
+    exit $exit_code
+}
+
+# Trap common termination signals
+trap cleanup EXIT INT TERM
 
 # Default SLURM settings if not provided as environment variables
 : ${SLURM_PARTITION:="day"}
@@ -154,8 +165,11 @@ done
 echo "exit(0);" >> "$MATLAB_SCRIPT"
 
 # Run MATLAB with the generated script
-matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT'); run_my_simulation;"
-rm "$MATLAB_SCRIPT"
+if ! matlab -nodisplay -nosplash -r "run('$MATLAB_SCRIPT');"; then
+    echo "ERROR: MATLAB execution failed" >&2
+    exit 1
+fi
+
 
 # Optional: Post-processing steps could be added here
 # For example, to process the raw data after simulation completes
