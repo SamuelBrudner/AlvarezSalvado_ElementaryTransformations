@@ -230,7 +230,7 @@ EOL
 # Add agent-specific code for each agent
 for AGENT_ID in $(seq $START_AGENT $END_AGENT); do
   SEED=$AGENT_ID                       # reproducible 1-to-1 seed
-  OUT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${SENSING_NAME}/${AGENT_ID}_${SEED}"
+  OUT_DIR="${OUTPUT_BASE}/${EXPERIMENT_NAME}/${PLUME_NAME}_${SENSING_NAME}/${AGENT_ID}_${SEED}"
   mkdir -p "$OUT_DIR"
 
   # Add agent simulation code to MATLAB script
