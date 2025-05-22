@@ -1,0 +1,44 @@
+# Batch job configuration
+# This file contains all configuration parameters for running batch jobs
+
+experiment:
+  name: "default_experiment"
+  agents_per_condition: 1000
+  agents_per_job: 100
+  output_base: "data/raw"
+  required_disk_gb: 2  # Estimated required disk space in GB
+  bytes_per_agent: 400000  # 400KB per agent
+
+plumes:
+  - crimaldi
+  - custom
+
+sensing_modes:
+  - bilateral
+  - unilateral
+
+matlab:
+  version: "R2021a"
+  module: "matlab/R2021a"
+  options: "-nodisplay -nosplash"
+
+slurm:
+  partition: "day"
+  time: "6:00:00"
+  mem: "16G"
+  cpus_per_task: 1
+  array_concurrent: 100
+  mail_user: "${USER}@yale.edu"
+  mail_type: "ALL"
+
+# Path to the plume configuration file (relative to project root)
+plume_config: "configs/my_complex_plume_config.yaml"
+
+# Directories (relative to project root)
+directories:
+  slurm_out: "slurm_out"
+  slurm_err: "slurm_err"
+  tmp: "${TMPDIR:-/tmp}"
+
+# These settings can be overridden by environment variables with the same name in UPPERCASE
+# For example: export EXPERIMENT_NAME="my_experiment"
