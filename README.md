@@ -276,9 +276,21 @@ result = run_navigation_cfg(cfg);
 The batch script `run_batch_job.sh` also accepts this `bilateral` flag when
 creating configuration structures for large simulation runs.
 
+
 > **Important**: `run_batch_job.sh` contains a `--mail-user` directive for
 > SLURM job notifications. Replace the placeholder email address with your own,
 > or comment out the line to disable email alerts before submitting jobs.
+
+### `run_batch_job_4000.sh`
+
+`run_batch_job_4000.sh` drops environment variable expansion from its `SBATCH`
+headers. Specify job parameters when launching the job:
+
+```bash
+sbatch --job-name=${EXPERIMENT_NAME}_sim \
+       --array=0-$((TOTAL_JOBS-1))%${SLURM_ARRAY_CONCURRENT} \
+       run_batch_job_4000.sh
+```
 
 
 
