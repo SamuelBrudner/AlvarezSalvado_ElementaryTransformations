@@ -1,8 +1,10 @@
-function run_batch_job(config_file, job_id, start_agent, end_agent)
+function run_batch_job(config_file, job_id, start_agent, end_agent, use_parallel)
 % RUN_BATCH_JOB Run a batch of agent simulations
-%   RUN_BATCH_JOB(CONFIG_FILE, JOB_ID, START_AGENT, END_AGENT) runs
+%   RUN_BATCH_JOB(CONFIG_FILE, JOB_ID, START_AGENT, END_AGENT, USE_PARALLEL) runs
 %   simulations for agents from START_AGENT to END_AGENT as part of the
 %   batch job identified by JOB_ID, using the configuration from CONFIG_FILE.
+%   If USE_PARALLEL is true, simulations are executed with PARFOR. The
+%   parameter defaults to false if omitted.
 
 % Add Code directory to path if not already there
 if isempty(which('run_agent_simulation'))
@@ -30,12 +32,29 @@ catch ME
 end
 
 % Run simulations for each agent in this batch
-for agent_id = start_agent:end_agent
-    try
-        run_agent_simulation(job_id, agent_id, config_file);
-    catch ME
-        warning('Error running agent %d: %s', agent_id, getReport(ME));
-        % Continue with next agent even if one fails
+if nargin < 5
+    use_parallel = false;
+end
+
+if use_parallel
+    if isempty(gcp('nocreate'))
+        parpool;
+    end
+    parfor agent_id = start_agent:end_agent
+        try
+            run_agent_simulation(job_id, agent_id, config_file);
+        catch ME
+            warning('Error running agent %d: %s', agent_id, getReport(ME));
+        end
+    end
+else
+    for agent_id = start_agent:end_agent
+        try
+            run_agent_simulation(job_id, agent_id, config_file);
+        catch ME
+            warning('Error running agent %d: %s', agent_id, getReport(ME));
+            % Continue with next agent even if one fails
+        end
     end
 end
 
