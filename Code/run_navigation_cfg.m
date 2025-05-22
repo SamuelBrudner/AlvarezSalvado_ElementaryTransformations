@@ -24,6 +24,10 @@ function out = run_navigation_cfg(cfg)
 %   CFG specifies a triallength to override.
 
 model_fn = @navigation_model_vec;
+if isfield(cfg, 'environment') && strcmp(cfg.environment, 'video') && ...
+        ~isfield(cfg, 'triallength') && ~isfield(cfg, 'loop')
+    warning('Trial truncated to movie length; set cfg.loop=true to repeat.');
+end
 if isfield(cfg, 'bilateral') && cfg.bilateral
     model_fn = @Elifenavmodel_bilateral;
 end
