@@ -38,8 +38,12 @@ trap cleanup EXIT INT TERM
 
 # Centralized configuration file and output base. These can be overridden
 # by exporting the variables before calling sbatch.
+# Configuration for plume type
 : ${PLUME_CONFIG:="configs/my_complex_plume_config.yaml"}
 : ${OUTPUT_BASE:="data/raw"}
+
+# Derive plume name from configuration file path (without extension)
+PLUME_NAME="$(basename "${PLUME_CONFIG%.*}")"
 
 # Create output directories if they don't exist
 mkdir -p slurm_out slurm_err data/raw data/processed logs
@@ -133,6 +137,7 @@ done
 
 echo "=== Simulation Parameters ===" | tee -a "$JOB_LOG"
 echo "Job ID: $SLURM_ARRAY_TASK_ID" | tee -a "$JOB_LOG"
+echo "Plume: $PLUME_NAME" | tee -a "$JOB_LOG"
 echo "Condition: $CONDITION_NAME ($CONDITION)" | tee -a "$JOB_LOG"
 echo "Agents: $START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
 echo "Random seeds: ${RANDOM_SEEDS[*]}" | tee -a "$JOB_LOG"
@@ -146,7 +151,7 @@ MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
     AGENT_INDEX=$((START_AGENT+i))
     SEED=${RANDOM_SEEDS[$i]}
-    AGENT_DIR="${OUTPUT_BASE}/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
+    AGENT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
 
     mkdir -p "$AGENT_DIR"
 
