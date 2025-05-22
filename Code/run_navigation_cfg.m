@@ -19,6 +19,7 @@ function out = run_navigation_cfg(cfg)
 %
 %   Optional fields:
 %       bilateral   - true to run the bilateral model
+%       outputDir   - directory where config_used.yaml is written
 %
 %   When using video plumes, triallength is determined from the video unless
 %   CFG specifies a triallength to override.
@@ -26,6 +27,20 @@ function out = run_navigation_cfg(cfg)
 model_fn = @navigation_model_vec;
 if isfield(cfg, 'bilateral') && cfg.bilateral
     model_fn = @Elifenavmodel_bilateral;
+end
+
+if isfield(cfg, 'outputDir')
+    if ~exist(cfg.outputDir, 'dir')
+        mkdir(cfg.outputDir);
+    end
+    cfgPath = fullfile(cfg.outputDir, 'config_used.yaml');
+    if exist('yamlwrite', 'file') == 2
+        yamlwrite(cfgPath, cfg);
+    else
+        fid = fopen(cfgPath, 'w');
+        fwrite(fid, jsonencode(cfg));
+        fclose(fid);
+    end
 end
 
 if isfield(cfg, 'plume_metadata')
