@@ -11,5 +11,5 @@ def test_run_batch_job_contents():
     assert '#SBATCH --partition=' in content
     assert ': ${PLUME_CONFIG:="' in content
     assert ': ${OUTPUT_BASE:="' in content
-    assert 'AGENT_DIR="${OUTPUT_BASE}/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"' in content
+    assert 'AGENT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"' in content
 
