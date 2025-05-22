@@ -21,10 +21,9 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 
 ## Data Directory
 
-All plume data files should be stored inside the `data/` directory located at the
-repository root. Custom plume movies or processed MATLAB files can also be kept
-in this folder so that configuration files can reference them with a relative
-path.
+Place raw plume files in `data/raw/` and store any processed outputs in
+`data/processed/`. Keeping these folders separate ensures the original data
+remains untouched and configuration files can refer to them reliably.
 
 ## Running Simulations
 
