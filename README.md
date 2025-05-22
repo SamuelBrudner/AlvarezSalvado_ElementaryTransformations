@@ -48,6 +48,19 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
   - `config_used.yaml` - Exact configuration used for the run
   - `result.mat` - Simulation output (see below)
 
+### Environment Variables
+
+The batch script `run_batch_job.sh` uses two environment variables for file
+management:
+
+- `PLUME_CONFIG` – path to the YAML configuration describing the plume and
+  simulation defaults (defaults to `configs/my_complex_plume_config.yaml`).
+- `OUTPUT_BASE` – base directory for raw simulation outputs (defaults to
+  `data/raw`).
+
+Override these when submitting jobs to customize where configuration is loaded
+from and where results are written.
+
 ### Output Data
 
 #### In-Memory Structure

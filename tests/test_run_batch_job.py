@@ -9,7 +9,7 @@ def test_run_batch_job_contents():
     with open('run_batch_job.sh') as f:
         content = f.read()
     assert '#SBATCH --partition=' in content
-    assert 'conda activate .env' in content
-    assert re.search(r"matlab .*run_my_simulation", content)
-    assert 'plotting' in content.lower()
+    assert ': ${PLUME_CONFIG:="' in content
+    assert ': ${OUTPUT_BASE:="' in content
+    assert 'AGENT_DIR="${OUTPUT_BASE}/${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"' in content
 
