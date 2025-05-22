@@ -2,6 +2,26 @@
 
 This repository provides the MATLAB implementation of the navigation model described in Álvarez-Salvado et al., "Elementary sensory-motor transformations underlying olfactory navigation in walking fruit flies" (eLife 2018, http://dx.doi.org/10.7554/eLife.37815).
 
+## Quick Start
+
+Run a default simulation and export the results in just a few commands:
+
+```matlab
+% Load the default configuration
+cfg = load_config('tests/sample_config.yaml');
+
+% Run the simulation
+result = run_navigation_cfg(cfg);
+
+% Export results to CSV and JSON
+export_results('data/raw/bilateral/1_1/result.mat', 'data/processed');
+```
+
+This will:
+1. Run a simulation with default parameters
+2. Save the raw results in the standard directory structure
+3. Export processed data to `data/processed/` in open formats
+
 ## Overview
 
 The code simulates walking fruit flies navigating in different odor plumes. Several built-in plume environments are provided, including:
@@ -66,6 +86,38 @@ files = dir('data/raw/*/*/result.mat');
 succ = arrayfun(@(f) load(fullfile(f.folder,f.name),'out'), files);
 success_rate = mean(arrayfun(@(s) s.out.successrate, succ));
 ```
+
+## Data Dictionary
+
+### Trajectory Data (trajectories.csv)
+
+| Column | Type | Units | Description |
+|--------|------|-------|-------------|
+| t | int | step | Time step (0-indexed) |
+| trial | int | - | Trial/agent number (0-indexed) |
+| x | float | cm | X-coordinate in arena (0 = left edge) |
+| y | float | cm | Y-coordinate in arena (0 = bottom edge) |
+| theta | float | ° | Heading angle (0 = upwind, 90° = to the right) |
+| odor | float | 0-1 | Normalized odor concentration at agent's position |
+| ON | float | - | ON channel temporal filter output |
+| OFF | float | - | OFF channel temporal filter output |
+| turn | bool | - | Whether a turn was executed this timestep |
+
+### Parameters (params.json)
+
+Contains all model parameters used in the simulation, including:
+- `bilateral`: Whether bilateral sensing is enabled
+- `tau_ON`, `tau_OFF`: Time constants for ON/OFF filters (s)
+- `v0`: Base walking speed (cm/s)
+- `R0`: Base turning rate (rad/s)
+- And all other model parameters
+
+### Summary (summary.json)
+
+- `successrate`: Fraction of agents that reached the goal (0-1)
+- `latency`: Array of goal-reaching times for successful agents (s)
+- `n_trials`: Total number of agents/trials
+- `timesteps`: Duration of simulation (time steps)
 
 ## Exporting Results to Open Formats
 
