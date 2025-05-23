@@ -246,7 +246,7 @@ for i = 1:triallength
             if exist('params','var') && isfield(params,'ws')
                 ws = params.ws;
             else
-                ws = 1;
+                ws = 0;
             end
 
     end
