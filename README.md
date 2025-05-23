@@ -228,8 +228,9 @@ result = navigation_model_vec(triallength, 'video', 1, 1, plume);
 
 When `triallength` exceeds the number of frames in the plume movie, the odor
 frames automatically repeat so that the simulation continues for the full
-duration. Currently wind speed is assumed zero for video plumes because the
-plume data does not include wind information.
+duration. By default a wind speed of one unit is used for video plumes so that
+upwind and downwind responses match the Crimaldi environment. Set the optional
+`ws` parameter in the configuration to override this value.
 
 The spatial scale (pixels per millimeter) and frame rate are supplied when
 loading the movie so that the simulation can handle different resolutions and

@@ -10,3 +10,5 @@ frame_rate: 60
 plotting: 0
 # Number of trials to run
 ntrials: 10
+# Wind speed in arbitrary units
+ws: 1
