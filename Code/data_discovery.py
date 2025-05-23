@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import csv
 from pathlib import Path
 from typing import Dict, Iterator, Any
 
@@ -26,14 +27,21 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
     Yields
     ------
     dict
-        Dictionary with keys ``path``, ``metadata``, and ``config`` (optional).
+        Dictionary with keys ``path`` and ``metadata`` plus optional entries
+        for ``config``, ``summary``, ``params``, and ``trajectories`` depending
+        on ``data_loading_options``.
     """
     base_dirs = cfg.get("data_paths", {}).get("processed_base_dirs", [])
     template = cfg.get("metadata_extraction", {}).get(
         "directory_template",
         "{plume}_{mode}/agent_{agent_id}/seed_{seed}",
     )
-    load_run_cfg = cfg.get("load_run_config", False)
+
+    options = cfg.get("data_loading_options", {})
+    load_summary = options.get("load_summary_json", False)
+    load_traj = options.get("load_trajectories_csv", False)
+    load_params = options.get("load_params_json", False)
+    load_run_cfg = options.get("load_config_used_yaml", cfg.get("load_run_config", False))
 
     regex = _template_to_regex(template)
 
@@ -57,4 +65,28 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                                 record["config"] = json.loads(cfg_file.read_text())
                             except Exception:
                                 record["config"] = {}
+
+                    if load_summary:
+                        summary_file = path / "summary.json"
+                        if summary_file.is_file():
+                            try:
+                                record["summary"] = json.loads(summary_file.read_text())
+                            except Exception:
+                                record["summary"] = {}
+
+                    if load_params:
+                        param_file = path / "params.json"
+                        if param_file.is_file():
+                            try:
+                                record["params"] = json.loads(param_file.read_text())
+                            except Exception:
+                                record["params"] = {}
+
+                    if load_traj:
+                        traj_file = path / "trajectories.csv"
+                        if traj_file.is_file():
+                            with traj_file.open() as f:
+                                reader = csv.DictReader(f)
+                                record["trajectories"] = [row for row in reader]
+
                     yield record
