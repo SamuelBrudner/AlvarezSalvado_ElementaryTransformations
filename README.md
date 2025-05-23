@@ -38,6 +38,7 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 - MATLAB (tested on **R2021a or later**).
 - For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
 - Python packages listed in `environment.yml` for running analysis scripts and tests.
+- SciPy is required for reading MAT files in certain utilities.
 
 ### Development environment
 
