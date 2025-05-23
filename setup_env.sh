@@ -16,6 +16,9 @@ LOCAL_ENV_DIR="dev-env"
 BASE_ENV_FILE="environment.yml"
 # DEV_REQUIREMENTS_FILE: Optional file for pip-based development-specific dependencies.
 DEV_REQUIREMENTS_FILE="requirements-dev.txt"
+# Pre-commit config template and output file
+PRE_COMMIT_TEMPLATE=".pre-commit-config.yaml.template"
+PRE_COMMIT_CONFIG=".pre-commit-config.yaml"
 # ---
 
 INSTALL_DEV_EXTRAS=0
@@ -113,17 +116,40 @@ if [ "$INSTALL_DEV_EXTRAS" -eq 1 ]; then
 
   # Install pre-commit and set up hooks
   # pre-commit should be listed as a dependency in your environment.yml or requirements-dev.txt
-  # Alternatively, install it directly here:
-  section "Installing pre-commit"
-  run_command_verbose conda run --prefix "./$LOCAL_ENV_DIR" pip install pre-commit
-  if [ $? -ne 0 ]; then
+  # Install pre-commit if not available
+  if ! command -v pre-commit &> /dev/null; then
+    log INFO "Installing pre-commit..."
+    conda install -y -c conda-forge pre-commit || pip install pre-commit
+    if [ $? -ne 0 ]; then
       error "Failed to install pre-commit. Add it to '$BASE_ENV_FILE' or '$DEV_REQUIREMENTS_FILE'."
+    fi
   fi
-  log INFO "Setting up pre-commit hooks..."
-  if run_command_verbose conda run --prefix "./$LOCAL_ENV_DIR" pre-commit install --install-hooks; then
+
+  # Generate pre-commit config from template if template exists
+  setup_pre_commit_config() {
+    local env_path="$PWD/$LOCAL_ENV_DIR"
+    local conda_prefix="$(conda info --base 2>/dev/null || echo "$CONDA_PREFIX")"
+    
+    if [ -f "$PRE_COMMIT_TEMPLATE" ]; then
+      log INFO "Generating pre-commit configuration..."
+      sed -e "s|{{ENV_PATH}}|$env_path|g" \
+          -e "s|{{CONDA_PREFIX}}|$conda_prefix|g" \
+          "$PRE_COMMIT_TEMPLATE" > "$PRE_COMMIT_CONFIG"
+      log SUCCESS "Generated $PRE_COMMIT_CONFIG from template"
+    fi
+  }
+
+  # Generate the config from template if it exists
+  setup_pre_commit_config
+  
+  # Set up the hooks if config exists
+  if [ -f "$PRE_COMMIT_CONFIG" ]; then
+    log INFO "Setting up pre-commit hooks..."
+    if run_command_verbose conda run --prefix "./$LOCAL_ENV_DIR" pre-commit install --install-hooks; then
       log SUCCESS "Pre-commit hooks set up successfully."
-  else
+    else
       log WARNING "Failed to set up pre-commit hooks, but pre-commit command was found."
+    fi
   fi
 fi
 

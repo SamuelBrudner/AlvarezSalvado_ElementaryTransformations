@@ -42,6 +42,29 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 
 ### Development Environment
 
+#### Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to enforce code quality standards. The configuration is automatically generated during environment setup to work with the local conda environment.
+
+Key features:
+- **Automatic Setup**: Hooks are configured automatically when you run `./setup_env.sh --dev`
+- **Portable**: Configuration works across different machines and platforms
+- **Consistent**: Uses the project's conda environment for all tools
+- **Local Configuration**: The `.pre-commit-config.yaml` file is generated locally and should not be committed to version control (it's in `.gitignore`)
+
+Available hooks include:
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **Ruff**: Linting and code style
+- **Mypy**: Static type checking (runs manually)
+- **Pytest**: Test runner (runs manually)
+- **Interrogate**: Docstring coverage (runs manually)
+
+To run all pre-commit checks manually:
+```bash
+conda run -p ./dev-env pre-commit run --all-files
+```
+
 #### Setting up the environment
 
 Create and set up the local Conda environment:
