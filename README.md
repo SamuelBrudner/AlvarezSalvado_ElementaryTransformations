@@ -293,6 +293,16 @@ sbatch --job-name=${EXPERIMENT_NAME}_sim \
        run_batch_job_4000.sh
 ```
 
+## Analysis Configuration
+
+All analysis scripts use a shared YAML file located at
+`configs/analysis_config.yaml`. Load it in Python with:
+
+```python
+from Code.load_analysis_config import load_analysis_config
+cfg = load_analysis_config('configs/analysis_config.yaml')
+```
+
 
 
 ## Repository Layout
