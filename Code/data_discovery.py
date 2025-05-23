@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Dict, Iterator, Any
+from typing import Dict, Iterator, Any, List
 
 
 def _template_to_regex(template: str) -> re.Pattern:
@@ -33,7 +33,14 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         "directory_template",
         "{plume}_{mode}/agent_{agent_id}/seed_{seed}",
     )
-    load_run_cfg = cfg.get("load_run_config", False)
+    param_opts = cfg.get("parameter_usage", {})
+    load_run_cfg = cfg.get("load_run_config", False) or param_opts.get(
+        "use_config_used_for_dt", False
+    )
+
+    need_params = param_opts.get("check_model_parameter_consistency", {}).get(
+        "enabled", False
+    )
 
     regex = _template_to_regex(template)
 
@@ -57,4 +64,61 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                                 record["config"] = json.loads(cfg_file.read_text())
                             except Exception:
                                 record["config"] = {}
+                        else:
+                            record["config"] = {}
+                        if param_opts.get("use_config_used_for_dt", False):
+                            fr_key = param_opts.get(
+                                "framerate_field_in_config_used", "frame_rate"
+                            )
+                            fr = record["config"].get(fr_key)
+                            if fr:
+                                record["dt"] = 1.0 / float(fr)
+                    if need_params:
+                        param_file = path / "params.json"
+                        if param_file.is_file():
+                            try:
+                                record["params"] = json.loads(param_file.read_text())
+                            except Exception:
+                                record["params"] = {}
+                        else:
+                            record["params"] = {}
+
                     yield record
+
+
+def check_parameter_consistency(records: List[Dict[str, Any]], cfg: Dict[str, Any]) -> None:
+    """Validate that model parameters are consistent across runs.
+
+    Parameters
+    ----------
+    records : list of dict
+        Records returned by :func:`discover_processed_data`.
+    cfg : dict
+        Analysis configuration containing ``parameter_usage`` options.
+    """
+    param_cfg = cfg.get("parameter_usage", {}).get(
+        "check_model_parameter_consistency", {}
+    )
+    if not param_cfg.get("enabled", False):
+        return
+
+    to_check = param_cfg.get("parameters_to_check", [])
+    expected = param_cfg.get("expected_values", {})
+
+    seen: Dict[str, Dict[str, Any]] = {}
+    for rec in records:
+        group = "{plume}_{mode}".format(**rec.get("metadata", {}))
+        params = rec.get("params", {})
+        gdict = seen.setdefault(group, {})
+        exp_group = expected.get(group, {})
+        for p in to_check:
+            if p not in params:
+                continue
+            val = params[p]
+            if p in gdict and gdict[p] != val:
+                raise ValueError(f"Inconsistent {p} in group {group}")
+            gdict.setdefault(p, val)
+            if p in exp_group and exp_group[p] != val:
+                raise ValueError(
+                    f"Parameter {p} in group {group} expected {exp_group[p]}, got {val}"
+                )
