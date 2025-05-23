@@ -6,4 +6,3 @@ def test_run_agent_simulation_save_struct():
         content = f.read()
     assert "save(fullfile(output_dir, 'result.mat'), '-struct', 'result');" in content, \
         "run_agent_simulation.m should save results with -struct"
-
