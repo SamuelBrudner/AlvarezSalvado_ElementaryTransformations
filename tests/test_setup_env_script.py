@@ -15,6 +15,8 @@ def test_setup_env_script_contains_expected_commands():
     assert 'conda env update' in content
     assert 'pre-commit install' in content
     assert 'setup_utils.sh' in content
+    assert 'conda-lock' in content
+    assert 'log ' in content
 
 
 def test_setup_env_script_runs_idempotently():

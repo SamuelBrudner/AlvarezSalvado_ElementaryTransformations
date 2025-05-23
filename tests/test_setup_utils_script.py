@@ -11,6 +11,7 @@ def test_setup_utils_functions_defined():
     assert 'section()' in content
     assert 'error()' in content
     assert 'run_command_verbose()' in content
+    assert 'log()' in content
 
 
 def test_setup_env_sources_utils():
