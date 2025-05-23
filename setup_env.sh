@@ -135,5 +135,18 @@ if [ "$RUN_TESTS" -eq 1 ]; then
     log WARNING "Some tests failed"
   fi
 fi
-log SUCCESS "Setup complete."
-log INFO "To activate the Conda environment, run: conda activate \"./$LOCAL_ENV_DIR\""
+# Print success message and usage instructions
+log SUCCESS "Environment setup complete!"
+echo
+log INFO "To use this environment:"
+echo
+echo "For interactive shell usage:"
+echo "  conda activate $PWD/$LOCAL_ENV_DIR"
+echo
+echo "For scripts and non-interactive usage (recommended for batch jobs/CI):"
+echo "  conda run -p $PWD/$LOCAL_ENV_DIR your_script.py"
+echo
+echo "To run tests:"
+echo "  conda run -p $PWD/$LOCAL_ENV_DIR pytest tests/"
+echo
+log INFO "See README.md for more details on using the environment."

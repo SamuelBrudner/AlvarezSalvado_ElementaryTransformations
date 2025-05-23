@@ -1,6 +1,12 @@
 #!/bin/bash
 # robust SLURM wrapper – absolute YAML & movie paths + auto MATLAB module
+# Uses conda run -p for Python environment activation
 set -euo pipefail
+
+# Load conda if not already loaded
+if [ -z "${CONDA_DEFAULT_ENV:-}" ] && [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+fi
 
 #SBATCH --begin=now
 #SBATCH --open-mode=append
@@ -102,11 +108,21 @@ echo "exit" >>"$MATLAB_SCRIPT"
 matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT');" || { echo "MATLAB failed"; exit 1; }
 
 ########################  export CSV/JSON  #########################
+# Use conda run -p for any Python commands
+# Example: conda run -p ./dev-env python script.py
+
+# MATLAB-based export (kept as is since it's MATLAB-specific)
 EXPORT_SCRIPT=$(mktemp -p "$TMPDIR" export_job_XXXX.m)
 find "$RAW_DIR" -name result.mat | while read -r f; do
-  out=${f/$RAW_DIR/data\/processed}; out=\${out%/result.mat}
-  mkdir -p "\$out"; echo "try,export_results('$f','\$out','Format','both');catch,end" >>"$EXPORT_SCRIPT"
+  out=${f/$RAW_DIR/data\/processed}; out=${out%/result.mat}
+  mkdir -p "$out"; echo "try,export_results('$f','$out','Format','both');catch,end" >>"$EXPORT_SCRIPT"
 done
 echo "exit" >>"$EXPORT_SCRIPT"
 [[ -s "$EXPORT_SCRIPT" ]] && matlab -nodisplay -nosplash -r "run('$EXPORT_SCRIPT');" || true
-echo "Job finished."
+
+echo "Job finished successfully."
+
+# Example of how to run Python scripts with the conda environment:
+# if [ -d "./dev-env" ]; then
+#     conda run -p ./dev-env python your_script.py --input input_file --output output_dir
+# fi

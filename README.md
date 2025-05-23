@@ -40,13 +40,42 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 - Python packages listed in `environment.yml` for running analysis scripts and tests.
 - SciPy is required for reading MAT files in certain utilities.
 
-### Development environment
+### Development Environment
 
-If you plan to run the Python tests or scripts, create a local Conda
-environment using the provided setup script:
+#### Setting up the environment
+
+Create and set up the local Conda environment:
 
 ```bash
-source setup_env.sh --dev
+# Run the setup script
+./setup_env.sh --dev
+
+# For interactive shell usage
+conda activate ./dev-env
+
+# For scripts and non-interactive usage (recommended for batch jobs/CI)
+conda run -p ./dev-env your_script.py
+```
+
+#### Running tests
+
+After setup, you can run tests using:
+
+```bash
+# Run all tests
+conda run -p ./dev-env pytest tests/
+
+# Run a specific test file
+conda run -p ./dev-env pytest tests/test_module.py
+```
+
+#### Running batch jobs
+
+For batch processing, use the `conda run -p` approach in your scripts:
+
+```bash
+#!/bin/bash
+conda run -p ./dev-env python process_data.py --input data/input --output results/
 ```
 
 The script creates a local environment in `./dev-env`. Rather than activating
