@@ -18,6 +18,26 @@
     "velocity_threshold": 1.0,
     "smoothing_window": 5
   },
+  "metrics_to_compute": [
+    "success_rate",
+    "latency",
+    "path_length",
+    "average_speed",
+    "net_upwind_displacement",
+    "straightness",
+    "turning_rate"
+  ],
+  "metric_parameters": {
+    "average_speed": {
+      "dt_source": "from_config_used_yaml",
+      "dt_fixed_value": 0.02,
+      "framerate_field_in_config_used": "frame_rate"
+    },
+    "net_upwind_displacement": {
+      "upwind_axis": "y",
+      "upwind_positive_direction": true
+    }
+  },
   "trajectory_processing": {
     "required_columns": ["t", "x", "y", "theta", "turn"]
   },
