@@ -22,6 +22,8 @@ def _apply_filters(records: List[Record], filters: Dict[str, Any]) -> List[Recor
 def generate_dashboard(records: List[Record], cfg: Dict[str, Any]):
     layout = cfg.get("dashboard_layout", {})
     subplots = layout.get("subplots", [])
+    if not subplots:
+        return None
     output_dir = Path(cfg.get("output_paths", {}).get("figures", "."))
     output_dir.mkdir(parents=True, exist_ok=True)
     fname = layout.get("output_filename", "dashboard.png")
@@ -46,8 +48,10 @@ def generate_dashboard(records: List[Record], cfg: Dict[str, Any]):
             groups = list(grouped.keys())
             data = [grouped[g] for g in groups]
         else:
-            groups = None
             data = [rec.get(metric) for rec in subset]
+            groups = [metric] if plot_type in ("bar", "box") else None
+            if plot_type in ("bar", "box"):
+                data = [data]
 
         if plot_type == "bar":
             means = [sum(vals) / len(vals) for vals in data]
@@ -55,7 +59,8 @@ def generate_dashboard(records: List[Record], cfg: Dict[str, Any]):
         elif plot_type == "box":
             ax.boxplot(data, labels=groups)
         elif plot_type == "hist":
-            ax.hist(data[0] if groups is None else [v for vals in data for v in vals], bins=10)
+            values = data if groups is None else [v for vals in data for v in vals]
+            ax.hist(values, bins=10)
         else:
             raise ValueError(f"Unsupported plot_type: {plot_type}")
 

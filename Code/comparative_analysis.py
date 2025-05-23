@@ -17,7 +17,7 @@ Record = Dict[str, Any]
 def _group_records(records: Iterable[Record], keys: List[str]) -> Dict[tuple, List[Record]]:
     groups: Dict[tuple, List[Record]] = {}
     for rec in records:
-        key = tuple(rec[k] for k in keys)
+        key = tuple(rec.get(k) for k in keys)
         groups.setdefault(key, []).append(rec)
     return groups
 

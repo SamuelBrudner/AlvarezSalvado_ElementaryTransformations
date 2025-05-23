@@ -43,12 +43,15 @@ from pathlib import Path
 from typing import Dict, Iterator, Any, List
 
 
-def _maybe_float(value: str) -> Any:
+def _maybe_float(value: Any) -> Any:
+    """Return a float if ``value`` looks numeric, otherwise the original value."""
+    if not isinstance(value, str):
+        return value
     try:
         if value.lower() in ("nan", "inf", "-inf"):
             return float(value)
         return float(value)
-    except (ValueError, AttributeError):
+    except ValueError:
         return value
 
 
