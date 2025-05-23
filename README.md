@@ -314,6 +314,9 @@ from Code.load_analysis_config import load_analysis_config
 cfg = load_analysis_config('configs/analysis_config.yaml')
 ```
 
+See [docs/analysis_plan.md](docs/analysis_plan.md) for a detailed outline of how
+this configuration drives each step of the analysis workflow.
+
 
 
 ## Repository Layout
