@@ -1,76 +1,60 @@
-"""Utilities for computing statistics on intensity arrays."""
+"""Utility functions for plume intensity statistics."""
 
 from __future__ import annotations
 
-from typing import Dict, List
+import argparse
+from typing import Sequence, Dict
 
 try:
-    import numpy as np  # type: ignore
-except Exception as exc:  # pragma: no cover - optional dependency
-    raise ImportError("calculate_intensity_stats_dict requires numpy") from exc
+    import numpy as np
+except Exception as exc:  # pragma: no cover
+    raise ImportError("numpy is required for intensity statistics") from exc
 
 
-_PERCENTILES: List[float] = [
-    1,
-    5,
-    10,
-    25,
-    50,
-    75,
-    90,
-    95,
-    99,
-    99.5,
-    99.9,
-]
-
-
-def calculate_intensity_stats_dict(
-    intensities_array: np.ndarray, min_threshold: float = 0.01
-) -> Dict[str, float | int | Dict[float, float]]:
-    """Return a dictionary of summary statistics for ``intensities_array``.
-
-    Parameters
-    ----------
-    intensities_array : numpy.ndarray
-        1D array of intensity values.
-    min_threshold : float, optional
-        Minimum value to include in statistics, by default 0.01.
-
-    Returns
-    -------
-    dict
-        Dictionary containing ``mean``, ``median``, ``std``, ``min``, ``max``,
-        ``percentiles`` and pixel counts.
-    """
-
-    num_total = int(len(intensities_array))
-    filtered = intensities_array[intensities_array >= min_threshold]
-    num_filtered = int(len(filtered))
-
-    stats: Dict[str, float | int | Dict[float, float]] = {
-        "num_pixels_total": num_total,
-        "num_pixels_analyzed_post_threshold": num_filtered,
-        "percentiles": {},
-        "mean": float("nan"),
-        "median": float("nan"),
-        "std": float("nan"),
-        "min": float("nan"),
-        "max": float("nan"),
+def calculate_intensity_stats_dict(intensities: Sequence[float]) -> Dict[str, float]:
+    """Return basic statistics for the provided intensities."""
+    arr = np.asarray(intensities, dtype=float)
+    stats = {
+        "mean": float(arr.mean()),
+        "median": float(np.median(arr)),
+        "p95": float(np.percentile(arr, 95)),
+        "p99": float(np.percentile(arr, 99)),
+        "min": float(arr.min()),
+        "max": float(arr.max()),
+        "count": int(arr.size),
     }
-
-    if num_filtered == 0:
-        return stats
-
-    stats["mean"] = float(np.mean(filtered))
-    stats["median"] = float(np.median(filtered))
-    stats["std"] = float(np.std(filtered))
-    stats["min"] = float(np.min(filtered))
-    stats["max"] = float(np.max(filtered))
-
-    percentiles = np.percentile(filtered, _PERCENTILES)
-    stats["percentiles"] = {
-        p: float(val) for p, val in zip(_PERCENTILES, percentiles)
-    }
-
     return stats
+
+
+def _print_stats(identifier: str, file_path: str, stats: Dict[str, float]) -> None:
+    print(f"Plume: {identifier}")
+    print(f"File: {file_path}")
+    for key in ["mean", "median", "p95", "p99", "min", "max", "count"]:
+        print(f"{key}: {stats[key]}")
+
+
+def main(args: Sequence[str] | None = None) -> None:  # pragma: no cover - CLI
+    parser = argparse.ArgumentParser(description="Calculate intensity statistics")
+    parser.add_argument("identifier", help="Plume identifier")
+    parser.add_argument("file", help="Path to text file containing intensities")
+    parser.add_argument("--plot_histogram", action="store_true", help="Plot intensity histogram")
+    ns = parser.parse_args(args)
+
+    data = np.loadtxt(ns.file)
+    stats = calculate_intensity_stats_dict(data)
+    _print_stats(ns.identifier, ns.file, stats)
+
+    if ns.plot_histogram:
+        try:
+            import matplotlib.pyplot as plt
+        except Exception as exc:  # pragma: no cover
+            raise RuntimeError("matplotlib is required for plotting") from exc
+        plt.hist(data, bins=30)
+        plt.title(f"Intensity Histogram: {ns.identifier}")
+        plt.xlabel("Intensity")
+        plt.ylabel("Frequency")
+        plt.show()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
