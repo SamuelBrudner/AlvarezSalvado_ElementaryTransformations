@@ -1,63 +1,83 @@
-{
-  "data_paths": {
-    "raw_data_dir": "data/raw",
-    "processed_data_dir": "data/processed",
-    "metadata_file": "data/metadata.csv"
-  },
-  "data_loading_options": {
-    "load_summary_json": true,
-    "load_trajectories_csv": false,
-    "load_params_json": false,
-    "load_config_used_yaml": true
-  },
-  "metadata_extraction": {
-    "plume_regex": "(gaussian|smoke)_([a-z]+)",
-    "mode_regex": "(bilateral|unilateral)"
-  },
-  "metrics_calculation": {
-    "velocity_threshold": 1.0,
-    "smoothing_window": 5
-  },
-  "metrics_to_compute": [
-    "success_rate",
-    "latency",
-    "path_length",
-    "average_speed",
-    "net_upwind_displacement",
-    "straightness",
-    "turning_rate"
-  ],
-  "metric_parameters": {
-    "average_speed": {
-      "dt_source": "from_config_used_yaml",
-      "dt_fixed_value": 0.02,
-      "framerate_field_in_config_used": "frame_rate"
-    },
-    "net_upwind_displacement": {
-      "upwind_axis": "y",
-      "upwind_positive_direction": true
-    }
-  },
-  "trajectory_processing": {
-    "required_columns": ["t", "x", "y", "theta", "turn"]
-  },
-  "aggregation_groups": ["plume_type", "sensing_mode"],
-  "aggregation_options": {
-    "group_by_keys": ["plume_type", "sensing_mode"],
-    "statistics_to_compute": ["mean", "std", "sem", "count", "median", "min", "max"]
-  },
-  "plotting_parameters": {
-    "colors": {"gaussian": "blue", "smoke": "orange"},
-    "output_format": "png",
-    "metrics": ["velocity", "turning_rate"]
-  },
-  "statistical_tests": {
-    "significance_level": 0.05,
-    "tests": ["ttest", "anova"]
-  },
-  "output_paths": {
-    "figures": "figures",
-    "tables": "tables",
-    "processed": "analysis_results"
-  }
-}
+# Example analysis configuration in YAML
+
+data_paths:
+  raw_data_dir: data/raw
+  processed_data_dir: data/processed
+  metadata_file: data/metadata.csv
+
+data_loading_options:
+  load_summary_json: true
+  load_trajectories_csv: false
+  load_params_json: false
+  load_config_used_yaml: true
+
+metadata_extraction:
+  plume_regex: "(gaussian|smoke)_([a-z]+)"
+  mode_regex: "(bilateral|unilateral)"
+
+metrics_calculation:
+  velocity_threshold: 1.0
+  smoothing_window: 5
+
+metrics_to_compute:
+  - success_rate
+  - latency
+  - path_length
+  - average_speed
+  - net_upwind_displacement
+  - straightness
+  - turning_rate
+
+metric_parameters:
+  average_speed:
+    dt_source: from_config_used_yaml
+    dt_fixed_value: 0.02
+    framerate_field_in_config_used: frame_rate
+  net_upwind_displacement:
+    upwind_axis: y
+    upwind_positive_direction: true
+
+trajectory_processing:
+  required_columns:
+    - t
+    - x
+    - y
+    - theta
+    - turn
+
+aggregation_groups:
+  - plume_type
+  - sensing_mode
+
+aggregation_options:
+  group_by_keys:
+    - plume_type
+    - sensing_mode
+  statistics_to_compute:
+    - mean
+    - std
+    - sem
+    - count
+    - median
+    - min
+    - max
+
+plotting_parameters:
+  colors:
+    gaussian: blue
+    smoke: orange
+  output_format: png
+  metrics:
+    - velocity
+    - turning_rate
+
+statistical_tests:
+  significance_level: 0.05
+  tests:
+    - ttest
+    - anova
+
+output_paths:
+  figures: figures
+  tables: tables
+  processed: analysis_results

@@ -1,6 +1,6 @@
 import os
 import sys
-import json
+import yaml
 import tempfile
 import pytest
 
@@ -53,7 +53,7 @@ def sample_config(tmp_path, stat="mean"):
         "output_paths": {"figures": str(tmp_path), "tables": str(tmp_path), "processed": str(tmp_path)},
     }
     cfg_path = tmp_path / "analysis_config.yaml"
-    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg_path.write_text(yaml.safe_dump(cfg_dict))
     return cfg_path
 
 

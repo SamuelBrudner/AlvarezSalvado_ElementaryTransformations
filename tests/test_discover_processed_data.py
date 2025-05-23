@@ -1,6 +1,6 @@
 import os
 import sys
-import json
+import yaml
 from pathlib import Path
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -23,7 +23,7 @@ def test_discover_processed_data(tmp_path):
         "load_run_config": True,
     }
     cfg_path = tmp_path / "analysis_config.yaml"
-    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg_path.write_text(yaml.safe_dump(cfg_dict))
     cfg = load_analysis_config(cfg_path)
 
     records = list(discover_processed_data(cfg))
@@ -56,7 +56,7 @@ def test_conditional_loading_options(tmp_path):
         },
     }
     cfg_path = tmp_path / "analysis_config.yaml"
-    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg_path.write_text(yaml.safe_dump(cfg_dict))
     cfg = load_analysis_config(cfg_path)
 
     records = list(discover_processed_data(cfg))

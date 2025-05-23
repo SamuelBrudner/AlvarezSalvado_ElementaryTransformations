@@ -314,6 +314,9 @@ from Code.load_analysis_config import load_analysis_config
 cfg = load_analysis_config('configs/analysis_config.yaml')
 ```
 
+`load_analysis_config` uses `yaml.safe_load` under the hood, so the
+configuration must be valid YAML rather than JSON.
+
 The configuration file includes a `data_loading_options` section that controls
 which files are loaded for each discovered run. For example:
 

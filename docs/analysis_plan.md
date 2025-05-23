@@ -14,6 +14,8 @@ This document describes a parameterized approach for processing simulation resul
   - `output_paths` – directories for figures, tables and analysis outputs.
 
 The analysis scripts load this YAML at startup using `load_analysis_config`.
+The loader relies on `yaml.safe_load`, so the configuration file must be
+valid YAML.
 
 ## 2. Data Discovery and Organization
 - Directories containing processed results are specified under `data_paths.processed_base_dirs`.
