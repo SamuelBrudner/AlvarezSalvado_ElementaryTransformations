@@ -35,8 +35,19 @@ The code simulates walking fruit flies navigating in different odor plumes. Seve
 Model parameters are defined in `Code/navigation_model_vec.m`. Data import functions for analyzing experimental trials are located in `Code/import functions feb2017`.
 ## Requirements
 
-- MATLAB (tested on R2017b or later).
+- MATLAB (tested on **R2021a or later**).
 - For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
+
+### Development environment
+
+If you plan to run the Python tests or scripts, create a local conda environment:
+
+```bash
+source setup_env.sh --dev
+conda activate .env
+```
+
+This installs the required packages and activates an environment named `.env`.
 
 ## Data Organization
 
