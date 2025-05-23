@@ -13,8 +13,8 @@ def test_discover_processed_data(tmp_path):
     base = tmp_path / "processed"
     run_dir = base / "gaussian_bilateral" / "agent_1" / "seed_0"
     run_dir.mkdir(parents=True)
-    # create a dummy config_used.yaml in JSON format
-    (run_dir / "config_used.yaml").write_text('{"frame_rate": 100, "px_per_mm": 5}')
+    # create a dummy config_used.yaml in YAML format
+    (run_dir / "config_used.yaml").write_text("frame_rate: 100\npx_per_mm: 5\n")
     (run_dir / "results.mat").write_text("dummy")
 
     cfg_dict = {
@@ -40,7 +40,7 @@ def test_conditional_loading_options(tmp_path):
     base = tmp_path / "processed"
     run_dir = base / "gaussian_unilateral" / "agent_2" / "seed_1"
     run_dir.mkdir(parents=True)
-    (run_dir / "config_used.yaml").write_text('{"fps":60}')
+    (run_dir / "config_used.yaml").write_text("fps: 60\n")
     (run_dir / "summary.json").write_text('{"successrate":0.5}')
     (run_dir / "params.json").write_text('{"tau_ON":0.1}')
     (run_dir / "trajectories.csv").write_text('t,x,y\n0,0,0')
