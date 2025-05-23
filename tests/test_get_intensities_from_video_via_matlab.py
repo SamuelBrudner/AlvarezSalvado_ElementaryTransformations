@@ -5,6 +5,7 @@ import numpy as np
 import tempfile
 
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from Code.video_intensity import get_intensities_from_video_via_matlab
