@@ -37,17 +37,25 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 
 - MATLAB (tested on **R2021a or later**).
 - For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
+- Python packages listed in `environment.yml` for running analysis scripts and tests.
 
 ### Development environment
 
-If you plan to run the Python tests or scripts, create a local conda environment:
+If you plan to run the Python tests or scripts, create a local conda environment
+using the provided setup script:
 
 ```bash
 source setup_env.sh --dev
 conda activate .env
 ```
 
-This installs the required packages and activates an environment named `.env`.
+The script creates (or updates) the `.env` environment from `environment.yml`.
+After activating the environment, run `pre-commit` hooks and the test suite:
+
+```bash
+pre-commit run --files <changed files>
+pytest
+```
 
 ## Data Organization
 
