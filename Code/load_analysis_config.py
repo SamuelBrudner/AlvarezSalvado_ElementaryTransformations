@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import json
+import yaml
 from typing import Any, Dict
 from pathlib import Path
 
@@ -25,4 +25,4 @@ def load_analysis_config(path: str | Path) -> Dict[str, Any]:
         raise FileNotFoundError(f"Config file not found: {file_path}")
 
     content = file_path.read_text()
-    return json.loads(content)
+    return yaml.safe_load(content)

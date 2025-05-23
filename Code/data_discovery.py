@@ -37,13 +37,21 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         "{plume}_{mode}/agent_{agent_id}/seed_{seed}",
     )
     param_opts = cfg.get("parameter_usage", {})
-    load_run_cfg = cfg.get("load_run_config", False) or param_opts.get(
-        "use_config_used_for_dt", False
+    load_opts = cfg.get("data_loading_options", {})
+
+    load_run_cfg = (
+        cfg.get("load_run_config", False)
+        or param_opts.get("use_config_used_for_dt", False)
+        or load_opts.get("load_config_used_yaml", False)
     )
 
-    need_params = param_opts.get("check_model_parameter_consistency", {}).get(
-        "enabled", False
+    need_params = (
+        param_opts.get("check_model_parameter_consistency", {}).get("enabled", False)
+        or load_opts.get("load_params_json", False)
     )
+
+    load_summary = load_opts.get("load_summary_json", False)
+    load_traj = load_opts.get("load_trajectories_csv", False)
 
 
     regex = _template_to_regex(template)
@@ -88,6 +96,23 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                         else:
                             record["params"] = {}
 
+                    if load_summary:
+                        summary_file = path / "summary.json"
+                        if summary_file.is_file():
+                            try:
+                                record["summary"] = json.loads(summary_file.read_text())
+                            except Exception:
+                                record["summary"] = {}
+
+                    if load_traj:
+                        traj_file = path / "trajectories.csv"
+                        if traj_file.is_file():
+                            try:
+                                with open(traj_file, "r", newline="") as f:
+                                    reader = csv.DictReader(f)
+                                    record["trajectories"] = list(reader)
+                            except Exception:
+                                record["trajectories"] = []
 
                     yield record
 

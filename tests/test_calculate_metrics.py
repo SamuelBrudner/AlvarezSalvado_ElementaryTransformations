@@ -1,6 +1,6 @@
 import os
 import sys
-import json
+import yaml
 import math
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -31,7 +31,7 @@ def test_calculate_metrics(tmp_path):
         },
     }
     cfg_path = tmp_path / "analysis.yaml"
-    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg_path.write_text(yaml.safe_dump(cfg_dict))
     cfg = load_analysis_config(cfg_path)
 
     trajectories = [

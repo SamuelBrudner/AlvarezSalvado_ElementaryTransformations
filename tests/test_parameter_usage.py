@@ -1,4 +1,5 @@
 import json
+import yaml
 import os
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ def test_use_config_used_for_dt(tmp_path):
         }
     }
     cfg_path = tmp_path / "analysis.yaml"
-    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg_path.write_text(yaml.safe_dump(cfg_dict))
     cfg = load_analysis_config(cfg_path)
 
     records = list(discover_processed_data(cfg))
@@ -54,7 +55,7 @@ def test_check_model_parameter_consistency(tmp_path):
         }
     }
     cfg_path = tmp_path / "analysis.yaml"
-    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg_path.write_text(yaml.safe_dump(cfg_dict))
     cfg = load_analysis_config(cfg_path)
 
     records = list(discover_processed_data(cfg))
