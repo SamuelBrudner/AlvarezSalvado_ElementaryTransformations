@@ -42,17 +42,49 @@ Model parameters are defined in `Code/navigation_model_vec.m`. Data import funct
 
 ### Development environment
 
-If you plan to run the Python tests or scripts, create a local conda environment
-using the provided setup script:
+If you plan to run the Python tests or scripts, create a local Conda
+environment using the provided setup script:
 
 ```bash
 source setup_env.sh --dev
-conda activate .env
 ```
 
-This installs the required packages and activates an environment named `.env`.
-The setup script also runs `pre-commit install` so formatting and tests run
-automatically before each commit.
+The script creates a local environment in `./dev-env`. Rather than activating
+it globally, prefix all Python commands with `conda run --prefix ./dev-env` to
+ensure the correct interpreter is used. For example:
+
+```bash
+conda run --prefix ./dev-env pytest -q
+```
+
+`setup_env.sh` installs the required packages and sets up pre-commit so
+formatting and tests run automatically before each commit.
+
+### Developer Workflow
+
+Typical steps when contributing:
+
+```bash
+# Run formatters and linters
+conda run --prefix ./dev-env pre-commit run --all-files
+
+# Run the Python test suite
+conda run --prefix ./dev-env pytest -q
+```
+
+Use MATLAB's Code Analyzer and unit testing framework in parallel for MATLAB
+changes. Ensure all tests pass before committing.
+
+### Maintenance
+
+- Update pre-commit hooks periodically with:
+
+  ```bash
+  conda run --prefix ./dev-env pre-commit autoupdate
+  ```
+
+- Regenerate `conda-lock.yml` whenever `environment.yml` changes to keep
+  dependencies pinned.
 
 
 ## Data Organization
@@ -352,7 +384,17 @@ FlyTracker 3.6.vi                Data acquisition software
 
 ## Citation
 
-If you use this code in your research, please cite:
+If you use this code in your research, please cite the accompanying paper and
+refer to the metadata files in the repository root. `CITATION.cff` provides a
+machine-readable citation for the software, and `codemeta.json` contains rich
+metadata for automated tools.
 
-Álvarez-Salvado et al. "Elementary sensory-motor transformations underlying olfactory navigation in walking fruit flies." eLife, 2018. http://dx.doi.org/10.7554/eLife.37815
+Álvarez-Salvado et al. "Elementary sensory-motor transformations underlying
+olfactory navigation in walking fruit flies." eLife, 2018.
+<http://dx.doi.org/10.7554/eLife.37815>
+
+## Roadmap
+
+Future work includes improving the Python analysis tools and expanding the test
+coverage for MATLAB functions. Contributions are welcome.
 
