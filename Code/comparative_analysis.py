@@ -127,3 +127,74 @@ def generate_plots(records: List[Record], cfg: Dict[str, Any]) -> List[Path]:
         outfile.write_text(f"Plot placeholder for {task.get('metric_name')}")
         paths.append(outfile)
     return paths
+
+
+def generate_trajectory_heatmaps(records: List[Record], cfg: Dict[str, Any]) -> List[Path]:
+    """Generate trajectory heatmaps from records.
+
+    Parameters
+    ----------
+    records : list of dict
+        Input data records that may include ``trajectories`` and ``metadata``.
+    cfg : dict
+        Parsed analysis configuration.
+
+    Returns
+    -------
+    list of Path
+        Paths to generated heatmap CSV files.
+    """
+    tasks = cfg.get("heatmap_generation", [])
+    output_dir = Path(cfg.get("output_paths", {}).get("figures", "."))
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    outputs: List[Path] = []
+    for task in tasks:
+        cond_key = task.get("condition_key")
+        cond_val = task.get("condition_value")
+        bins = task.get("bins", [50, 50])
+        x_range, y_range = task.get("range", [[0.0, 1.0], [0.0, 1.0]])
+        outfile = output_dir / task.get("output_filename", "heatmap.csv")
+
+        xs: List[float] = []
+        ys: List[float] = []
+        for rec in records:
+            val = None
+            if cond_key:
+                val = rec.get(cond_key)
+                if val is None:
+                    val = rec.get("metadata", {}).get(cond_key)
+            if cond_key and val != cond_val:
+                continue
+            traj = rec.get("trajectories", [])
+            for row in traj:
+                try:
+                    xs.append(float(row["x"]))
+                    ys.append(float(row["y"]))
+                except Exception:
+                    continue
+
+        bx, by = bins
+        x_min, x_max = x_range
+        y_min, y_max = y_range
+        hx = [[0 for _ in range(bx)] for _ in range(by)]
+        if xs:
+            dx = (x_max - x_min) / bx
+            dy = (y_max - y_min) / by
+            for x, y in zip(xs, ys):
+                if x_min <= x < x_max and y_min <= y < y_max:
+                    ix = int((x - x_min) / dx)
+                    iy = int((y - y_min) / dy)
+                    if ix >= bx:
+                        ix = bx - 1
+                    if iy >= by:
+                        iy = by - 1
+                    hx[iy][ix] += 1
+
+        with outfile.open("w", newline="") as f:
+            writer = csv.writer(f)
+            for row in hx:
+                writer.writerow(row)
+        outputs.append(outfile)
+
+    return outputs
