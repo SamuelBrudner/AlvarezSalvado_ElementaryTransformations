@@ -12,6 +12,9 @@
     "velocity_threshold": 1.0,
     "smoothing_window": 5
   },
+  "trajectory_processing": {
+    "required_columns": ["t", "x", "y", "theta", "turn"]
+  },
   "aggregation_groups": ["plume_type", "sensing_mode"],
   "plotting_parameters": {
     "colors": {"gaussian": "blue", "smoke": "orange"},
