@@ -48,6 +48,8 @@ conda activate .env
 ```
 
 This installs the required packages and activates an environment named `.env`.
+The setup script also runs `pre-commit install` so formatting and tests run
+automatically before each commit.
 
 ## Data Organization
 
