@@ -314,8 +314,16 @@ from Code.load_analysis_config import load_analysis_config
 cfg = load_analysis_config('configs/analysis_config.yaml')
 ```
 
-See [docs/analysis_plan.md](docs/analysis_plan.md) for a detailed outline of how
-this configuration drives each step of the analysis workflow.
+The configuration file includes a `data_loading_options` section that controls
+which files are loaded for each discovered run. For example:
+
+```yaml
+data_loading_options:
+  load_summary_json: true
+  load_trajectories_csv: false
+  load_params_json: false
+  load_config_used_yaml: true
+```
 
 
 

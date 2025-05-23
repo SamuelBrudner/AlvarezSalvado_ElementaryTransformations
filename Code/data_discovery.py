@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import csv
 from pathlib import Path
 from typing import Dict, Iterator, Any, List
 
@@ -26,7 +27,9 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
     Yields
     ------
     dict
-        Dictionary with keys ``path``, ``metadata``, and ``config`` (optional).
+        Dictionary with keys ``path`` and ``metadata`` plus optional entries
+        for ``config``, ``summary``, ``params``, and ``trajectories`` depending
+        on ``data_loading_options``.
     """
     base_dirs = cfg.get("data_paths", {}).get("processed_base_dirs", [])
     template = cfg.get("metadata_extraction", {}).get(
@@ -41,6 +44,7 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
     need_params = param_opts.get("check_model_parameter_consistency", {}).get(
         "enabled", False
     )
+
 
     regex = _template_to_regex(template)
 
@@ -74,6 +78,7 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                             if fr:
                                 record["dt"] = 1.0 / float(fr)
                     if need_params:
+
                         param_file = path / "params.json"
                         if param_file.is_file():
                             try:
@@ -82,6 +87,7 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                                 record["params"] = {}
                         else:
                             record["params"] = {}
+
 
                     yield record
 

@@ -4,6 +4,12 @@
     "processed_data_dir": "data/processed",
     "metadata_file": "data/metadata.csv"
   },
+  "data_loading_options": {
+    "load_summary_json": true,
+    "load_trajectories_csv": false,
+    "load_params_json": false,
+    "load_config_used_yaml": true
+  },
   "metadata_extraction": {
     "plume_regex": "(gaussian|smoke)_([a-z]+)",
     "mode_regex": "(bilateral|unilateral)"
@@ -11,6 +17,9 @@
   "metrics_calculation": {
     "velocity_threshold": 1.0,
     "smoothing_window": 5
+  },
+  "trajectory_processing": {
+    "required_columns": ["t", "x", "y", "theta", "turn"]
   },
   "aggregation_groups": ["plume_type", "sensing_mode"],
   "plotting_parameters": {

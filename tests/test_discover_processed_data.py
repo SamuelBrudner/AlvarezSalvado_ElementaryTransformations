@@ -35,3 +35,35 @@ def test_discover_processed_data(tmp_path):
     assert rec["metadata"]["seed"] == "0"
     assert rec["config"]["frame_rate"] == 100
 
+
+def test_conditional_loading_options(tmp_path):
+    base = tmp_path / "processed"
+    run_dir = base / "gaussian_unilateral" / "agent_2" / "seed_1"
+    run_dir.mkdir(parents=True)
+    (run_dir / "config_used.yaml").write_text('{"fps":60}')
+    (run_dir / "summary.json").write_text('{"successrate":0.5}')
+    (run_dir / "params.json").write_text('{"tau_ON":0.1}')
+    (run_dir / "trajectories.csv").write_text('t,x,y\n0,0,0')
+
+    cfg_dict = {
+        "data_paths": {"processed_base_dirs": [str(base)]},
+        "metadata_extraction": {"directory_template": "{plume}_{mode}/agent_{agent_id}/seed_{seed}"},
+        "data_loading_options": {
+            "load_summary_json": True,
+            "load_trajectories_csv": False,
+            "load_params_json": True,
+            "load_config_used_yaml": False,
+        },
+    }
+    cfg_path = tmp_path / "analysis_config.yaml"
+    cfg_path.write_text(json.dumps(cfg_dict))
+    cfg = load_analysis_config(cfg_path)
+
+    records = list(discover_processed_data(cfg))
+    assert len(records) == 1
+    rec = records[0]
+    assert "summary" in rec and rec["summary"]["successrate"] == 0.5
+    assert "params" in rec and rec["params"]["tau_ON"] == 0.1
+    assert "trajectories" not in rec
+    assert "config" not in rec
+
