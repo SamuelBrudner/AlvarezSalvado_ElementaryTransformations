@@ -22,6 +22,10 @@
     "required_columns": ["t", "x", "y", "theta", "turn"]
   },
   "aggregation_groups": ["plume_type", "sensing_mode"],
+  "aggregation_options": {
+    "group_by_keys": ["plume_type", "sensing_mode"],
+    "statistics_to_compute": ["mean", "std", "sem", "count", "median", "min", "max"]
+  },
   "plotting_parameters": {
     "colors": {"gaussian": "blue", "smoke": "orange"},
     "output_format": "png",
