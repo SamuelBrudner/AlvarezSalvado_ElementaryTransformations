@@ -14,7 +14,7 @@ def test_use_config_used_for_dt(tmp_path):
     base = tmp_path / "processed"
     run_dir = base / "gaussian_bilateral" / "agent_1" / "seed_0"
     run_dir.mkdir(parents=True)
-    (run_dir / "config_used.yaml").write_text(json.dumps({"frame_rate": 20}))
+    (run_dir / "config_used.yaml").write_text("frame_rate: 20\n")
     (run_dir / "params.json").write_text(json.dumps({"beta": 0.01}))
 
     cfg_dict = {

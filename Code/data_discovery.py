@@ -3,6 +3,40 @@
 from __future__ import annotations
 
 import json
+try:
+    import yaml
+except ModuleNotFoundError:  # pragma: no cover - fallback for environments without PyYAML
+    import types
+    import re
+
+    def _minimal_safe_load(text: str):
+        text = text.strip()
+        try:
+            return json.loads(text)
+        except Exception:
+            data = {}
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                if ':' not in line:
+                    continue
+                key, value = line.split(':', 1)
+                key = key.strip()
+                value = value.strip().strip("\"'")
+                if value.lower() in ('true', 'false'):
+                    data[key] = value.lower() == 'true'
+                else:
+                    try:
+                        if '.' in value:
+                            data[key] = float(value)
+                        else:
+                            data[key] = int(value)
+                    except ValueError:
+                        data[key] = value
+            return data
+
+    yaml = types.SimpleNamespace(safe_load=_minimal_safe_load)
 import re
 import csv
 from pathlib import Path
@@ -65,7 +99,7 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                         cfg_file = path / "config_used.yaml"
                         if cfg_file.is_file():
                             try:
-                                record["config"] = json.loads(cfg_file.read_text())
+                                record["config"] = yaml.safe_load(cfg_file.read_text())
                             except Exception:
                                 record["config"] = {}
                         else:
@@ -82,7 +116,7 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                         param_file = path / "params.json"
                         if param_file.is_file():
                             try:
-                                record["params"] = json.loads(param_file.read_text())
+                                record["params"] = yaml.safe_load(param_file.read_text())
                             except Exception:
                                 record["params"] = {}
                         else:
