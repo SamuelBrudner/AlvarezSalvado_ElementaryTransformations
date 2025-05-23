@@ -43,6 +43,15 @@ from pathlib import Path
 from typing import Dict, Iterator, Any, List
 
 
+def _maybe_float(value: str) -> Any:
+    try:
+        if value.lower() in ("nan", "inf", "-inf"):
+            return float(value)
+        return float(value)
+    except (ValueError, AttributeError):
+        return value
+
+
 def _template_to_regex(template: str) -> re.Pattern:
     pattern = re.escape(template)
     pattern = pattern.replace(r"\{", "{").replace(r"\}", "}")
@@ -144,7 +153,10 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
                             try:
                                 with open(traj_file, "r", newline="") as f:
                                     reader = csv.DictReader(f)
-                                    record["trajectories"] = list(reader)
+                                    rows = []
+                                    for row in reader:
+                                        rows.append({k: _maybe_float(v) for k, v in row.items()})
+                                    record["trajectories"] = rows
                             except Exception:
                                 record["trajectories"] = []
 
