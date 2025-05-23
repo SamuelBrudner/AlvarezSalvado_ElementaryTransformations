@@ -1,340 +1,112 @@
 #!/bin/bash
-set -euo pipefail  # Exit on error, undefined variable, and pipe failure
+# robust SLURM wrapper – absolute YAML & movie paths + auto MATLAB module
+set -euo pipefail
 
 #SBATCH --begin=now
-# Default SLURM directives are intentionally minimal to avoid
-# variable expansion issues. Specify job parameters at submission time, e.g.:
-#   sbatch --job-name=${EXPERIMENT_NAME}_sim \
-#          --mem-per-cpu=${SLURM_MEM:-16G} \
-#          --cpus-per-task=${SLURM_CPUS_PER_TASK:-1} \
-#          --partition=${SLURM_PARTITION:-day} \
-#          --time=${SLURM_TIME:-6:00:00} \
-#          "$0"
-# ───────────────────────────────────────────────────────────
-# Submit with:  sbatch --job-name=${EXPERIMENT_NAME}_sim \
-#                     --array=0-$((TOTAL_JOBS-1))%${SLURM_ARRAY_CONCURRENT} "$0"
-# ⇧ the "%N" part limits to N concurrent tasks (cores) to prevent overloading
-# ───────────────────────────────────────────────────────────
 #SBATCH --open-mode=append
 #SBATCH --output=slurm_out/%A_%a.out
 #SBATCH --error=slurm_err/%A_%a.err
 
-# Cleanup function to run on exit or error
-cleanup() {
-    local exit_code=$?
-    # Clean up temporary MATLAB scripts if they exist
-    [[ -n "${MATLAB_SCRIPT:-}" && -f "$MATLAB_SCRIPT" ]] && rm -f "$MATLAB_SCRIPT"
-    [[ -n "${EXPORT_SCRIPT:-}" && -f "$EXPORT_SCRIPT" ]] && rm -f "$EXPORT_SCRIPT"
-    exit $exit_code
-}
+########################  graceful cleanup  ########################
+cleanup(){ rc=$?; [[ -f ${MATLAB_SCRIPT:-}  ]] && rm -f "$MATLAB_SCRIPT"
+                   [[ -f ${EXPORT_SCRIPT:-} ]] && rm -f "$EXPORT_SCRIPT"; exit $rc; }
+trap cleanup EXIT SIGINT SIGTERM
 
-trap cleanup EXIT SIGTERM SIGINT
+########################  directories  #############################
+for d in slurm_out slurm_err data/processed; do mkdir -p "$d"; done
+RAW_DIR="data/raw"; mkdir -p "$RAW_DIR"
 
-# ───────────────────────────────────────────────────────────
-# 1.  Directory plumbing and environment setup
-# ───────────────────────────────────────────────────────────
-# Create necessary directories with error checking
-for dir in slurm_out slurm_err data/processed; do
-    if ! mkdir -p "$dir"; then
-        echo "ERROR: Failed to create directory: $dir" >&2
-        exit 1
-    fi
+########################  defaults  ################################
+: ${EXPERIMENT_NAME:=default_experiment}
+: ${PLUME_TYPES:="crimaldi custom"}
+: ${SENSING_MODES:="bilateral unilateral"}
+: ${AGENTS_PER_CONDITION:=1000}
+: ${AGENTS_PER_JOB:=100}
+: ${PLUME_CONFIG:=configs/my_complex_plume_config.yaml}
+: ${PLUME_VIDEO:=data/smoke_1a_bgsub_raw.avi}
+: ${OUTPUT_BASE:=data/raw}
+: ${MATLAB_VERSION:=2023b}
+: ${MATLAB_MODULE:=MATLAB/${MATLAB_VERSION}}
+: ${SLURM_ARRAY_CONCURRENT:=100}
+: ${MATLAB_OPTIONS:="-nodisplay -nosplash"}
+
+########## strip stray quotes then absolutise YAML & movie #########
+for var in PLUME_CONFIG PLUME_VIDEO; do
+    val=${!var#\"}; val=${val%\"}
+    [[ "$val" != /* ]] && val="$SLURM_SUBMIT_DIR/$val"
+    declare "$var=$val"
 done
 
-# Create raw data directory and check available space
-RAW_DIR="data/raw"
-mkdir -p "$RAW_DIR"
+########################  counts  ##################################
+IFS=' ' read -ra PLUMES   <<< "$PLUME_TYPES"
+IFS=' ' read -ra SENSING  <<< "$SENSING_MODES"
+NUM_CONDITIONS=$(( ${#PLUMES[@]} * ${#SENSING[@]} ))
+JOBS_PER_COND=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB -1)/AGENTS_PER_JOB ))
+TOTAL_JOBS=$(( NUM_CONDITIONS * JOBS_PER_COND ))
 
-# Get available space in KB
-get_available_space_kb() {
-    if [[ "$(uname -s)" == "Linux" ]]; then
-        df -k --output=avail "$1" | tail -n 1
-    else  # For macOS
-        df -k "$1" | tail -n 1 | awk '{print $4}'
-    fi
+########################  disk space check  ########################
+BYTES_PER_AGENT=${BYTES_PER_AGENT:-50000000}
+REQUIRED=$(( AGENTS_PER_CONDITION * NUM_CONDITIONS * BYTES_PER_AGENT * 12 / 10 / 1024 ))
+FREE=$(df -k --output=avail "$OUTPUT_BASE" | tail -1)
+(( FREE >= REQUIRED )) || { echo "ERR not enough space"; exit 1; }
+
+########################  MATLAB module loader  ####################
+load_matlab(){
+  all=$(module -t avail 2>&1 | awk '{gsub(/^[[:space:]]+/,"")} /^[mM][aA][tT][lL][aA][bB]\//')
+  for cand in "$1" "${1/matlab/MATLAB}" "${1/MATLAB/matlab}"; do
+      printf '%s\n' "$all" | grep -qx "$cand" && { echo "$cand"; return; }
+  done
+  printf '%s\n' "$all" | sort -V | tail -1
 }
-
-# Check disk space
-AVAILABLE_SPACE_KB=$(get_available_space_kb "$OUTPUT_BASE")
-
-if [[ $AVAILABLE_SPACE_KB -lt $REQUIRED_SPACE_KB ]]; then
-    echo "ERROR: Not enough disk space in $OUTPUT_BASE" >&2
-    echo "  Required: $((REQUIRED_SPACE_KB / 1024)) MB" >&2
-    echo "  Available: $((AVAILABLE_SPACE_KB / 1024)) MB" >&2
-    echo "  Please free up space or change the output directory" >&2
-    exit 1
-fi
-
-echo "Disk space check passed: $((AVAILABLE_SPACE_KB / 1024)) MB available in $OUTPUT_BASE"
-
-# Disable GUI / X11 during batch jobs
+MATLAB_MODULE=$(load_matlab "$MATLAB_MODULE") || { echo "No MATLAB module"; exit 1; }
+module load "$MATLAB_MODULE"; echo "Loaded $MATLAB_MODULE"
 export DISPLAY=
-unset X11
 
-# Check if MATLAB module exists
-if ! module is-avail "$MATLAB_MODULE" 2>/dev/null; then
-    echo "ERROR: MATLAB module '$MATLAB_MODULE' is not available" >&2
-    echo "Available MATLAB versions:"
-    module -t avail 2>&1 | grep -i matlab || echo "  (none found)"
-    exit 1
-fi
+########################  array mapping  ###########################
+TASK=${SLURM_ARRAY_TASK_ID:-0}
+(( TASK<TOTAL_JOBS )) || exit 0
+PICK=$(( TASK % NUM_CONDITIONS ))
+BLOCK=$(( TASK / NUM_CONDITIONS ))
+PLUME=${PLUMES[$((PICK/${#SENSING[@]}))]}
+SENSE=${SENSING[$((PICK%${#SENSING[@]}))]}
+START=$(( BLOCK*AGENTS_PER_JOB + 1 ))
+END=$(( (BLOCK+1)*AGENTS_PER_JOB )); (( END>AGENTS_PER_CONDITION )) && END=$AGENTS_PER_CONDITION
 
-# Load MATLAB module
-if ! module load "$MATLAB_MODULE"; then
-    echo "ERROR: Failed to load MATLAB module: $MATLAB_MODULE" >&2
-    exit 1
-fi
+########################  build MATLAB script  #####################
+TMPDIR="${TMPDIR:-/tmp}"
+MATLAB_SCRIPT=$(mktemp -p "$TMPDIR" batch_job_XXXX.m)
 
-# ───────────────────────────────────────────────────────────
-# 2.  Configuration - All parameters can be overridden with environment variables
-# ───────────────────────────────────────────────────────────
-
-# Experiment configuration
-: ${EXPERIMENT_NAME:="default_experiment"}  # Name for this experiment
-: ${PLUME_TYPES:="crimaldi custom"}         # Space-separated list of plume types
-: ${SENSING_MODES:="bilateral unilateral"}   # Space-separated list of sensing modes
-: ${AGENTS_PER_CONDITION:=1000}              # Number of agents per condition
-: ${AGENTS_PER_JOB:=100}                     # Agents to simulate per SLURM task
-: ${PLUME_CONFIG:="configs/my_complex_plume_config.yaml"}  # Path to config file
-: ${OUTPUT_BASE:="data/raw"}                 # Base directory for output files
-: ${MATLAB_VERSION:="R2021a"}                # MATLAB version to use
-: ${MATLAB_MODULE:="matlab/${MATLAB_VERSION}"} # MATLAB module to load
-: ${SLURM_PARTITION:="day"}                  # SLURM partition to use
-: ${SLURM_TIME:="6:00:00"}                   # Maximum runtime per job
-: ${SLURM_MEM:="16G"}                        # Memory per CPU
-: ${SLURM_CPUS_PER_TASK:=1}                  # CPUs per task
-: ${SLURM_ARRAY_CONCURRENT:=100}             # Maximum concurrent array jobs
-: ${MATLAB_OPTIONS:="-nodisplay -nosplash"}  # Additional MATLAB options
-
-# Derived parameters - don't modify these
-IFS=' ' read -r -a PLUMES <<< "$PLUME_TYPES"
-IFS=' ' read -r -a SENSING <<< "$SENSING_MODES"
-NUM_PLUMES=${#PLUMES[@]}
-NUM_SENSING=${#SENSING[@]}
-NUM_CONDITIONS=$((NUM_PLUMES * NUM_SENSING))
-JOBS_PER_CONDITION=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB - 1) / AGENTS_PER_JOB ))
-TOTAL_JOBS=$((NUM_CONDITIONS * JOBS_PER_CONDITION))
-
-# Calculate required disk space (50MB per agent with 20% buffer)
-BYTES_PER_AGENT=50000000  # 50MB per agent
-REQUIRED_SPACE_KB=$(( (AGENTS_PER_CONDITION * NUM_CONDITIONS * BYTES_PER_AGENT * 12 / 10) / 1024 ))
-
-# ───────────────────────────────────────────────────────────
-# 3.  Print configuration
-# ───────────────────────────────────────────────────────────
-echo "=== Experiment Configuration ==="
-echo "Experiment Name:    $EXPERIMENT_NAME"
-echo "Plume Types:       ${PLUMES[*]}"
-echo "Sensing Modes:     ${SENSING[*]}"
-echo "Agents/Condition:  $AGENTS_PER_CONDITION"
-echo "Agents/Job:        $AGENTS_PER_JOB"
-echo "Total Jobs:        $TOTAL_JOBS"
-echo "SLURM Concurrency: $SLURM_ARRAY_CONCURRENT"
-echo "MATLAB Version:    $MATLAB_VERSION"
-echo "Output Directory:  $OUTPUT_BASE"
-echo "Required Disk:     $((REQUIRED_SPACE_KB / 1024)) MB"
-echo "================================"
-
-
-# (SLURM sets $SLURM_ARRAY_TASK_ID from 0 .. TOTAL_JOBS-1)
-if [[ -n "$SLURM_ARRAY_TASK_ID" && $SLURM_ARRAY_TASK_ID -ge $TOTAL_JOBS ]]; then
-  echo "Task $SLURM_ARRAY_TASK_ID exceeds TOTAL_JOBS=$TOTAL_JOBS — exiting."
-  exit 0
-fi
-
-# ───────────────────────────────────────────────────────────
-# 3.  Map array index → (plume,sensing) + agent-slice
-# ───────────────────────────────────────────────────────────
-CONDITION=$(( SLURM_ARRAY_TASK_ID % NUM_CONDITIONS ))
-JOB_INDEX_IN_CONDITION=$(( SLURM_ARRAY_TASK_ID / NUM_CONDITIONS ))
-
-PLUME_INDEX=$(( CONDITION / NUM_SENSING ))            # 0 or 1
-SENSING_INDEX=$(( CONDITION % NUM_SENSING ))          # 0 or 1
-
-PLUME_NAME=${PLUMES[$PLUME_INDEX]}
-SENSING_NAME=${SENSING[$SENSING_INDEX]}
-
-# Slice of agents handled by this job
-START_AGENT=$(( JOB_INDEX_IN_CONDITION * AGENTS_PER_JOB + 1 ))
-END_AGENT=$(( (JOB_INDEX_IN_CONDITION + 1) * AGENTS_PER_JOB ))
-(( END_AGENT > AGENTS_PER_CONDITION )) && END_AGENT=$AGENTS_PER_CONDITION
-
-# ───────────────────────────────────────────────────────────
-# 4.  Echo job parameters
-# ───────────────────────────────────────────────────────────
-echo "──────── Job Context ────────"
-echo " SLURM_ARRAY_TASK_ID : ${SLURM_ARRAY_TASK_ID:-N/A (not running in SLURM)}"
-echo " Plume Type          : $PLUME_NAME"
-echo " Sensing Mode        : $SENSING_NAME"
-echo " Agent Range         : $START_AGENT – $END_AGENT of $AGENTS_PER_CONDITION"
-echo " Agents / Job        : $AGENTS_PER_JOB"
-echo " Total Jobs          : $TOTAL_JOBS"
-echo " Max Concurrent      : $SLURM_ARRAY_CONCURRENT"
-echo " Output Directory    : $OUTPUT_BASE"
-echo "──────────────────────────────"
-
-# ───────────────────────────────────────────────────────────
-# 5.  Load configuration from YAML file
-# ───────────────────────────────────────────────────────────
-PLUME_CONFIG="configs/my_complex_plume_config.yaml"
-if [[ ! -f "$PLUME_CONFIG" ]]; then
-    echo "ERROR: Plume configuration file not found: $PLUME_CONFIG" >&2
-    echo "Please create a configuration file or update the path in the script." >&2
-    exit 1
-fi
-
-# Ensure the config file is readable
-if [[ ! -r "$PLUME_CONFIG" ]]; then
-    echo "ERROR: Cannot read configuration file: $PLUME_CONFIG" >&2
-    exit 1
-fi
-
-echo "Using configuration from: $PLUME_CONFIG"
-
-# ───────────────────────────────────────────────────────────
-# 6.  Build a temporary MATLAB script that runs every agent slice serially
-#     (1 CPU per MATLAB, so we keep the bash loop outside MATLAB)
-# ───────────────────────────────────────────────────────────
-# Create temporary file in a more robust way
-TMP_DIR="${TMPDIR:-/tmp}"
-MATLAB_SCRIPT=$(mktemp -p "$TMP_DIR" batch_job_XXXXXX.m)
-
-if [[ ! -f "$MATLAB_SCRIPT" ]]; then
-    echo "ERROR: Failed to create temporary MATLAB script" >&2
-    exit 1
-fi
-
-# Ensure the script is deleted on exit
-trap 'rm -f "$MATLAB_SCRIPT"' EXIT
-
-# ───────────────────────────────────────────────────────────
-# 7.  Create MATLAB script with initialization
-# ─────────────────────────────────────────────────────────--
-# Write the MATLAB script header and initialization
-cat > "$MATLAB_SCRIPT" << 'EOL'
-% Add Code directory to path if not already there
-if isempty(which('run_navigation_cfg'))
-    addpath(fullfile(pwd, 'Code'));
-end
-
-% Ensure we have the required functions
-if ~exist('load_config', 'file') || ~exist('run_navigation_cfg', 'file')
-    error('Required functions not found. Make sure the Code directory is on your path.');
-end
-
-% Set up error handling
-original_warning_state = warning('off', 'all');
-cleanupObj = onCleanup(@() warning(original_warning_state));
-
-EOL
-
-# Add agent-specific code for each agent
-for AGENT_ID in $(seq $START_AGENT $END_AGENT); do
-  SEED=$AGENT_ID                       # reproducible 1-to-1 seed
-  OUT_DIR="${OUTPUT_BASE}/${EXPERIMENT_NAME}/${PLUME_NAME}_${SENSING_NAME}/${AGENT_ID}_${SEED}"
-  mkdir -p "$OUT_DIR"
-
-  # Add agent simulation code to MATLAB script
-  cat >> "$MATLAB_SCRIPT" << EOF
-% Agent $AGENT_ID (Seed: $SEED)
+cat >"$MATLAB_SCRIPT"<<MAT
+if isempty(which('run_navigation_cfg')), addpath(fullfile(pwd,'Code')); end
+ws=warning('off','all'); cleanupObj=onCleanup(@()warning(ws));
+MAT
+for AG in $(seq $START $END); do
+  cat >>"$MATLAB_SCRIPT"<<MAT
 try
-    % Load the base configuration
-    cfg = load_config('$PLUME_CONFIG');
-    
-    % Override with simulation-specific parameters
-    cfg.bilateral = $([[ $SENSING_NAME == "bilateral" ]] && echo 'true' || echo 'false');
-    cfg.randomSeed = $SEED;
-    cfg.ntrials = 1;
-    cfg.plotting = 0;
-    cfg.outputDir = '$OUT_DIR';
-    
-    % Run the simulation
-    fprintf('Starting simulation for seed %d...\\n', $SEED);
-    result = run_navigation_cfg(cfg);
-    
-    % Save the results
-    save(fullfile(cfg.outputDir, 'result.mat'), '-struct', 'result');
-    fprintf('Successfully completed simulation for seed %d\\n', cfg.randomSeed);
-    
-    % Clear large variables to save memory
-    clear result cfg;
-    
-catch ME
-    fprintf('Error in simulation (seed %d): %s\\n', $SEED, getReport(ME));
-    % Don't exit on error - continue with next agent
-    continue;
-end
-
-% Add a small pause to prevent file system overload
-pause(0.1);
-
-EOF
+  cfg = load_config('$PLUME_CONFIG');
+  cfg.plume_video = '$PLUME_VIDEO';
+  cfg.bilateral   = $( [[ $SENSE == bilateral ]] && echo true || echo false );
+  cfg.randomSeed  = $AG;
+  cfg.ntrials=1; cfg.plotting=0;
+  cfg.outputDir   = '$OUTPUT_BASE/$EXPERIMENT_NAME/${PLUME}_${SENSE}/${AG}_$AG';
+  mkdir(cfg.outputDir);
+  R = run_navigation_cfg(cfg);
+  save(fullfile(cfg.outputDir,'result.mat'),'R','-v7');
+catch ME, fprintf(2,'Seed %d: %s\\n',$AG,getReport(ME)); end
+pause(0.05);
+MAT
 done
+echo "exit" >>"$MATLAB_SCRIPT"
 
-echo "exit(0);" >> "$MATLAB_SCRIPT"
+########################  run MATLAB  ##############################
+matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT');" || { echo "MATLAB failed"; exit 1; }
 
-
-# ───────────────────────────────────────────────────────────
-# 8.  Launch MATLAB to run the generated file
-# ───────────────────────────────────────────────────────────
-echo "Running MATLAB with script: $MATLAB_SCRIPT"
-if ! matlab ${MATLAB_OPTIONS} -r \
-    "try, "\
-    "  addpath('Code'); "\
-    "  startup; "\
-    "  run('$MATLAB_SCRIPT'); "\
-    "catch ME, "\
-    "  fprintf('Error in MATLAB script: %s\\n', getReport(ME)); "\
-    "  exit(1); "\
-    "end, "\
-    "exit;"; then
-    echo "ERROR: MATLAB execution failed" >&2
-    exit 1
-fi
-
-# ───────────────────────────────────────────────────────────
-# 7.  Export results to processed format
-# ───────────────────────────────────────────────────────────
-echo "Exporting results to processed format..."
-
-# Create a temporary MATLAB script for exporting results
-EXPORT_SCRIPT=$(mktemp -p "$TMP_DIR" export_job_XXXXXX.m)
-trap 'rm -f "$EXPORT_SCRIPT"' EXIT
-
-# Find all result.mat files and create export commands
-find "$RAW_DIR" -name 'result.mat' | while read -r result_file; do
-    # Get the directory containing the result file
-    result_dir=$(dirname "$result_file")
-    
-    # Create corresponding processed directory structure
-    processed_dir=${result_dir/$RAW_DIR/}
-    processed_dir="data/processed${processed_dir}"
-    mkdir -p "$processed_dir"
-    
-    # Add export command to the script
-    cat >> "$EXPORT_SCRIPT" <<EOF
-try
-    export_results('$result_file', '$processed_dir', 'Format', 'both');
-    fprintf('Exported results to %s\\n', '$processed_dir');
-catch ME
-    fprintf('Error exporting %s: %s\\n', '$result_file', getReport(ME));
-end
-
-EOF
+########################  export CSV/JSON  #########################
+EXPORT_SCRIPT=$(mktemp -p "$TMPDIR" export_job_XXXX.m)
+find "$RAW_DIR" -name result.mat | while read -r f; do
+  out=${f/$RAW_DIR/data\/processed}; out=\${out%/result.mat}
+  mkdir -p "\$out"; echo "try,export_results('$f','\$out','Format','both');catch,end" >>"$EXPORT_SCRIPT"
 done
-
-# Add exit command to the script
-echo "exit;" >> "$EXPORT_SCRIPT"
-
-# Run the export script if we found any result files
-if [ -s "$EXPORT_SCRIPT" ]; then
-    echo "Running export script..."
-    if ! matlab -nodisplay -nosplash -r "run('$EXPORT_SCRIPT')"; then
-        echo "WARNING: Some exports may have failed" >&2
-    fi
-else
-    echo "No result files found to export"
-fi
-
-echo "Job completed successfully"
-exit 0
+echo "exit" >>"$EXPORT_SCRIPT"
+[[ -s "$EXPORT_SCRIPT" ]] && matlab -nodisplay -nosplash -r "run('$EXPORT_SCRIPT');" || true
+echo "Job finished."
