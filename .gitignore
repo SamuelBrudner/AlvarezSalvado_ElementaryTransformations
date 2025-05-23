@@ -55,6 +55,8 @@ venv.bak/
 *.log
 *.sql
 *.sqlite
+slurm*.out
+slurm*.err
 
 # Local development
 .env
