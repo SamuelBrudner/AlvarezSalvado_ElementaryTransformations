@@ -1,0 +1,30 @@
+{
+  "data_paths": {
+    "raw_data_dir": "data/raw",
+    "processed_data_dir": "data/processed",
+    "metadata_file": "data/metadata.csv"
+  },
+  "metadata_extraction": {
+    "plume_regex": "(gaussian|smoke)_([a-z]+)",
+    "mode_regex": "(bilateral|unilateral)"
+  },
+  "metrics_calculation": {
+    "velocity_threshold": 1.0,
+    "smoothing_window": 5
+  },
+  "aggregation_groups": ["plume_type", "sensing_mode"],
+  "plotting_parameters": {
+    "colors": {"gaussian": "blue", "smoke": "orange"},
+    "output_format": "png",
+    "metrics": ["velocity", "turning_rate"]
+  },
+  "statistical_tests": {
+    "significance_level": 0.05,
+    "tests": ["ttest", "anova"]
+  },
+  "output_paths": {
+    "figures": "figures",
+    "tables": "tables",
+    "processed": "analysis_results"
+  }
+}
