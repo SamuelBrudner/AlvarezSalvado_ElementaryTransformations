@@ -49,13 +49,10 @@ source setup_env.sh --dev
 conda activate .env
 ```
 
-The script creates (or updates) the `.env` environment from `environment.yml`.
-After activating the environment, run `pre-commit` hooks and the test suite:
+This installs the required packages and activates an environment named `.env`.
+The setup script also runs `pre-commit install` so formatting and tests run
+automatically before each commit.
 
-```bash
-pre-commit run --files <changed files>
-pytest
-```
 
 ## Data Organization
 
