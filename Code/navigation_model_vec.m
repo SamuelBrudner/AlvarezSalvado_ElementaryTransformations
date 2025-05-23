@@ -227,7 +227,11 @@ for i = 1:triallength
             ws=OLodorlib.(environment).ws;
          case {'gaussian', 'Gaussian'}
             odor(i,:) = pmax*exp(-(x(i,:).^2+y(i,:).^2)/(2*sigma^2));
-            ws = 0;
+            if exist('params','var') && isfield(params,'ws')
+                ws = params.ws;
+            else
+                ws = 0;
+            end
             p(i,:) = odor(i,:);
         case {'video'}
             tind = mod(i-1, size(plume.data,3)) + 1;
@@ -239,7 +243,11 @@ for i = 1:triallength
             for it = within
                 odor(i,it) = plume.data(yind(it), xind(it), tind);
             end
-            ws = 0;
+            if exist('params','var') && isfield(params,'ws')
+                ws = params.ws;
+            else
+                ws = 0;
+            end
 
     end
 
