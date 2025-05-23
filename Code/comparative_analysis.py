@@ -69,8 +69,10 @@ def generate_tables(records: List[Record], cfg: Dict[str, Any]) -> List[Path]:
                     vals = [r[m] for r in recs if m in r]
                     if stat == "mean":
                         row.append(_mean(vals))
+                    elif stat == "sem":
+                        row.append(_sem(vals))
                     else:
-                        row.append(_mean(vals))
+                        raise ValueError(f"Unsupported statistic: {stat}")
                 writer.writerow(row)
         output_files.append(outfile)
     return output_files
