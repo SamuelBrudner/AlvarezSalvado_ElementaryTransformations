@@ -35,10 +35,85 @@ The code simulates walking fruit flies navigating in different odor plumes. Seve
 Model parameters are defined in `Code/navigation_model_vec.m`. Data import functions for analyzing experimental trials are located in `Code/import functions feb2017`.
 ## Requirements
 
-- MATLAB (tested on **R2021a or later**).
+- **MATLAB** (tested on **R2021a or later**).
+- **Conda** (Miniconda or Anaconda) for Python environment management.
 - For the Crimaldi plume environment, download the file `10302017_10cms_bounded.hdf5` and place it in the `data/` directory.
-- Python packages listed in `environment.yml` for running analysis scripts and tests.
-- SciPy is required for reading MAT files in certain utilities.
+
+### Python Dependencies
+
+Python dependencies are managed using Conda and are split into two files:
+
+1. `environment.yml` - Core dependencies required for running the project
+2. `dev-environment.yml` - Additional development tools and dependencies (only needed for development)
+
+## Development Environment Setup
+
+1. **Set up the base environment**:
+   ```bash
+   # Create and activate the base environment
+   conda env create -f environment.yml
+   conda activate elementary
+   ```
+
+2. **For development, set up the development environment**:
+   ```bash
+   # Install development tools and dependencies
+   conda env update -f dev-environment.yml
+   ```
+
+3. **Alternative: Use the setup script**:
+   ```bash
+   # This will create a local environment in ./dev-env
+   ./setup_env.sh --dev
+   ```
+
+4. **Activate the development environment**:
+   ```bash
+   conda activate ./dev-env
+   ```
+
+5. **Install pre-commit hooks (optional but recommended)**:
+   ```bash
+   pre-commit install
+   ```
+
+### Running Tests
+
+To run the test suite:
+
+```bash
+# Run all tests
+pytest
+
+# Run a specific test file
+pytest tests/test_example.py
+
+# Run tests with more verbose output
+pytest -v
+```
+
+### Development Workflow
+
+1. Make your changes to the code
+2. Run tests to ensure nothing is broken
+3. The pre-commit hooks will automatically format and check your code when you commit
+4. Create a pull request with your changes
+
+## Configuration
+
+### Paths Configuration
+
+The project uses a centralized paths configuration file (`configs/paths.yaml`) that is automatically generated during setup. This file contains paths to important resources like data files and output directories.
+
+Key paths:
+- `crimaldi_hdf5`: Path to the Crimaldi HDF5 data file
+- `output.raw`: Directory for raw simulation outputs
+- `output.processed`: Directory for processed data
+- `output.figures`: Directory for generated figures
+
+To customize paths:
+1. Edit `configs/paths.yaml` after running the setup script
+2. Use environment variables in the template (e.g., `${PROJECT_DIR}/data/file.h5`)
 
 ### Development Environment
 

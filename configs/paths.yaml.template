@@ -1,0 +1,17 @@
+# Paths configuration
+# This file is auto-generated during setup - do not edit directly
+# Copy to paths.yaml and customize as needed
+
+# Path to the Crimaldi HDF5 data file
+# Place your HDF5 file in the data/ directory
+crimaldi_hdf5: "${PROJECT_DIR}/data/10302017_10cms_bounded.hdf5"
+
+# Temporary directory for processing
+# Uses system TMPDIR if available, falls back to /tmp
+tmp_dir: "${TMPDIR:-/tmp}"
+
+# Output directories (relative to project root)
+output:
+  raw: "data/raw"
+  processed: "data/processed"
+  figures: "figures"
