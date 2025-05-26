@@ -493,6 +493,84 @@ data_loading_options:
   load_config_used_yaml: true
 ```
 
+### Running the Python analysis pipeline
+
+Once processed simulation results are available you can execute the full
+analysis workflow with:
+
+```bash
+python Code/main_analysis.py configs/analysis_config.yaml
+```
+
+This script generates any requested tables and plots, then performs the
+statistical tests defined in the configuration. All tables and the
+resulting p-values are written to the directory specified by
+`output_paths.tables`.
+
+To compare the built‑in Crimaldi plume with a custom plume, include a
+`statistical_analysis` block in your YAML:
+
+```yaml
+statistical_analysis:
+  - test_type: t_test_ind
+    metric_name: success_rate
+    grouping_variable: plume_type
+    groups_to_compare:
+      - crimaldi
+      - custom_video
+```
+
+## Plume Intensity Utilities
+
+Two Python helper scripts simplify working with plume intensity data. See
+[docs/intensity_comparison.md](docs/intensity_comparison.md) for a concise
+overview of the workflow and example commands.
+
+### Characterize plume intensities
+
+`Code/characterize_plume_intensities.py` computes basic statistics for a plume
+and stores them in a JSON file. Use it for Crimaldi HDF5 files or for custom
+video plumes processed via MATLAB.
+
+```bash
+# Crimaldi plume example
+python Code/characterize_plume_intensities.py \
+    --plume_type crimaldi \
+    --file_path data/10302017_10cms_bounded.hdf5 \
+    --plume_id crimaldi \
+    --output_json plume_stats.json
+
+# Video plume example
+python Code/characterize_plume_intensities.py \
+    --plume_type video \
+    --file_path path/to/video_script.m \
+    --plume_id my_video \
+    --px_per_mm 20 \
+    --frame_rate 40 \
+    --matlab_exec /path/to/matlab \
+    --output_json plume_stats.json
+```
+
+``px_per_mm`` and ``frame_rate`` are inserted into the temporary MATLAB script
+before execution so that your MATLAB code can access these values as workspace
+variables.
+```
+
+### Compare intensity statistics
+
+`Code/compare_intensity_stats.py` reads intensity vectors from one or more HDF5
+files and prints a table of summary statistics or writes them to CSV.
+
+```bash
+# Display results in the terminal
+python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5
+    --matlab_exec /path/to/matlab
+
+# Write to CSV
+python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
+    --csv intensity_comparison.csv
+    --matlab_exec /path/to/matlab
+```
 
 
 ## Repository Layout
