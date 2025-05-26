@@ -10,9 +10,8 @@ from typing import Iterable, List, Tuple
 import numpy as np
 
 from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
-from Code.video_intensity import get_intensities_from_video_via_matlab
 from Code.intensity_stats import calculate_intensity_stats_dict
-
+from Code.video_intensity import get_intensities_from_video_via_matlab
 
 Stats = dict[str, float]
 
@@ -67,31 +66,37 @@ def compute_differences(results: Iterable[Tuple[str, Stats]]) -> Stats:
     return {
         "delta_mean": a["mean"] - b["mean"],
         "delta_median": a["median"] - b["median"],
+        "delta_p95": a["p95"] - b["p95"],
+        "delta_p99": a["p99"] - b["p99"],
+        "delta_min": a["min"] - b["min"],
+        "delta_max": a["max"] - b["max"],
+        "delta_count": a["count"] - b["count"],
     }
 
 
-def format_table(results: Iterable[Tuple[str, Stats]], diff: Stats | None = None) -> str:
+def format_table(
+    results: Iterable[Tuple[str, Stats]], diff: Stats | None = None
+) -> str:
     keys = ["mean", "median", "p95", "p99", "min", "max", "count"]
     header = ["identifier"] + keys
     lines = ["\t".join(header)]
     for ident, stats in results:
-        row = [ident] + [f"{stats[k]:.3f}" if k != "count" else str(stats[k]) for k in keys]
+        row = [ident] + [
+            f"{stats[k]:.3f}" if k != "count" else str(stats[k]) for k in keys
+        ]
         lines.append("\t".join(row))
     if diff is not None:
-        diff_row = [
-            "DIFF",
-            f"{diff['delta_mean']:.3f}",
-            f"{diff['delta_median']:.3f}",
-            "",
-            "",
-            "",
-            "",
+        diff_row = ["DIFF"] + [
+            (f"{diff['delta_' + k]:.3f}" if k != "count" else str(diff["delta_" + k]))
+            for k in keys
         ]
         lines.append("\t".join(diff_row))
     return "\n".join(lines)
 
 
-def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str, diff: Stats | None = None) -> None:
+def write_csv(
+    results: Iterable[Tuple[str, Stats]], csv_path: str, diff: Stats | None = None
+) -> None:
     keys = ["mean", "median", "p95", "p99", "min", "max", "count"]
     path = Path(csv_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -101,15 +106,18 @@ def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str, diff: Stats |
         for ident, stats in results:
             writer.writerow([ident] + [stats[k] for k in keys])
         if diff is not None:
-            writer.writerow([
-                "DIFF",
-                diff["delta_mean"],
-                diff["delta_median"],
-                "",
-                "",
-                "",
-                "",
-            ])
+            writer.writerow(
+                [
+                    "DIFF",
+                    diff["delta_mean"],
+                    diff["delta_median"],
+                    diff["delta_p95"],
+                    diff["delta_p99"],
+                    diff["delta_min"],
+                    diff["delta_max"],
+                    diff["delta_count"],
+                ]
+            )
 
 
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
@@ -120,8 +128,12 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         help="identifier [plume_type] path entries; plume_type optional",
     )
     parser.add_argument("--csv", dest="csv_path", help="Output CSV file")
-    parser.add_argument("--matlab_exec", default="matlab", help="Path to MATLAB executable")
-    parser.add_argument("--diff", action="store_true", help="Show differences for two datasets")
+    parser.add_argument(
+        "--matlab_exec", default="matlab", help="Path to MATLAB executable"
+    )
+    parser.add_argument(
+        "--diff", action="store_true", help="Show differences for two datasets"
+    )
     ns = parser.parse_args(argv)
 
     if len(ns.items) % 3 == 0:
@@ -131,8 +143,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         ]
     elif len(ns.items) % 2 == 0:
         entries = [
-            (ns.items[i], ns.items[i + 1], None)
-            for i in range(0, len(ns.items), 2)
+            (ns.items[i], ns.items[i + 1], None) for i in range(0, len(ns.items), 2)
         ]
     else:
         parser.error(
