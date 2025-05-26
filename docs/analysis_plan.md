@@ -10,7 +10,7 @@ This document describes a parameterized approach for processing simulation resul
   - `metrics_calculation` – parameters for computing metrics.
   - `aggregation_groups` – how to group results before summarising.
   - `plotting_parameters` – figure options and metrics to display.
-  - `statistical_tests` – tests to run and significance levels.
+  - `statistical_analysis` – tests to run and significance levels.
   - `output_paths` – directories for figures, tables and analysis outputs.
 
 The analysis scripts load this YAML at startup using `load_analysis_config`.
@@ -32,7 +32,7 @@ valid YAML.
 
 ## 5. Plotting and Statistical Tests
 - Plot appearance and output formats are controlled via `plotting_parameters`.
-- Statistical tests defined in `statistical_tests` are executed on the aggregated data.
+- Statistical tests defined in `statistical_analysis` are executed on the aggregated data.
 
 ## 6. Output
 - Tables, figures and processed analysis data are written to the paths given in `output_paths`.
