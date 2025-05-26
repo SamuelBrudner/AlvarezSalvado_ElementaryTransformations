@@ -1,0 +1,11 @@
+[project]
+name = "elementary-transformations"
+version = "0.1.0"
+dependencies = [
+  "numpy",
+  "scipy"
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
