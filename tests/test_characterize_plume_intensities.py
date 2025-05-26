@@ -1,9 +1,11 @@
-import os
+# ruff: noqa: E402
 import json
+import os
 import sys
 import types
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 def simple_stats(values):
     values = sorted(values)
@@ -32,6 +34,7 @@ def simple_stats(values):
         "count": n,
     }
     return stats
+
 
 sys.modules["Code.intensity_stats"] = types.SimpleNamespace(
     calculate_intensity_stats_dict=simple_stats
@@ -77,3 +80,15 @@ def test_corrupted_or_empty_file(tmp_path):
     data = json.loads(output.read_text())
     assert len(data) == 1
     assert data[0]["plume_id"] == "p1"
+
+
+def test_creates_parent_directory(tmp_path):
+    output = tmp_path / "missing" / "stats.json"
+
+    process_plume("p1", [1, 2], output)
+    assert output.exists()
+    data = json.loads(output.read_text())
+    assert len(data) == 1
+    expected = simple_stats([1, 2])
+    assert data[0]["plume_id"] == "p1"
+    assert data[0]["statistics"] == expected
