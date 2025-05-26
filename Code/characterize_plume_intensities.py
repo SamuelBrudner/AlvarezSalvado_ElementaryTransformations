@@ -33,15 +33,7 @@ def process_plume(
     if intensities:
         stats = calculate_intensity_stats_dict(intensities)
     else:
-        stats = {
-            "mean": float("nan"),
-            "median": float("nan"),
-            "p95": float("nan"),
-            "p99": float("nan"),
-            "min": float("nan"),
-            "max": float("nan"),
-            "count": 0,
-        }
+        stats = calculate_intensity_stats_dict([])
 
     new_entry = {
         "plume_id": plume_id,
