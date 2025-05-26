@@ -79,6 +79,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
         captured["px_per_mm"] = px_per_mm
         captured["frame_rate"] = frame_rate
         captured["matlab_exec"] = m
+        captured["script"] = s
         return [1.0, 2.0, 3.0]
 
     fake_vid = types.SimpleNamespace(

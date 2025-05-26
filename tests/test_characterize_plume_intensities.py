@@ -92,3 +92,22 @@ def test_creates_parent_directory(tmp_path):
     expected = simple_stats([1, 2])
     assert data[0]["plume_id"] == "p1"
     assert data[0]["statistics"] == expected
+
+def test_empty_intensities_calls_stats_function(monkeypatch, tmp_path):
+    import Code.characterize_plume_intensities as cpi
+
+    called = {}
+
+    def fake_calc(values):
+        called["vals"] = list(values)
+        return {"placeholder": True}
+
+    monkeypatch.setattr(cpi, "calculate_intensity_stats_dict", fake_calc)
+    out = tmp_path / "stats.json"
+
+    result = cpi.process_plume("pid", [], out)
+
+    assert called["vals"] == []
+    assert result["statistics"] == {"placeholder": True}
+    data = json.loads(out.read_text())
+    assert data[0]["statistics"] == {"placeholder": True}
