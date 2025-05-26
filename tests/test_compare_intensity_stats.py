@@ -7,6 +7,7 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from Code import compare_intensity_stats as cis
+import csv
 
 
 def create_hdf5(path, data):
@@ -87,3 +88,51 @@ def test_matlab_exec_option(monkeypatch, tmp_path):
         '--matlab_exec', '/opt/matlab',
     ])
     assert captured['matlab_exec'] == '/opt/matlab'
+
+
+def test_csv_output_and_directory_creation(monkeypatch, tmp_path):
+    hfile = tmp_path / 'c.h5'
+    arr_crim = np.array([5.0, 15.0], dtype=float)
+    create_hdf5(hfile, arr_crim)
+
+    script = tmp_path / 'video_script.m'
+    script.write_text("disp('hi')")
+    arr_vid = np.array([1.0, 2.0], dtype=float)
+
+    monkeypatch.setattr(
+        cis,
+        'get_intensities_from_video_via_matlab',
+        lambda s, m='matlab': arr_vid,
+    )
+
+    csv_path = tmp_path / 'nested' / 'results' / 'stats.csv'
+    cis.main([
+        'VID',
+        'video',
+        str(script),
+        'CRIM',
+        'crimaldi',
+        str(hfile),
+        '--csv',
+        str(csv_path),
+    ])
+
+    assert csv_path.exists()
+    assert csv_path.parent.is_dir()
+
+    with csv_path.open(newline='') as f:
+        rows = list(csv.reader(f))
+
+    assert rows[0][0] == 'identifier'
+    assert rows[1][0] == 'VID'
+    assert rows[2][0] == 'CRIM'
+
+    stats_vid = cis.calculate_intensity_stats_dict(arr_vid)
+    stats_crim = cis.calculate_intensity_stats_dict(arr_crim)
+
+    def approx_float(x):
+        return pytest.approx(float(x), rel=1e-3)
+
+    assert float(rows[1][1]) == approx_float(stats_vid['mean'])
+    assert float(rows[2][1]) == approx_float(stats_crim['mean'])
+
