@@ -1,8 +1,9 @@
 import os
 import sys
-import h5py
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy")
+h5py = pytest.importorskip("h5py")
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
