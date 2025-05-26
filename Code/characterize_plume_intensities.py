@@ -60,6 +60,7 @@ def process_plume(
 
     existing = [e for e in existing if e.get("plume_id") != plume_id]
     existing.append(new_entry)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(existing, indent=4))
     return new_entry
 

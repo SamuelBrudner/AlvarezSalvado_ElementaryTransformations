@@ -1,4 +1,10 @@
-"""Utilities for retrieving video intensities using MATLAB."""
+"""Utilities for retrieving video intensities using MATLAB.
+
+The helper function in this module writes a temporary MATLAB script to disk and
+executes it using ``matlab -batch``.  If ``px_per_mm`` and ``frame_rate`` values
+are supplied, they are inserted as variable assignments at the beginning of the
+script so that MATLAB code can access them directly.
+"""
 
 from __future__ import annotations
 
@@ -26,9 +32,12 @@ def get_intensities_from_video_via_matlab(
     matlab_exec_path : str
         Path to the MATLAB executable to run.
     px_per_mm : float, optional
-        Pixel-to-millimetre conversion factor used by the MATLAB script.
+        Pixel-to-millimetre conversion factor. When provided, ``px_per_mm`` is
+        inserted at the top of the generated MATLAB script so downstream
+        functions can access it as a workspace variable.
     frame_rate : float, optional
-        Frame rate of the video in Hz.
+        Frame rate of the video in Hz. As with ``px_per_mm``, the value is
+        embedded in the temporary MATLAB script for use by helper routines.
 
     Returns
     -------
@@ -39,7 +48,13 @@ def get_intensities_from_video_via_matlab(
     mat_path = None
     try:
         script_file = tempfile.NamedTemporaryFile(delete=False, suffix=".m")
-        script_file.write(script_contents.encode())
+        header_lines = []
+        if px_per_mm is not None:
+            header_lines.append(f"px_per_mm = {px_per_mm};")
+        if frame_rate is not None:
+            header_lines.append(f"frame_rate = {frame_rate};")
+        full_contents = "\n".join(header_lines + [script_contents])
+        script_file.write(full_contents.encode())
         script_file.flush()
         matlab_cmd = [matlab_exec_path, "-batch", Path(script_file.name).stem]
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)

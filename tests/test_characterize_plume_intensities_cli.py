@@ -110,6 +110,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
     assert captured["px_per_mm"] == 10
     assert captured["matlab_exec"] == "matlab"
     assert captured["frame_rate"] == 25
+    assert captured["script"] == script.read_text()
 
 
 def test_crimaldi_valid_arguments(monkeypatch, tmp_path):

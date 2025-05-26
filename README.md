@@ -549,6 +549,11 @@ python Code/characterize_plume_intensities.py \
     --output_json plume_stats.json
 ```
 
+``px_per_mm`` and ``frame_rate`` are inserted into the temporary MATLAB script
+before execution so that your MATLAB code can access these values as workspace
+variables.
+```
+
 ### Compare intensity statistics
 
 `Code/compare_intensity_stats.py` reads intensity vectors from one or more HDF5
