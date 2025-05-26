@@ -22,7 +22,10 @@ def test_compare_intensity_stats_table(tmp_path, capsys):
     create_hdf5(f1, arr1)
     create_hdf5(f2, arr2)
 
-    cis.main(['A', str(f1), 'B', str(f2)])
+    cis.main([
+        '--item', 'A', str(f1),
+        '--item', 'B', str(f2),
+    ])
     out = capsys.readouterr().out.strip().splitlines()
     assert out[0].startswith('identifier')
     assert out[1].split('\t')[0] == 'A'
@@ -51,12 +54,8 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
     )
 
     cis.main([
-        'VID',
-        'video',
-        str(script),
-        'CRIM',
-        'crimaldi',
-        str(hfile),
+        '--item', 'VID:video', str(script),
+        '--item', 'CRIM:crimaldi', str(hfile),
     ])
     out = capsys.readouterr().out.strip().splitlines()
     assert out[0].startswith('identifier')

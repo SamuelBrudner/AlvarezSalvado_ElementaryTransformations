@@ -79,27 +79,23 @@ def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str) -> None:
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
     parser = argparse.ArgumentParser(description="Compare intensity statistics")
     parser.add_argument(
-        "items",
-        nargs="+",
-        help="identifier [plume_type] path entries; plume_type optional",
+        "--item",
+        action="append",
+        nargs=2,
+        metavar=("ID[:TYPE]", "PATH"),
+        required=True,
+        help="Add a dataset: ID optionally followed by ':TYPE' and its PATH",
     )
     parser.add_argument("--csv", dest="csv_path", help="Output CSV file")
     ns = parser.parse_args(argv)
 
-    if len(ns.items) % 3 == 0:
-        entries = [
-            (ns.items[i], ns.items[i + 2], ns.items[i + 1])
-            for i in range(0, len(ns.items), 3)
-        ]
-    elif len(ns.items) % 2 == 0:
-        entries = [
-            (ns.items[i], ns.items[i + 1], None)
-            for i in range(0, len(ns.items), 2)
-        ]
-    else:
-        parser.error(
-            "Expected pairs (identifier path) or triples (identifier plume_type path)"
-        )
+    entries = []
+    for id_type, path in ns.item:
+        if ":" in id_type:
+            identifier, plume_type = id_type.split(":", 1)
+        else:
+            identifier, plume_type = id_type, None
+        entries.append((identifier, path, plume_type))
 
     results = compare_intensity_stats(entries)
 

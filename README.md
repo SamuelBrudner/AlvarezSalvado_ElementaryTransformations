@@ -555,10 +555,14 @@ files and prints a table of summary statistics or writes them to CSV.
 
 ```bash
 # Display results in the terminal
-python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5
+python Code/compare_intensity_stats.py \
+    --item A data/crimaldi.hdf5 \
+    --item B data/custom.hdf5
 
 # Write to CSV
-python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
+python Code/compare_intensity_stats.py \
+    --item A data/crimaldi.hdf5 \
+    --item B data/custom.hdf5 \
     --csv intensity_comparison.csv
 ```
 
