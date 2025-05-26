@@ -1,0 +1,13 @@
+name: elementary
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - h5py
+  - loguru
+  - pyyaml
+  - pytest
+  - matplotlib
+  - scipy

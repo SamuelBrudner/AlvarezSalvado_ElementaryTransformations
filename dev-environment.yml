@@ -1,0 +1,30 @@
+name: elementary-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Base environment dependencies
+  - python=3.11
+  - pandas
+  - numpy
+  - h5py
+  - loguru
+  - pyyaml
+  - matplotlib
+  - scipy
+  
+  # Development tools
+  - conda-lock>=2.0.0
+  - pre-commit
+  - pip
+  - pytest
+  - pytest-cov
+  - black
+  - isort
+  - flake8
+  - mypy
+  - types-PyYAML
+  - types-requests
+  - types-python-dateutil
+  - types-pytz
+  - types-six

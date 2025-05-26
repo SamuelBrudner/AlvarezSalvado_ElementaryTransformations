@@ -1,0 +1,10 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "Elementary Transformations Navigation Model",
+  "description": "MATLAB and Python code for simulating olfactory navigation in fruit flies",
+  "license": "MIT",
+  "codeRepository": "https://github.com/example/AlvarezSalvado_ElementaryTransformations",
+  "programmingLanguage": ["MATLAB", "Python"],
+  "version": "0.1.0"
+}

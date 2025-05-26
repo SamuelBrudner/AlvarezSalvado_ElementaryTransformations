@@ -14,4 +14,5 @@ function testLoadComplexConfig(testCase)
     verifyEqual(testCase, cfg.frame_rate, 60);
     verifyEqual(testCase, cfg.plotting, 0);
     verifyEqual(testCase, cfg.ntrials, 10);
+    verifyEqual(testCase, cfg.ws, 1);
 end
