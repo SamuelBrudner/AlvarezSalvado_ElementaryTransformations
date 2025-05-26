@@ -1,12 +1,44 @@
 import json
 import os
 import sys
+import types
 
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import types
+
+def simple_stats(values):
+    values = sorted(values)
+    n = len(values)
+
+    def pct(p):
+        k = (n - 1) * p / 100
+        f = int(k)
+        c = min(f + 1, n - 1)
+        if f == c:
+            return float(values[f])
+        return float(values[f] * (c - k) + values[c] * (k - f))
+
+    mean = sum(values) / n if n else float("nan")
+    if n % 2 == 1:
+        median = float(values[n // 2])
+    else:
+        median = (values[n // 2 - 1] + values[n // 2]) / 2
+    return {
+        "mean": float(mean),
+        "median": float(median),
+        "p95": pct(95),
+        "p99": pct(99),
+        "min": float(values[0]),
+        "max": float(values[-1]),
+        "count": n,
+    }
+
+
+sys.modules["Code.intensity_stats"] = types.SimpleNamespace(
+    calculate_intensity_stats_dict=simple_stats
+)
 
 from Code import characterize_plume_intensities as cpi
 
