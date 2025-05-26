@@ -1,31 +1,39 @@
+# ruff: noqa: E402
 import os
 import sys
 import types
-import yaml
-import builtins
+
 
 # Pre-insert dummy matplotlib before importing the module under test
 class DummyAx:
     def bar(self, *a, **k):
         pass
+
     def boxplot(self, *a, **k):
         pass
+
     def hist(self, *a, **k):
         pass
+
     def set_title(self, *a, **k):
         pass
+
     def set_ylabel(self, *a, **k):
         pass
+
     def set_xlabel(self, *a, **k):
         pass
+
 
 class DummyFig:
     def __init__(self, axes):
         self.axes = axes
+
     def tight_layout(self):
         pass
+
     def savefig(self, path):
-        with open(path, 'w') as _:
+        with open(path, "w") as _:
             pass
 
 
@@ -38,26 +46,26 @@ def dummy_subplots(nrows, ncols, figsize=None):
         return fig, axes[0]
     return fig, axes
 
+
 def dummy_close(fig):
     pass
 
-mpl = types.ModuleType('matplotlib')
+
+mpl = types.ModuleType("matplotlib")
 mpl.use = lambda *a, **k: None
-plt = types.ModuleType('matplotlib.pyplot')
+plt = types.ModuleType("matplotlib.pyplot")
 plt.subplots = dummy_subplots
 plt.close = dummy_close
 plt.bar = DummyAx().bar
 plt.boxplot = DummyAx().boxplot
 plt.hist = DummyAx().hist
 
-sys.modules.setdefault('matplotlib', mpl)
-sys.modules.setdefault('matplotlib.pyplot', plt)
+sys.modules.setdefault("matplotlib", mpl)
+sys.modules.setdefault("matplotlib.pyplot", plt)
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Code.generate_dashboard import generate_dashboard
-from Code.load_analysis_config import load_analysis_config
-
 
 SAMPLE_DATA = [
     {"metric": 1, "value": 10},
@@ -68,9 +76,7 @@ SAMPLE_DATA = [
 def test_bar_without_group(tmp_path):
     cfg = {
         "dashboard_layout": {
-            "subplots": [
-                {"metric": "value", "plot_type": "bar"}
-            ],
+            "subplots": [{"metric": "value", "plot_type": "bar"}],
             "output_filename": "dash.png",
         },
         "output_paths": {"figures": str(tmp_path)},
