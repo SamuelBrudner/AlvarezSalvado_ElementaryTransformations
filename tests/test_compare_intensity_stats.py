@@ -44,11 +44,13 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
     script.write_text("disp('hi')")
     arr_vid = np.array([1.0, 2.0, 3.0], dtype=float)
 
-    monkeypatch.setattr(
-        cis,
-        'get_intensities_from_video_via_matlab',
-        lambda s, m='matlab': arr_vid,
-    )
+    captured = {}
+
+    def fake_func(s, m='matlab'):
+        captured['matlab_exec'] = m
+        return arr_vid
+
+    monkeypatch.setattr(cis, 'get_intensities_from_video_via_matlab', fake_func)
 
     cis.main([
         'VID',
@@ -64,3 +66,24 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
     assert out[2].split('\t')[0] == 'CRIM'
     assert f"{arr_vid.mean():.3f}" in out[1]
     assert f"{arr_crim.mean():.3f}" in out[2]
+    assert captured['matlab_exec'] == 'matlab'
+
+def test_matlab_exec_option(monkeypatch, tmp_path):
+    script = tmp_path / 'video.m'
+    script.write_text('disp("hi")')
+    arr_vid = np.array([1.0], dtype=float)
+    captured = {}
+
+    def fake_func(s, m='matlab'):
+        captured['matlab_exec'] = m
+        return arr_vid
+
+    monkeypatch.setattr(cis, 'get_intensities_from_video_via_matlab', fake_func)
+
+    cis.main([
+        'V',
+        'video',
+        str(script),
+        '--matlab_exec', '/opt/matlab',
+    ])
+    assert captured['matlab_exec'] == '/opt/matlab'

@@ -78,7 +78,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
     def fake_vid_func(s, m, px_per_mm, frame_rate):
         captured["px_per_mm"] = px_per_mm
         captured["frame_rate"] = frame_rate
-        captured["script"] = s
+        captured["matlab_exec"] = m
         return [1.0, 2.0, 3.0]
 
     fake_vid = types.SimpleNamespace(
@@ -108,6 +108,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
     assert data[0]["plume_id"] == "pid"
     assert data[0]["statistics"]["count"] == 3
     assert captured["px_per_mm"] == 10
+    assert captured["matlab_exec"] == "matlab"
     assert captured["frame_rate"] == 25
     assert captured["script"] == script.read_text()
 
@@ -141,3 +142,26 @@ def test_crimaldi_valid_arguments(monkeypatch, tmp_path):
     data = json.loads(out_json.read_text())
     assert data[0]["plume_id"] == "pid"
     assert data[0]["statistics"]["count"] == 2
+
+def test_matlab_exec_option(monkeypatch, tmp_path):
+    script = tmp_path / "script.m"
+    script.write_text("disp('hi')")
+    out_json = tmp_path / "out.json"
+    fake_crim = types.SimpleNamespace(get_intensities_from_crimaldi=lambda p: [1])
+    captured = {}
+    def fake_vid_func(s, m, px_per_mm, frame_rate):
+        captured["matlab_exec"] = m
+        return [1]
+    fake_vid = types.SimpleNamespace(get_intensities_from_video_via_matlab=fake_vid_func)
+    sys.modules["Code.analyze_crimaldi_data"] = fake_crim
+    sys.modules["Code.video_intensity"] = fake_vid
+    cpi.main([
+        "--plume_type", "video",
+        "--file_path", str(script),
+        "--output_json", str(out_json),
+        "--plume_id", "pid",
+        "--px_per_mm", "10",
+        "--frame_rate", "25",
+        "--matlab_exec", "/custom/matlab",
+    ])
+    assert captured["matlab_exec"] == "/custom/matlab"
