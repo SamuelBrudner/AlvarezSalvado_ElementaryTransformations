@@ -78,6 +78,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
     def fake_vid_func(s, m, px_per_mm, frame_rate):
         captured["px_per_mm"] = px_per_mm
         captured["frame_rate"] = frame_rate
+        captured["script"] = s
         return [1.0, 2.0, 3.0]
 
     fake_vid = types.SimpleNamespace(
@@ -108,6 +109,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
     assert data[0]["statistics"]["count"] == 3
     assert captured["px_per_mm"] == 10
     assert captured["frame_rate"] == 25
+    assert captured["script"] == script.read_text()
 
 
 def test_crimaldi_valid_arguments(monkeypatch, tmp_path):

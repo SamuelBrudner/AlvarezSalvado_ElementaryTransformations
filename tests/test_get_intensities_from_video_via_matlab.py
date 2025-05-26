@@ -22,9 +22,7 @@ def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
 
     stdout = f"some log\nTEMP_MAT_FILE_SUCCESS:{mat_file}\n"
 
-    def fake_run(cmd, capture_output, text):
-        assert cmd[0] == matlab_exec
-        return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+    captured = {}
 
     created_files = []
     orig_ntf = tempfile.NamedTemporaryFile
@@ -33,7 +31,14 @@ def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
         kwargs.setdefault("delete", False)
         tmp = orig_ntf(*args, **kwargs)
         created_files.append(tmp.name)
+        captured["script_path"] = tmp.name
         return tmp
+
+    def fake_run(cmd, capture_output, text):
+        assert cmd[0] == matlab_exec
+        with open(captured["script_path"]) as fh:
+            captured["script_contents"] = fh.read()
+        return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     monkeypatch.setattr(tempfile, "NamedTemporaryFile", fake_ntf)
@@ -42,6 +47,9 @@ def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
         script_content, matlab_exec, px_per_mm=0.5, frame_rate=60.0
     )
     assert np.array_equal(arr, np.array([1, 2, 3], dtype=np.float32))
+
+    assert "px_per_mm = 0.5" in captured["script_contents"]
+    assert "frame_rate = 60.0" in captured["script_contents"]
 
     for f in created_files:
         assert not Path(f).exists(), f"temporary file {f} should be removed"
