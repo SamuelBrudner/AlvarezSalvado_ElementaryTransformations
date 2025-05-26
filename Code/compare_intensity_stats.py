@@ -58,17 +58,40 @@ def compare_intensity_stats(
     return results
 
 
-def format_table(results: Iterable[Tuple[str, Stats]]) -> str:
+def compute_differences(results: Iterable[Tuple[str, Stats]]) -> Stats:
+    """Return differences between two result dictionaries."""
+    res = list(results)
+    if len(res) != 2:
+        raise ValueError("Exactly two datasets are required to compute differences")
+    a, b = res[0][1], res[1][1]
+    return {
+        "delta_mean": a["mean"] - b["mean"],
+        "delta_median": a["median"] - b["median"],
+    }
+
+
+def format_table(results: Iterable[Tuple[str, Stats]], diff: Stats | None = None) -> str:
     keys = ["mean", "median", "p95", "p99", "min", "max", "count"]
     header = ["identifier"] + keys
     lines = ["\t".join(header)]
     for ident, stats in results:
         row = [ident] + [f"{stats[k]:.3f}" if k != "count" else str(stats[k]) for k in keys]
         lines.append("\t".join(row))
+    if diff is not None:
+        diff_row = [
+            "DIFF",
+            f"{diff['delta_mean']:.3f}",
+            f"{diff['delta_median']:.3f}",
+            "",
+            "",
+            "",
+            "",
+        ]
+        lines.append("\t".join(diff_row))
     return "\n".join(lines)
 
 
-def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str) -> None:
+def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str, diff: Stats | None = None) -> None:
     keys = ["mean", "median", "p95", "p99", "min", "max", "count"]
     path = Path(csv_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -77,6 +100,16 @@ def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str) -> None:
         writer.writerow(["identifier"] + keys)
         for ident, stats in results:
             writer.writerow([ident] + [stats[k] for k in keys])
+        if diff is not None:
+            writer.writerow([
+                "DIFF",
+                diff["delta_mean"],
+                diff["delta_median"],
+                "",
+                "",
+                "",
+                "",
+            ])
 
 
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
@@ -88,6 +121,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
     )
     parser.add_argument("--csv", dest="csv_path", help="Output CSV file")
     parser.add_argument("--matlab_exec", default="matlab", help="Path to MATLAB executable")
+    parser.add_argument("--diff", action="store_true", help="Show differences for two datasets")
     ns = parser.parse_args(argv)
 
     if len(ns.items) % 3 == 0:
@@ -106,11 +140,18 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         )
 
     results = compare_intensity_stats(entries, ns.matlab_exec)
+    if ns.diff:
+        try:
+            diff = compute_differences(results)
+        except ValueError as exc:
+            parser.error(str(exc))
+    else:
+        diff = None
 
     if ns.csv_path:
-        write_csv(results, ns.csv_path)
+        write_csv(results, ns.csv_path, diff)
     else:
-        print(format_table(results))
+        print(format_table(results, diff))
 
 
 if __name__ == "__main__":  # pragma: no cover

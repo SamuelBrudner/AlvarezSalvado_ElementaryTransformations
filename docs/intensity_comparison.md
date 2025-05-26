@@ -31,6 +31,21 @@ Use the `compare_intensity_stats.py` script with multiple input files. The scrip
 conda run --prefix ./dev-env python Code/compare_intensity_stats.py data/raw/plume1.hdf5 data/raw/plume2.hdf5
 ```
 
+To see the mean and median differences when exactly two datasets are provided, add the `--diff` option:
+
+```bash
+conda run --prefix ./dev-env python Code/compare_intensity_stats.py A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --diff
+```
+
+Sample output:
+
+```
+identifier    mean    median    p95    p99    min    max    count
+A              1.200   1.100     ...
+B              1.500   1.300     ...
+DIFF          -0.300  -0.200
+```
+
 Typical output:
 
 ```
