@@ -56,7 +56,7 @@ def get_intensities_from_video_via_matlab(
         full_contents = "\n".join(header_lines + [script_contents])
         script_file.write(full_contents.encode())
         script_file.flush()
-        matlab_cmd = [matlab_exec_path, "-batch", Path(script_file.name).stem]
+        matlab_cmd = [matlab_exec_path, "-batch", f"run('{script_file.name}')"]
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
             raise RuntimeError(f"MATLAB failed: {proc.stdout}\n{proc.stderr}")
