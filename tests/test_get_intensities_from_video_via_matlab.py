@@ -36,6 +36,8 @@ def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
 
     def fake_run(cmd, capture_output, text):
         assert cmd[0] == matlab_exec
+        assert cmd[1] == "-batch"
+        assert cmd[2] == f"run('{captured['script_path']}')"
         with open(captured["script_path"]) as fh:
             captured["script_contents"] = fh.read()
         return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
