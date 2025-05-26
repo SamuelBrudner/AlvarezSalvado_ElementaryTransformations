@@ -62,7 +62,15 @@ def process_plume(
 
 
 def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
-    """Command-line interface for characterizing plume intensities."""
+    """Command-line interface for characterizing plume intensities.
+
+    Parameters
+    ----------
+    args : list of str or None, optional
+        Command-line arguments. ``--px_per_mm`` and ``--frame_rate`` are passed
+        through to :func:`get_intensities_from_video_via_matlab` when processing
+        video plumes.
+    """
     import argparse
 
     from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
@@ -82,7 +90,12 @@ def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
         if ns.px_per_mm is None or ns.frame_rate is None:
             parser.error("--px_per_mm and --frame_rate are required for video plumes")
         script_contents = Path(ns.file_path).read_text()
-        intensities = get_intensities_from_video_via_matlab(script_contents, "matlab")
+        intensities = get_intensities_from_video_via_matlab(
+            script_contents,
+            "matlab",
+            px_per_mm=ns.px_per_mm,
+            frame_rate=ns.frame_rate,
+        )
     else:
         intensities = get_intensities_from_crimaldi(ns.file_path)
 

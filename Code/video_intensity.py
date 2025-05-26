@@ -11,8 +11,30 @@ import numpy as np
 from scipy.io import loadmat
 
 
-def get_intensities_from_video_via_matlab(script_contents: str, matlab_exec_path: str) -> np.ndarray:
-    """Run a MATLAB script and return the extracted intensity vector."""
+def get_intensities_from_video_via_matlab(
+    script_contents: str,
+    matlab_exec_path: str,
+    px_per_mm: float | None = None,
+    frame_rate: float | None = None,
+) -> np.ndarray:
+    """Run a MATLAB script and return the extracted intensity vector.
+
+    Parameters
+    ----------
+    script_contents : str
+        Contents of the MATLAB script to execute.
+    matlab_exec_path : str
+        Path to the MATLAB executable to run.
+    px_per_mm : float, optional
+        Pixel-to-millimetre conversion factor used by the MATLAB script.
+    frame_rate : float, optional
+        Frame rate of the video in Hz.
+
+    Returns
+    -------
+    numpy.ndarray
+        Flattened array of the intensity values extracted from the MAT-file.
+    """
     script_file = None
     mat_path = None
     try:
