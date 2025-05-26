@@ -8,10 +8,6 @@ set -o pipefail || true
 # Load utility functions
 source "$(dirname "$0")/setup_utils.sh"
 
-usage() {
-  echo "Usage: $0 [--dev] [--no-tests] [--help]"
-}
-
 # --- Configuration ---
 # Readonly constants for better maintainability
 readonly LOCAL_ENV_DIR="dev-env"
@@ -23,6 +19,16 @@ readonly PATHS_TEMPLATE="configs/paths.yaml.template"
 readonly PATHS_CONFIG="configs/paths.yaml"
 # ---
 
+# Setup usage function
+usage() {
+  log INFO "Usage: $0 [--dev] [--no-tests] [--help]"
+  log INFO "  --dev        Install development dependencies and set up pre-commit hooks"
+  log INFO "  --no-tests   Skip running tests after setup"
+  log INFO "  --help       Show this help message"
+  exit 0
+}
+
+# Parse command line arguments
 INSTALL_DEV_EXTRAS=0
 RUN_TESTS=1
 
@@ -30,16 +36,17 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --dev)
       INSTALL_DEV_EXTRAS=1
+      log INFO "Development mode enabled: Extras like dev-specific packages and pre-commit hooks will be set up."
       ;;
     --no-tests)
       RUN_TESTS=0
+      log INFO "Tests will be skipped after setup."
       ;;
     -h|--help)
       usage
-      exit 0
       ;;
     *)
-      echo "Unknown option: $1"
+      log ERROR "Unknown option: $1"
       usage
       exit 1
       ;;
@@ -47,140 +54,151 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-if [ "$INSTALL_DEV_EXTRAS" -eq 1 ]; then
-  log INFO "Development mode enabled: Extras like dev-specific packages and pre-commit hooks will be set up."
-fi
-
-# Check if conda is installed
-if ! command -v conda >/dev/null 2>&1; then
-  if [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
-    log WARNING "conda not found, installing Miniconda"
-    if ! command -v wget >/dev/null 2>&1; then
-      run_command_verbose apt-get update
-      run_command_verbose apt-get install -y wget bzip2
+# --- Main setup function ---
+setup_environment() {
+  section "Starting environment setup"
+  
+  # Check if conda is installed
+  if ! command -v conda >/dev/null 2>&1; then
+    if [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
+      log WARNING "conda not found, installing Miniconda"
+      if ! command -v wget >/dev/null 2>&1; then
+        run_command_verbose apt-get update
+        run_command_verbose apt-get install -y wget bzip2
+      fi
+      run_command_verbose wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
+      run_command_verbose bash /tmp/miniconda.sh -b -p "$HOME/miniconda"
+      export PATH="$HOME/miniconda/bin:$PATH"
+    else
+      error "conda is required but not found in PATH. Please install Miniconda or Anaconda."
     fi
-    run_command_verbose wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
-    run_command_verbose bash /tmp/miniconda.sh -b -p "$HOME/miniconda"
-    export PATH="$HOME/miniconda/bin:$PATH"
-  else
-    error "conda is required but not found in PATH. Please install Miniconda or Anaconda."
   fi
-fi
 
-# Initialize conda for this shell
-CONDA_BASE_DIR="$(conda info --base)"
-source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
-
-# Check if base environment file exists
-
-if [ ! -f "$BASE_ENV_FILE" ]; then
-  error "Base environment file '$BASE_ENV_FILE' not found in the current directory."
-fi
-
-# Ensure conda-lock is installed and generate lock file
-if ! command -v conda-lock >/dev/null 2>&1; then
-  log INFO "Installing conda-lock"
-  # Install conda-lock and ensure it's in the PATH
-  run_command_verbose conda install -y -n base -c conda-forge conda-lock
-  # Refresh the shell to update PATH
+  # Initialize conda for this shell
+  CONDA_BASE_DIR="$(conda info --base 2>/dev/null || echo "")"
+  if [ -z "$CONDA_BASE_DIR" ] || [ ! -d "$CONDA_BASE_DIR" ]; then
+    error "Failed to determine conda base directory"
+  fi
+  
+  # Source conda.sh safely
   if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
     source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
+  else
+    log WARNING "conda.sh not found in expected location, conda commands might not work correctly"
   fi
-  # Add conda to PATH if not already there
-  export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
-  # Verify installation
+
+  # Check if base environment file exists
+  if [ ! -f "$BASE_ENV_FILE" ]; then
+    error "Base environment file '$BASE_ENV_FILE' not found in the current directory."
+  fi
+
+  # Ensure conda-lock is installed and generate lock file
   if ! command -v conda-lock >/dev/null 2>&1; then
-    error "Failed to install conda-lock or make it available in PATH"
+    log INFO "Installing conda-lock"
+    run_command_verbose conda install -y -n base -c conda-forge conda-lock
+    
+    # Refresh the shell to update PATH
+    if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
+      source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
+    fi
+    
+    # Add conda to PATH if not already there
+    export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
+    
+    # Verify installation
+    if ! command -v conda-lock >/dev/null 2>&1; then
+      error "Failed to install conda-lock or make it available in PATH"
+    fi
   fi
-fi
 
-# Get platform information safely
-if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
-  # Fallback for older conda versions or if json parsing fails
-  PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
-  log WARNING "Could not detect conda platform, using fallback: $PLATFORM"
-fi
+  # Get platform information safely
+  if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
+    # Fallback for older conda versions or if json parsing fails
+    PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+    log WARNING "Could not detect conda platform, using fallback: $PLATFORM"
+  fi
 
-# Always regenerate lock file to ensure consistency
-log INFO "Generating conda-lock.yml for $PLATFORM"
-if [ -f "conda-lock.yml" ]; then
-  rm -f "conda-lock.yml"
-fi
+  # Always regenerate lock file to ensure consistency
+  section "Generating conda environment lock file"
+  log INFO "Generating conda-lock.yml for $PLATFORM"
+  
+  if [ -f "conda-lock.yml" ]; then
+    log INFO "Removing existing conda-lock.yml"
+    rm -f "conda-lock.yml"
+  fi
 
-# Get conda-lock version to handle different versions
-CONDA_LOCK_VERSION=$(conda-lock --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+  # Get conda-lock version to handle different versions
+  CONDA_LOCK_VERSION=$(conda-lock --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "")
 
-if [ -z "$CONDA_LOCK_VERSION" ]; then
-  # If we can't determine version, try without --overwrite
-  run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
-else
-  # For versions that support --overwrite
-  run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml --overwrite 2>/dev/null || \
+  log INFO "Creating conda-lock file from $BASE_ENV_FILE"
+  if [ -z "$CONDA_LOCK_VERSION" ]; then
+    # If we can't determine version, try without --overwrite
     run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
-fi
+  else
+    # For versions that support --overwrite
+    run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml --overwrite 2>/dev/null || \
+      run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
+  fi
 
-# Create/update the local prefix environment
-# The environment will be located at "./$LOCAL_ENV_DIR"
-section "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
-if [ -f "conda-lock.yml" ]; then
-  run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
-else
-  run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
-fi
-log SUCCESS "Base environment './${LOCAL_ENV_DIR}' created/updated successfully."
+  # Create/update the local prefix environment
+  section "Setting up Conda environment"
+  log INFO "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
+  
+  if [ -f "conda-lock.yml" ]; then
+    run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
+  else
+    log WARNING "conda-lock.yml not found, falling back to direct environment creation"
+    run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
+  fi
+  
+  log SUCCESS "Base environment './${LOCAL_ENV_DIR}' created/updated successfully."
 
-# Create/update the local prefix environment
-# The environment will be located at "./$LOCAL_ENV_DIR"
+  # Install development dependencies and set up pre-commit if --dev flag is present
+  if [ "$INSTALL_DEV_EXTRAS" -eq 1 ]; then
+    setup_development_environment
+  fi
+  
+  # Run tests if requested
+  if [ "$RUN_TESTS" -eq 1 ]; then
+    run_tests
+  fi
+  
+  log SUCCESS "Environment setup completed successfully!"
+  log INFO "To activate the Conda environment, run: conda activate \"$PWD/${LOCAL_ENV_DIR}\""
+}
 
-# Install development dependencies and set up pre-commit if --dev flag is present
-if [ "$INSTALL_DEV_EXTRAS" -eq 1 ]; then
-  section "Processing development extras"
-
+# --- Development environment setup ---
+setup_development_environment() {
+  section "Setting up development environment"
+  
   # Install development environment if the file exists
   if [ -f "$DEV_ENV_FILE" ]; then
-    section "Installing development environment from '$DEV_ENV_FILE'"
+    log INFO "Installing development environment from '$DEV_ENV_FILE'"
     run_command_verbose conda env update --prefix "./$LOCAL_ENV_DIR" -f "$DEV_ENV_FILE" --prune
     log SUCCESS "Development environment from '$DEV_ENV_FILE' updated successfully."
   else
     log WARNING "Development mode enabled, but '$DEV_ENV_FILE' not found. Using base environment."
   fi
 
-  # All development dependencies are handled by dev-environment.yml
+  # Setup pre-commit hooks
+  setup_pre_commit
+}
 
-  # Install pre-commit and set up hooks
-  # pre-commit should be listed as a dependency in your environment.yml or requirements-dev.txt
+# --- Pre-commit setup ---
+setup_pre_commit() {
   # Check if pre-commit is installed in the target environment
   if ! conda run --prefix "./${LOCAL_ENV_DIR}" pre-commit --version >/dev/null 2>&1; then
     log INFO "Installing pre-commit into ${LOCAL_ENV_DIR}..."
     if ! conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge pre-commit; then
-      error "Failed to install pre-commit. Add it to '${BASE_ENV_FILE}' or '${DEV_REQUIREMENTS_FILE}'."
+      log ERROR "Failed to install pre-commit. Add it to '${BASE_ENV_FILE}' or '${DEV_ENV_FILE}'."
+      return 1
     fi
   fi
 
   # Generate pre-commit config from template if template exists
-  setup_pre_commit_config() {
-    local env_path="${PWD}/${LOCAL_ENV_DIR}"
-    local conda_prefix
-    
-    # Safely get conda prefix
-    if ! conda_prefix="$(conda info --base 2>/dev/null)"; then
-      conda_prefix="${CONDA_PREFIX:-/opt/conda}"  # Fallback default
-      log WARNING "Could not determine conda base directory, using fallback: ${conda_prefix}"
-    fi
-    
-    if [ -f "${PRE_COMMIT_TEMPLATE}" ]; then
-      log INFO "Generating pre-commit configuration..."
-      if ! sed -e "s|{{ENV_PATH}}|${env_path}|g" \
-               -e "s|{{CONDA_PREFIX}}|${conda_prefix}|g" \
-               "${PRE_COMMIT_TEMPLATE}" > "${PRE_COMMIT_CONFIG}"; then
-        error "Failed to generate ${PRE_COMMIT_CONFIG} from template"
-      fi
-      log SUCCESS "Generated ${PRE_COMMIT_CONFIG} from template"
-    fi
-  }
-
-  # Generate the config from template if it exists
-  setup_pre_commit_config
+  if [ -f "${PRE_COMMIT_TEMPLATE}" ]; then
+    generate_pre_commit_config
+  fi
   
   # Set up the hooks if config exists
   if [ -f "$PRE_COMMIT_CONFIG" ]; then
@@ -189,9 +207,88 @@ if [ "$INSTALL_DEV_EXTRAS" -eq 1 ]; then
       log SUCCESS "Pre-commit hooks set up successfully."
     else
       log WARNING "Failed to set up pre-commit hooks, but pre-commit command was found."
+      return 1
     fi
+  else
+    log WARNING "No pre-commit configuration found. Skipping pre-commit setup."
   fi
-fi
+}
+
+# --- Generate pre-commit config from template ---
+generate_pre_commit_config() {
+  local env_path="${PWD}/${LOCAL_ENV_DIR}"
+  local conda_prefix
+  
+  # Safely get conda prefix
+  if ! conda_prefix="$(conda info --base 2>/dev/null)"; then
+    conda_prefix="${CONDA_PREFIX:-/opt/conda}"  # Fallback default
+    log WARNING "Could not determine conda base directory, using fallback: ${conda_prefix}"
+  fi
+  
+  log INFO "Generating pre-commit configuration from template..."
+  
+  # Create backup if file exists
+  if [ -f "${PRE_COMMIT_CONFIG}" ]; then
+    mv "${PRE_COMMIT_CONFIG}" "${PRE_COMMIT_CONFIG}.bak"
+    log INFO "Backed up existing ${PRE_COMMIT_CONFIG} to ${PRE_COMMIT_CONFIG}.bak"
+  fi
+  
+  # Process template
+  if ! sed -e "s|{{ENV_PATH}}|${env_path}|g" \
+           -e "s|{{CONDA_PREFIX}}|${conda_prefix}|g" \
+           "${PRE_COMMIT_TEMPLATE}" > "${PRE_COMMIT_CONFIG}"; then
+    # Restore backup if processing failed
+    if [ -f "${PRE_COMMIT_CONFIG}.bak" ]; then
+      mv "${PRE_COMMIT_CONFIG}.bak" "${PRE_COMMIT_CONFIG}"
+    fi
+    log ERROR "Failed to generate ${PRE_COMMIT_CONFIG} from template"
+    return 1
+  fi
+  
+  # Remove backup if successful
+  if [ -f "${PRE_COMMIT_CONFIG}.bak" ]; then
+    rm -f "${PRE_COMMIT_CONFIG}.bak"
+  fi
+  
+  log SUCCESS "Generated ${PRE_COMMIT_CONFIG} from template"
+}
+
+# --- Run tests ---
+run_tests() {
+  section "Running tests"
+  
+  # Get the absolute path to the project root
+  PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  
+  # Check if pytest is available
+  if conda run --prefix "./${LOCAL_ENV_DIR}" python -m pytest --version >/dev/null 2>&1; then
+    log INFO "Running tests with pytest..."
+    if conda run --prefix "./${LOCAL_ENV_DIR}" python -m pytest -v tests/; then
+      log SUCCESS "All tests passed!"
+    else
+      log WARNING "Some tests failed. Continuing with setup..."
+    fi
+  else
+    log WARNING "pytest not found in the environment. Skipping tests."
+  fi
+}
+
+# --- Main execution ---
+main() {
+  # Create a trap to handle early exits
+  trap 'log ERROR "Setup was interrupted. Cleaning up..."' INT TERM
+  
+  # Run the main setup
+  setup_environment
+  
+  # Clear the trap on successful completion
+  trap - INT TERM
+  
+  exit 0
+}
+
+# Run the main function
+main "$@"
 
 if [ "$RUN_TESTS" -eq 1 ]; then
   section "Running tests"

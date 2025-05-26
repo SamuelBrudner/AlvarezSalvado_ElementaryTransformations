@@ -1,43 +1,52 @@
 #!/bin/bash
 # Utility functions for setup scripts
 
-# Colors for log output
-COLOR_INFO="\033[1;34m"
-COLOR_SUCCESS="\033[1;32m"
-COLOR_WARNING="\033[1;33m"
-COLOR_ERROR="\033[1;31m"
-COLOR_RESET="\033[0m"
-
 log() {
-    local level="$1"
-    shift
-    local color="$COLOR_INFO"
-    case "$level" in
-        INFO) color="$COLOR_INFO" ;;
-        SUCCESS) color="$COLOR_SUCCESS" ;;
-        WARNING) color="$COLOR_WARNING" ;;
-        ERROR) color="$COLOR_ERROR" ;;
-    esac
-    echo -e "$(date '+%Y-%m-%d %H:%M:%S') ${color}${level}${COLOR_RESET}: $*"
+  local level="$1"
+  shift
+  local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+
+  # Define colors
+  local color_reset="\e[0m"
+  local color_info="\e[34m"
+  local color_success="\e[32m"
+  local color_warning="\e[33m"
+  local color_error="\e[31m"
+
+  # Set color based on log level
+  local color="$color_info"
+  case "$level" in
+    INFO) color="$color_info" ;;
+    SUCCESS) color="$color_success" ;;
+    WARNING) color="$color_warning" ;;
+    ERROR) color="$color_error" ;;
+  esac
+
+  # Log to stderr for errors, stdout for everything else
+  if [ "$level" = "ERROR" ]; then
+    echo -e "${color}[$timestamp] [$level] $*${color_reset}" >&2
+  else
+    echo -e "${color}[$timestamp] [$level] $*${color_reset}"
+  fi
 }
 
 section() {
-    echo
-    echo "---- $* ----"
+  echo
+  log INFO "---- $* ----"
 }
 
 error() {
-    log ERROR "$*" >&2
-    exit 1
+  log ERROR "$*"
+  exit 1
 }
 
 run_command_verbose() {
-    log INFO "Running: $*"
-    "$@"
-    local status=$?
-    if [ $status -ne 0 ]; then
-        log ERROR "Command failed with status $status: $*"
-    fi
+  log INFO "Running: $*"
+  "$@"
+  local status=$?
+  if [ $status -ne 0 ]; then
+    log ERROR "Command failed with status $status: $*"
     return $status
+  fi
+  return 0
 }
-
