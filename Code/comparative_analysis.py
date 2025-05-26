@@ -89,32 +89,36 @@ def run_statistical_tests(records: List[Record], cfg: Dict[str, Any]) -> List[Di
     Parameters
     ----------
     records : list of dict
-        Collection of input measurements. Each record should contain at least
-        the metric to analyse as well as the variable used for grouping.
+        List of metric records to compare.
     cfg : dict
-        Analysis configuration. ``cfg['statistical_analysis']`` must be a list
-        of dictionaries with the following keys:
-
-        ``test_type``
-            Name of the statistical test to perform. Only ``"t_test_ind"`` is
-            currently supported.
-        ``metric_name``
-            Key in ``records`` holding the numeric metric to compare.
-        ``grouping_variable``
-            Key in ``records`` that defines the group membership of each
-            observation.
-        ``groups_to_compare``
-            Two-element list specifying the values of the grouping variable that
-            should be contrasted.
-        ``alpha_level``
-            Optional significance level. It is not used by this function but is
-            included to mirror the expected configuration schema.
+        Analysis configuration dictionary.
+        ``cfg['statistical_analysis']`` should be a list of mappings with keys:
+        ``test_type`` (only ``"t_test_ind"`` is supported), ``metric_name``,
+        ``grouping_variable``, ``groups_to_compare`` (two group labels) and an
+        optional ``alpha_level``.
 
     Returns
     -------
     list of dict
-        List of result dictionaries. Each entry summarises one test and contains
-        ``metric``, ``groups``, ``t_stat``, and ``p_value``.
+        Each entry contains ``metric``, ``groups``, ``t_stat`` and ``p_value``.
+
+    Examples
+    --------
+    >>> cfg = {
+    ...     "statistical_analysis": [
+    ...         {
+    ...             "test_type": "t_test_ind",
+    ...             "metric_name": "success_rate",
+    ...             "grouping_variable": "plume_type",
+    ...             "groups_to_compare": ["crimaldi", "custom_video"],
+    ...         }
+    ...     ]
+    ... }
+    >>> run_statistical_tests([
+    ...     {"plume_type": "crimaldi", "success_rate": 0.8},
+    ...     {"plume_type": "custom_video", "success_rate": 0.5},
+    ... ], cfg)
+    [{'metric': 'success_rate', 'groups': ['crimaldi', 'custom_video'], 't_stat': ... , 'p_value': ...}]
     """
     tests_cfg = cfg.get("statistical_analysis", [])
     results = []
