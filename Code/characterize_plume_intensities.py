@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import List, Dict, Any
 import statistics
+from pathlib import Path
+from typing import Any, Dict, List
 
 
-def process_plume(plume_id: str, intensities: List[float], output_json: Path | str) -> Dict[str, Any]:
+def process_plume(
+    plume_id: str, intensities: List[float], output_json: Path | str
+) -> Dict[str, Any]:
     """Compute statistics for a plume and update an output JSON file.
 
     Parameters
@@ -59,13 +61,36 @@ def process_plume(plume_id: str, intensities: List[float], output_json: Path | s
     return new_entry
 
 
-if __name__ == "__main__":  # pragma: no cover - simple CLI for manual use
+def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
+    """Command-line interface for characterizing plume intensities."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Characterize plume intensities")
-    parser.add_argument("plume_id", help="Identifier for the plume")
-    parser.add_argument("intensities", nargs="+", type=float, help="Intensity values")
-    parser.add_argument("output_json", help="Path to the output JSON file")
+    from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
+    from Code.video_intensity import get_intensities_from_video_via_matlab
 
-    args = parser.parse_args()
-    process_plume(args.plume_id, args.intensities, args.output_json)
+    parser = argparse.ArgumentParser(description="Characterize plume intensities")
+    parser.add_argument("--plume_type", choices=["crimaldi", "video"], required=True)
+    parser.add_argument("--file_path", required=True)
+    parser.add_argument("--plume_id", required=True)
+    parser.add_argument("--output_json", required=True)
+    parser.add_argument("--px_per_mm", type=float)
+    parser.add_argument("--frame_rate", type=float)
+
+    ns = parser.parse_args(args)
+
+    if ns.plume_type == "video":
+        if ns.px_per_mm is None or ns.frame_rate is None:
+            parser.error("--px_per_mm and --frame_rate are required for video plumes")
+        script_contents = Path(ns.file_path).read_text()
+        intensities = get_intensities_from_video_via_matlab(script_contents, "matlab")
+    else:
+        intensities = get_intensities_from_crimaldi(ns.file_path)
+
+    if hasattr(intensities, "tolist"):
+        intensities = intensities.tolist()
+
+    process_plume(ns.plume_id, intensities, ns.output_json)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()

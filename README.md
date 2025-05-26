@@ -493,6 +493,32 @@ data_loading_options:
   load_config_used_yaml: true
 ```
 
+### Running the Python analysis pipeline
+
+Once processed simulation results are available you can execute the full
+analysis workflow with:
+
+```bash
+python Code/main_analysis.py configs/analysis_config.yaml
+```
+
+This script generates any requested tables and plots, then performs the
+statistical tests defined in the configuration. All tables and the
+resulting p-values are written to the directory specified by
+`output_paths.tables`.
+
+To compare the built‑in Crimaldi plume with a custom plume, include a
+`statistical_analysis` block in your YAML:
+
+```yaml
+statistical_analysis:
+  - test_type: t_test_ind
+    metric_name: success_rate
+    grouping_variable: plume_type
+    groups_to_compare:
+      - crimaldi
+      - custom_video
+```
 
 
 ## Repository Layout
