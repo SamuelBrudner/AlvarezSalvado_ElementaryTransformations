@@ -71,11 +71,14 @@ plotting_parameters:
     - velocity
     - turning_rate
 
-statistical_tests:
-  significance_level: 0.05
-  tests:
-    - ttest
-    - anova
+statistical_analysis:
+  - test_type: t_test_ind
+    metric_name: success_rate
+    grouping_variable: plume_type
+    groups_to_compare:
+      - gaussian
+      - smoke
+    alpha_level: 0.05
 
 output_paths:
   figures: figures
