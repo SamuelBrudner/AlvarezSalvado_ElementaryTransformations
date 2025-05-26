@@ -1,6 +1,7 @@
 # Intensity Dataset Comparison
 
 This page describes how to characterise the intensity of individual odour plumes and how to compare multiple intensity datasets.
+Before running any commands, create the development environment using `./setup_env.sh --dev`.
 
 ## Characterising a Single Plume
 
@@ -40,10 +41,10 @@ conda run --prefix ./dev-env python Code/compare_intensity_stats.py A data/raw/p
 Sample output:
 
 ```
-identifier    mean    median    p95    p99    min    max    count
-A              1.200   1.100     ...
-B              1.500   1.300     ...
-DIFF          -0.300  -0.200
+identifier	mean	median	p95	p99	min	max	count
+A	1.200	1.100	...
+B	1.500	1.300	...
+DIFF	-0.300	-0.200				
 ```
 
 Typical output:
@@ -57,5 +58,5 @@ Figure saved to figures/intensity_comparison.png
 
 ## Notes
 
-- All commands assume the development environment created via `setup_env.sh --dev`.
+- All commands assume the development environment created via `./setup_env.sh --dev`.
 - Output paths are controlled by `configs/paths.yaml`.
