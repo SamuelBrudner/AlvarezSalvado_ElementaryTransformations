@@ -493,6 +493,29 @@ data_loading_options:
   load_config_used_yaml: true
 ```
 
+## Plume Intensity Analysis
+
+Before launching large simulation batches, characterize the intensity range of
+each plume. The script `Code/characterize_plume_intensities.py` reads a text
+file of intensities and appends summary statistics to a JSON record.
+
+```bash
+conda run -p ./dev-env python Code/characterize_plume_intensities.py \
+    CRIMALDI data/crimaldi/intensities.txt plume_intensity_stats.json
+```
+
+The statistics are written to `plume_intensity_stats.json` in the working
+directory. After processing all plumes, compare them with
+`Code/compare_intensity_stats.py`:
+
+```bash
+conda run -p ./dev-env python Code/compare_intensity_stats.py \
+    plume_intensity_stats.json
+```
+
+This prints a table of means and standard deviations to the console and writes
+an HTML report to `figures/intensity_comparison.html`.
+
 
 
 ## Repository Layout
