@@ -70,6 +70,7 @@ def format_table(results: Iterable[Tuple[str, Stats]]) -> str:
 
 def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str) -> None:
     keys = ["mean", "median", "p95", "p99", "min", "max", "count"]
+    Path(csv_path).parent.mkdir(parents=True, exist_ok=True)
     with open(csv_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["identifier"] + keys)
