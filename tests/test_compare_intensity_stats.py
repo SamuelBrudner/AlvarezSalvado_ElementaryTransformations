@@ -87,3 +87,19 @@ def test_matlab_exec_option(monkeypatch, tmp_path):
         '--matlab_exec', '/opt/matlab',
     ])
     assert captured['matlab_exec'] == '/opt/matlab'
+
+
+def test_csv_option_creates_nested_path(tmp_path):
+    hfile = tmp_path / 'vals.h5'
+    arr = np.array([1.0, 2.0])
+    create_hdf5(hfile, arr)
+    csv_path = tmp_path / 'nested' / 'dir' / 'stats.csv'
+
+    cis.main([
+        'ID',
+        str(hfile),
+        '--csv',
+        str(csv_path),
+    ])
+
+    assert csv_path.is_file()
