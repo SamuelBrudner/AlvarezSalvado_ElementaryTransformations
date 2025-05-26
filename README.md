@@ -522,7 +522,9 @@ statistical_analysis:
 
 ## Plume Intensity Utilities
 
-Two Python helper scripts simplify working with plume intensity data.
+Two Python helper scripts simplify working with plume intensity data. See
+[docs/intensity_comparison.md](docs/intensity_comparison.md) for a concise
+overview of the workflow and example commands.
 
 ### Characterize plume intensities
 
