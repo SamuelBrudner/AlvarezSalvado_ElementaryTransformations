@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
-import statistics
 from pathlib import Path
 from typing import Any, Dict, List
+
+from Code.intensity_stats import calculate_intensity_stats_dict
 
 
 def process_plume(
@@ -30,19 +31,21 @@ def process_plume(
     output_path = Path(output_json)
 
     if intensities:
-        mean_val = statistics.mean(intensities)
-        std_val = statistics.stdev(intensities) if len(intensities) > 1 else 0.0
+        stats = calculate_intensity_stats_dict(intensities)
     else:
-        mean_val = float("nan")
-        std_val = float("nan")
+        stats = {
+            "mean": float("nan"),
+            "median": float("nan"),
+            "p95": float("nan"),
+            "p99": float("nan"),
+            "min": float("nan"),
+            "max": float("nan"),
+            "count": 0,
+        }
 
     new_entry = {
         "plume_id": plume_id,
-        "statistics": {
-            "mean": mean_val,
-            "std": std_val,
-            "count": len(intensities),
-        },
+        "statistics": stats,
     }
 
     if output_path.exists():
