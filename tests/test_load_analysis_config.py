@@ -11,3 +11,5 @@ def test_load_analysis_config():
     assert cfg['data_paths']['raw_data_dir'] == 'data/raw'
     assert 'metrics_calculation' in cfg
     assert 'output_paths' in cfg
+    assert 'statistical_analysis' in cfg
+    assert 'statistical_tests' not in cfg
