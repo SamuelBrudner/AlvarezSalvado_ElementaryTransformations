@@ -14,6 +14,16 @@ except Exception as exc:  # pragma: no cover
 def calculate_intensity_stats_dict(intensities: Sequence[float]) -> Dict[str, float]:
     """Return basic statistics for the provided intensities."""
     arr = np.asarray(intensities, dtype=float)
+    if arr.size == 0:
+        return {
+            "mean": float("nan"),
+            "median": float("nan"),
+            "p95": float("nan"),
+            "p99": float("nan"),
+            "min": float("nan"),
+            "max": float("nan"),
+            "count": 0,
+        }
     stats = {
         "mean": float(arr.mean()),
         "median": float(np.median(arr)),
