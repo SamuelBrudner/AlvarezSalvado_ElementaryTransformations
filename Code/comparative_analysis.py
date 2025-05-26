@@ -84,9 +84,41 @@ def _normal_p_value(t_stat: float) -> float:
 
 
 def run_statistical_tests(records: List[Record], cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Run statistical tests specified in the config.
+    """Run statistical tests specified in ``cfg``.
 
-    Currently supports independent t-tests.
+    Parameters
+    ----------
+    records : list of dict
+        List of metric records to compare.
+    cfg : dict
+        Analysis configuration dictionary.
+        ``cfg['statistical_analysis']`` should be a list of mappings with keys:
+        ``test_type`` (only ``"t_test_ind"`` is supported), ``metric_name``,
+        ``grouping_variable``, ``groups_to_compare`` (two group labels) and an
+        optional ``alpha_level``.
+
+    Returns
+    -------
+    list of dict
+        Each entry contains ``metric``, ``groups``, ``t_stat`` and ``p_value``.
+
+    Examples
+    --------
+    >>> cfg = {
+    ...     "statistical_analysis": [
+    ...         {
+    ...             "test_type": "t_test_ind",
+    ...             "metric_name": "success_rate",
+    ...             "grouping_variable": "plume_type",
+    ...             "groups_to_compare": ["crimaldi", "custom_video"],
+    ...         }
+    ...     ]
+    ... }
+    >>> run_statistical_tests([
+    ...     {"plume_type": "crimaldi", "success_rate": 0.8},
+    ...     {"plume_type": "custom_video", "success_rate": 0.5},
+    ... ], cfg)
+    [{'metric': 'success_rate', 'groups': ['crimaldi', 'custom_video'], 't_stat': ... , 'p_value': ...}]
     """
     tests_cfg = cfg.get("statistical_analysis", [])
     results = []
