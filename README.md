@@ -53,6 +53,22 @@ This installs the required packages and activates an environment named `.env`.
 The setup script also runs `pre-commit install` so formatting and tests run
 automatically before each commit.
 
+### Developer workflow
+
+Run developer tools with `conda run --prefix ./dev-env` to ensure the correct
+environment is used:
+
+```bash
+conda run --prefix ./dev-env pre-commit run --all-files
+conda run --prefix ./dev-env pytest -q
+```
+
+To update hooks:
+
+```bash
+conda run --prefix ./dev-env pre-commit autoupdate
+```
+
 
 ## Data Organization
 
@@ -351,7 +367,11 @@ FlyTracker 3.6.vi                Data acquisition software
 
 ## Citation
 
-If you use this code in your research, please cite:
+If you use this code in your research, please cite the accompanying
+`CITATION.cff` file. The implementation is based on:
 
 Álvarez-Salvado et al. "Elementary sensory-motor transformations underlying olfactory navigation in walking fruit flies." eLife, 2018. http://dx.doi.org/10.7554/eLife.37815
+
+Machine-readable metadata is provided in `codemeta.json` for reuse in
+registries.
 

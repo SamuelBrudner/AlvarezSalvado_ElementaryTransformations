@@ -15,6 +15,11 @@ These instructions apply to the entire MATLAB codebase for the Alvarez-Salvado E
 - Use MATLAB's built-in dependency analysis tools to track function dependencies.
 - Keep a record of any external MATLAB toolboxes used.
 
+### Python Environment Setup
+- Maintain a `conda-lock.yml` generated from `environment.yml`.
+- Use `setup_env.sh --dev` to create the local environment in `./dev-env`.
+- Install development hooks with `pre-commit install`.
+
 ## 3. Code Organization
 - Organize code into logical directories (e.g., `Code/` for main scripts, `tests/` for test files).
 - Follow MATLAB's naming conventions:
@@ -54,6 +59,7 @@ These instructions apply to the entire MATLAB codebase for the Alvarez-Salvado E
 - Use MATLAB's built-in publishing tools for generating documentation.
 - Document all major design decisions in `docs/decisions/`.
 - Include a `CITATION.cff` file for proper attribution.
+- Provide a `codemeta.json` file for machine-readable metadata.
 
 ## 8. Development Workflow
 1. Create a feature branch from `main`.

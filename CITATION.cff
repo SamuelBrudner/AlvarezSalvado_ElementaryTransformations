@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+title: "AlvarezSalvado Elementary Transformations"
+message: "Please cite the eLife 2018 paper if you use this code."
+version: "1.0.0"
+doi: 10.7554/eLife.37815
+authors:
+  - family-names: Alvarez-Salvado
+    given-names: Eduardo
