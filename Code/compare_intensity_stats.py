@@ -4,27 +4,54 @@ from __future__ import annotations
 
 import argparse
 import csv
+from pathlib import Path
 from typing import Iterable, List, Tuple
 
 import numpy as np
 
 from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
+from Code.video_intensity import get_intensities_from_video_via_matlab
 from Code.intensity_stats import calculate_intensity_stats_dict
 
 
 Stats = dict[str, float]
 
 
-def load_intensities(path: str) -> np.ndarray:
-    """Load intensity vector from an HDF5 file using :func:`get_intensities_from_crimaldi`."""
-    return get_intensities_from_crimaldi(path)
+def load_intensities(
+    path: str,
+    plume_type: str | None = None,
+    matlab_exec_path: str = "matlab",
+) -> np.ndarray:
+    """Load intensity vector based on plume type.
+
+    If ``plume_type`` is ``None``, the function tries to infer the type from the
+    file extension: ``.h5`` or ``.hdf5`` files are treated as ``crimaldi``.
+    Everything else is assumed to be a MATLAB script for ``video`` plumes.
+    """
+
+    if plume_type is None:
+        if path.lower().endswith((".h5", ".hdf5")):
+            plume_type = "crimaldi"
+        else:
+            plume_type = "video"
+
+    if plume_type == "crimaldi":
+        return get_intensities_from_crimaldi(path)
+    if plume_type == "video":
+        script_contents = Path(path).read_text()
+        return get_intensities_from_video_via_matlab(script_contents, matlab_exec_path)
+
+    raise ValueError(f"Unknown plume_type: {plume_type}")
 
 
-def compare_intensity_stats(sources: Iterable[Tuple[str, str]]) -> List[Tuple[str, Stats]]:
-    """Return statistics for each identifier/path pair."""
+def compare_intensity_stats(
+    sources: Iterable[Tuple[str, str, str | None]]
+) -> List[Tuple[str, Stats]]:
+    """Return statistics for each identifier/path/type triple."""
+
     results: List[Tuple[str, Stats]] = []
-    for identifier, path in sources:
-        intensities = load_intensities(path)
+    for identifier, path, plume_type in sources:
+        intensities = load_intensities(path, plume_type)
         stats = calculate_intensity_stats_dict(intensities)
         results.append((identifier, stats))
     return results
@@ -51,15 +78,30 @@ def write_csv(results: Iterable[Tuple[str, Stats]], csv_path: str) -> None:
 
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
     parser = argparse.ArgumentParser(description="Compare intensity statistics")
-    parser.add_argument("pairs", nargs="+", help="identifier and file path pairs")
+    parser.add_argument(
+        "items",
+        nargs="+",
+        help="identifier [plume_type] path entries; plume_type optional",
+    )
     parser.add_argument("--csv", dest="csv_path", help="Output CSV file")
     ns = parser.parse_args(argv)
 
-    if len(ns.pairs) % 2 != 0:
-        parser.error("Expected pairs of identifier and path")
+    if len(ns.items) % 3 == 0:
+        entries = [
+            (ns.items[i], ns.items[i + 2], ns.items[i + 1])
+            for i in range(0, len(ns.items), 3)
+        ]
+    elif len(ns.items) % 2 == 0:
+        entries = [
+            (ns.items[i], ns.items[i + 1], None)
+            for i in range(0, len(ns.items), 2)
+        ]
+    else:
+        parser.error(
+            "Expected pairs (identifier path) or triples (identifier plume_type path)"
+        )
 
-    pairs = [(ns.pairs[i], ns.pairs[i + 1]) for i in range(0, len(ns.pairs), 2)]
-    results = compare_intensity_stats(pairs)
+    results = compare_intensity_stats(entries)
 
     if ns.csv_path:
         write_csv(results, ns.csv_path)
