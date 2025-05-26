@@ -8,6 +8,7 @@ dependencies:
   - pandas
   - numpy
   - h5py
+  - loguru
   - pyyaml
   - matplotlib
   - scipy
