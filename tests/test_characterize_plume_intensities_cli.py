@@ -1,39 +1,100 @@
+import json
 import os
-import subprocess
+import sys
+
+import pytest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import types
+
+from Code import characterize_plume_intensities as cpi
 
 
-def run_script(args):
-    return subprocess.run(['python', 'Code/characterize_plume_intensities.py'] + args, capture_output=True, text=True)
+def test_video_requires_px_per_mm_and_frame_rate(tmp_path):
+    script = tmp_path / "script.m"
+    script.write_text("disp('hi')")
+    out_json = tmp_path / "out.json"
+    fake_crim = types.SimpleNamespace(get_intensities_from_crimaldi=lambda p: [1])
+    fake_vid = types.SimpleNamespace(
+        get_intensities_from_video_via_matlab=lambda s, m: [1]
+    )
+    sys.modules["Code.analyze_crimaldi_data"] = fake_crim
+    sys.modules["Code.video_intensity"] = fake_vid
+    with pytest.raises(SystemExit):
+        cpi.main(
+            [
+                "--plume_type",
+                "video",
+                "--file_path",
+                str(script),
+                "--output_json",
+                str(out_json),
+                "--plume_id",
+                "pid",
+            ]
+        )
 
 
-def test_script_exists():
-    assert os.path.isfile('Code/characterize_plume_intensities.py'), 'Script does not exist'
+def test_video_valid_arguments(monkeypatch, tmp_path):
+    script = tmp_path / "script.m"
+    script.write_text("disp('hi')")
+    out_json = tmp_path / "out.json"
+    fake_crim = types.SimpleNamespace(get_intensities_from_crimaldi=lambda p: [1])
+    fake_vid = types.SimpleNamespace(
+        get_intensities_from_video_via_matlab=lambda s, m: [1.0, 2.0, 3.0]
+    )
+    sys.modules["Code.analyze_crimaldi_data"] = fake_crim
+    sys.modules["Code.video_intensity"] = fake_vid
+
+    cpi.main(
+        [
+            "--plume_type",
+            "video",
+            "--file_path",
+            str(script),
+            "--output_json",
+            str(out_json),
+            "--plume_id",
+            "pid",
+            "--px_per_mm",
+            "10",
+            "--frame_rate",
+            "25",
+        ]
+    )
+
+    data = json.loads(out_json.read_text())
+    assert data[0]["plume_id"] == "pid"
+    assert data[0]["statistics"]["count"] == 3
 
 
-def test_video_requires_px_per_mm_and_frame_rate():
-    result = run_script(['--plume_type', 'video', '--file_path', 'path', '--output_json', 'out.json', '--plume_id', 'pid'])
-    assert result.returncode != 0
+def test_crimaldi_valid_arguments(monkeypatch, tmp_path):
+    hdf5_file = tmp_path / "sample.hdf5"
+    hdf5_file.write_text("dummy")
+    fake_crim = types.SimpleNamespace(
+        get_intensities_from_crimaldi=lambda path: [4.0, 5.0]
+    )
+    fake_vid = types.SimpleNamespace(
+        get_intensities_from_video_via_matlab=lambda s, m: [1]
+    )
+    sys.modules["Code.analyze_crimaldi_data"] = fake_crim
+    sys.modules["Code.video_intensity"] = fake_vid
+    out_json = tmp_path / "out.json"
 
+    cpi.main(
+        [
+            "--plume_type",
+            "crimaldi",
+            "--file_path",
+            str(hdf5_file),
+            "--output_json",
+            str(out_json),
+            "--plume_id",
+            "pid",
+        ]
+    )
 
-def test_video_valid_arguments():
-    result = run_script([
-        '--plume_type', 'video',
-        '--file_path', 'path',
-        '--output_json', 'out.json',
-        '--plume_id', 'pid',
-        '--px_per_mm', '10.0',
-        '--frame_rate', '25.0'
-    ])
-    assert result.returncode == 0
-    assert "plume_type='video'" in result.stdout
-
-
-def test_crimaldi_valid_arguments():
-    result = run_script([
-        '--plume_type', 'crimaldi',
-        '--file_path', 'path',
-        '--output_json', 'out.json',
-        '--plume_id', 'pid'
-    ])
-    assert result.returncode == 0
-    assert "plume_type='crimaldi'" in result.stdout
+    data = json.loads(out_json.read_text())
+    assert data[0]["plume_id"] == "pid"
+    assert data[0]["statistics"]["count"] == 2
