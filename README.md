@@ -520,6 +520,48 @@ statistical_analysis:
       - custom_video
 ```
 
+## Plume Intensity Utilities
+
+Two Python helper scripts simplify working with plume intensity data.
+
+### Characterize plume intensities
+
+`Code/characterize_plume_intensities.py` computes basic statistics for a plume
+and stores them in a JSON file. Use it for Crimaldi HDF5 files or for custom
+video plumes processed via MATLAB.
+
+```bash
+# Crimaldi plume example
+python Code/characterize_plume_intensities.py \
+    --plume_type crimaldi \
+    --file_path data/10302017_10cms_bounded.hdf5 \
+    --plume_id crimaldi \
+    --output_json plume_stats.json
+
+# Video plume example
+python Code/characterize_plume_intensities.py \
+    --plume_type video \
+    --file_path path/to/video_script.m \
+    --plume_id my_video \
+    --px_per_mm 20 \
+    --frame_rate 40 \
+    --output_json plume_stats.json
+```
+
+### Compare intensity statistics
+
+`Code/compare_intensity_stats.py` reads intensity vectors from one or more HDF5
+files and prints a table of summary statistics or writes them to CSV.
+
+```bash
+# Display results in the terminal
+python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5
+
+# Write to CSV
+python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
+    --csv intensity_comparison.csv
+```
+
 
 ## Repository Layout
 
