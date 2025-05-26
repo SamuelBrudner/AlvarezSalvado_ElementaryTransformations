@@ -86,6 +86,7 @@ def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
     parser.add_argument("--output_json", required=True)
     parser.add_argument("--px_per_mm", type=float)
     parser.add_argument("--frame_rate", type=float)
+    parser.add_argument("--matlab_exec", default="matlab", help="Path to MATLAB executable")
 
     ns = parser.parse_args(args)
 
@@ -95,7 +96,7 @@ def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
         script_contents = Path(ns.file_path).read_text()
         intensities = get_intensities_from_video_via_matlab(
             script_contents,
-            "matlab",
+            ns.matlab_exec,
             px_per_mm=ns.px_per_mm,
             frame_rate=ns.frame_rate,
         )

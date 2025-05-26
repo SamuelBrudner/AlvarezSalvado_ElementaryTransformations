@@ -545,6 +545,7 @@ python Code/characterize_plume_intensities.py \
     --plume_id my_video \
     --px_per_mm 20 \
     --frame_rate 40 \
+    --matlab_exec /path/to/matlab \
     --output_json plume_stats.json
 ```
 
@@ -556,10 +557,12 @@ files and prints a table of summary statistics or writes them to CSV.
 ```bash
 # Display results in the terminal
 python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5
+    --matlab_exec /path/to/matlab
 
 # Write to CSV
 python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
     --csv intensity_comparison.csv
+    --matlab_exec /path/to/matlab
 ```
 
 

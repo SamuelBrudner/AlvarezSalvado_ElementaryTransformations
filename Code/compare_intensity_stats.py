@@ -45,13 +45,14 @@ def load_intensities(
 
 
 def compare_intensity_stats(
-    sources: Iterable[Tuple[str, str, str | None]]
+    sources: Iterable[Tuple[str, str, str | None]],
+    matlab_exec_path: str = "matlab",
 ) -> List[Tuple[str, Stats]]:
     """Return statistics for each identifier/path/type triple."""
 
     results: List[Tuple[str, Stats]] = []
     for identifier, path, plume_type in sources:
-        intensities = load_intensities(path, plume_type)
+        intensities = load_intensities(path, plume_type, matlab_exec_path)
         stats = calculate_intensity_stats_dict(intensities)
         results.append((identifier, stats))
     return results
@@ -84,6 +85,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         help="identifier [plume_type] path entries; plume_type optional",
     )
     parser.add_argument("--csv", dest="csv_path", help="Output CSV file")
+    parser.add_argument("--matlab_exec", default="matlab", help="Path to MATLAB executable")
     ns = parser.parse_args(argv)
 
     if len(ns.items) % 3 == 0:
@@ -101,7 +103,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
             "Expected pairs (identifier path) or triples (identifier plume_type path)"
         )
 
-    results = compare_intensity_stats(entries)
+    results = compare_intensity_stats(entries, ns.matlab_exec)
 
     if ns.csv_path:
         write_csv(results, ns.csv_path)
