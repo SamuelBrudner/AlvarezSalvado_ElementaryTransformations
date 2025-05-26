@@ -493,29 +493,32 @@ data_loading_options:
   load_config_used_yaml: true
 ```
 
-## Plume Intensity Analysis
+### Running the Python analysis pipeline
 
-Before launching large simulation batches, characterize the intensity range of
-each plume. The script `Code/characterize_plume_intensities.py` reads a text
-file of intensities and appends summary statistics to a JSON record.
-
-```bash
-conda run -p ./dev-env python Code/characterize_plume_intensities.py \
-    CRIMALDI data/crimaldi/intensities.txt plume_intensity_stats.json
-```
-
-The statistics are written to `plume_intensity_stats.json` in the working
-directory. After processing all plumes, compare them with
-`Code/compare_intensity_stats.py`:
+Once processed simulation results are available you can execute the full
+analysis workflow with:
 
 ```bash
-conda run -p ./dev-env python Code/compare_intensity_stats.py \
-    plume_intensity_stats.json
+python Code/main_analysis.py configs/analysis_config.yaml
 ```
 
-This prints a table of means and standard deviations to the console and writes
-an HTML report to `figures/intensity_comparison.html`.
+This script generates any requested tables and plots, then performs the
+statistical tests defined in the configuration. All tables and the
+resulting p-values are written to the directory specified by
+`output_paths.tables`.
 
+To compare the built‑in Crimaldi plume with a custom plume, include a
+`statistical_analysis` block in your YAML:
+
+```yaml
+statistical_analysis:
+  - test_type: t_test_ind
+    metric_name: success_rate
+    grouping_variable: plume_type
+    groups_to_compare:
+      - crimaldi
+      - custom_video
+```
 
 
 ## Repository Layout
