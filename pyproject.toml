@@ -3,7 +3,12 @@ name = "elementary-transformations"
 version = "0.1.0"
 dependencies = [
   "numpy",
-  "scipy"
+  "scipy",
+  "pandas",
+  "h5py",
+  "pyyaml",
+  "matplotlib",
+  "loguru",
 ]
 
 [build-system]

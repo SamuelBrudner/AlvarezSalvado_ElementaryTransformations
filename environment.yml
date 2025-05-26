@@ -6,6 +6,7 @@ dependencies:
   - pandas
   - numpy
   - h5py
+  - loguru
   - pyyaml
   - pytest
   - matplotlib
