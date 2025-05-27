@@ -32,3 +32,11 @@ def test_setup_env_has_conda_lock_pip_fallback():
     with open('setup_env.sh') as f:
         content = f.read()
     assert 'pip install --user conda-lock' in content
+
+
+def test_setup_env_handles_old_conda_versions():
+    """Script should support old Conda without --force."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'conda_supports_force' in content
+    assert 'conda env remove --prefix "./${LOCAL_ENV_DIR}" -y' in content

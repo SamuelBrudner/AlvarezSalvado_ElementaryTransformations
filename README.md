@@ -65,6 +65,7 @@ Python dependencies are managed using Conda and are split into two files:
    ```bash
    # This will create a local environment in ./dev-env
    ./setup_env.sh --dev
+   # Compatible with both new and older Conda versions
    ```
    This prepares the development environment. Run scripts located in the
    `Code` package with the module syntax so the repository root is added to
@@ -129,6 +130,7 @@ This project uses [pre-commit](https://pre-commit.com/) to enforce code quality 
 
 Key features:
 - **Automatic Setup**: Hooks are configured automatically when you run `./setup_env.sh --dev`
+  (compatible with both new and old Conda versions)
 - **Portable**: Configuration works across different machines and platforms
 - **Consistent**: Uses the project's conda environment for all tools
 - **Local Configuration**: The `.pre-commit-config.yaml` file is generated locally and should not be committed to version control (it's in `.gitignore`)
@@ -153,6 +155,7 @@ Create and set up the local Conda environment:
 ```bash
 # Run the setup script
 ./setup_env.sh --dev
+# Compatible with new and old Conda releases
 
 # For interactive shell usage
 conda activate ./dev-env
@@ -192,6 +195,8 @@ conda run --prefix ./dev-env pytest -q
 
 `setup_env.sh` installs the required packages and sets up pre-commit so
 formatting and tests run automatically before each commit.
+It detects whether your Conda version supports `--force` and works on
+both modern and older releases.
 
 ### Developer Workflow
 
@@ -578,7 +583,7 @@ python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5 \
 ```
 
 
-To compare a custom video plume against Crimaldi, first create the development environment with `./setup_env.sh --dev` and then run:
+To compare a custom video plume against Crimaldi, first create the development environment with `./setup_env.sh --dev` (compatible with old and new Conda) and then run:
 
 ```bash
 conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
