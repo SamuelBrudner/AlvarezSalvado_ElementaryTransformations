@@ -175,6 +175,14 @@ def make_paths_relative(config_path, project_root):
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f) or {}
     
+    # Skip paths that should remain absolute
+    skip_paths = {
+        'matlab.executable',  # MATLAB executable should remain absolute
+        'scripts.temp',       # Temp directory should remain absolute
+        'tmp_dir',            # System temp dir should remain absolute
+        'output.matlab_temp'  # MATLAB temp dir should remain absolute
+    }
+    
     # Process each path in the config
     def process_value(value, key_path=''):
         if isinstance(value, dict):
@@ -182,7 +190,7 @@ def make_paths_relative(config_path, project_root):
                    for k, v in value.items()}
         elif isinstance(value, list):
             return [process_item(item, f"{key_path}[]") for item in value]
-        elif isinstance(value, str) and value.startswith(project_root):
+        elif isinstance(value, str) and value.startswith(project_root) and key_path not in skip_paths:
             # Make path relative to project root
             rel_path = os.path.relpath(value, project_root)
             if not rel_path.startswith('..'):
@@ -192,7 +200,7 @@ def make_paths_relative(config_path, project_root):
     def process_item(item, key_path):
         if isinstance(item, dict):
             return {k: process_value(v, f"{key_path}.{k}") for k, v in item.items()}
-        elif isinstance(item, str) and item.startswith(project_root):
+        elif isinstance(item, str) and item.startswith(project_root) and key_path not in skip_paths:
             rel_path = os.path.relpath(item, project_root)
             if not rel_path.startswith('..'):
                 return rel_path

@@ -9,12 +9,12 @@ statistics in a human‑readable form.
 from __future__ import annotations
 
 import argparse
-from typing import Dict
 import os
+from typing import Dict
 
 try:
-    import numpy as np
     import h5py
+    import numpy as np
 except ImportError as exc:  # pragma: no cover - dependencies missing
     raise ImportError(
         "analyze_crimaldi_data requires numpy and h5py to be installed"
@@ -38,7 +38,7 @@ def analyze_crimaldi_data(path: str) -> Dict[str, float | dict]:
     with h5py.File(path, "r") as f:
         data = f["/dataset_1"][:]
 
-    stats = {
+    return {
         "min": float(data.min()),
         "max": float(data.max()),
         "mean": float(data.mean()),
@@ -50,11 +50,10 @@ def analyze_crimaldi_data(path: str) -> Dict[str, float | dict]:
             99: float(np.percentile(data, 99)),
         },
     }
-    return stats
 
 
 def get_intensities_from_crimaldi(
-    hdf5_path: str, dataset_name: str = "dataset_1"
+    hdf5_path: str, dataset_name: str = None
 ) -> np.ndarray:
     """Return a flat array of intensity values from the Crimaldi plume file.
 
@@ -63,29 +62,54 @@ def get_intensities_from_crimaldi(
     hdf5_path : str
         Path to the HDF5 file to read.
     dataset_name : str, optional
-        Name of the dataset within the file. Defaults to ``dataset_1``.
+        Name of the dataset within the file. If None, will try to find a suitable dataset.
+        Defaults to None.
+
 
     Returns
     -------
     numpy.ndarray
         Flattened 1-D array of the intensity values.
 
+
     Raises
     ------
     FileNotFoundError
         If the file does not exist.
     KeyError
-        If ``dataset_name`` is not found in the file.
+        If no suitable dataset is found in the file.
     """
+    import h5py
 
     if not os.path.isfile(hdf5_path):
         raise FileNotFoundError(f"HDF5 file not found: {hdf5_path}")
 
     with h5py.File(hdf5_path, "r") as f:
+        # If no dataset name is provided, try to find a suitable one
+        if dataset_name is None:
+            # List all datasets in the file
+            available_datasets = list(f.keys())
+            if not available_datasets:
+                raise KeyError(f"No datasets found in {hdf5_path}")
+
+            # Try to find a dataset that looks like our data
+            for name in available_datasets:
+                if "data" in name.lower() or "dataset" in name.lower():
+                    dataset_name = name
+                    break
+            else:
+                # If no obvious match, use the first dataset
+                dataset_name = available_datasets[0]
+
+            print(f"Using dataset: {dataset_name}")
+
+        # Check if the dataset exists
         if dataset_name not in f:
             raise KeyError(
-                f"Dataset '{dataset_name}' not found in {hdf5_path}"
+                f"Dataset '{dataset_name}' not found in {hdf5_path}. "
+                f"Available datasets: {list(f.keys())}"
             )
+
         data = f[dataset_name][:]
 
     return data.flatten()
