@@ -3,6 +3,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+import logging
 
 import pytest
 
@@ -98,3 +99,28 @@ def test_path_with_spaces_and_quotes(monkeypatch, tmp_path):
     assert "disp(" in captured["script_contents"]
     assert not Path(captured["script_path"]).exists()
     assert not mat_file.exists()
+
+
+def test_error_message_includes_path_and_workdir(monkeypatch, tmp_path, caplog):
+    matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
+    script_content = "disp('fail')"
+
+    def fake_run(cmd, capture_output, text):
+        return subprocess.CompletedProcess(cmd, 1, stdout="oops", stderr="bad")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with caplog.at_level(logging.WARNING), pytest.raises(RuntimeError) as exc:
+        get_intensities_from_video_via_matlab(
+            script_content,
+            matlab_exec,
+            work_dir=str(tmp_path),
+            orig_script_path="orig.m",
+        )
+
+    msg = exc.value.args[0]
+    assert "orig.m" in msg
+    assert str(tmp_path) in msg
+    assert "orig_script_dir" in msg
+    assert any("MATLAB failed while running" in r.message for r in caplog.records)
+

@@ -132,9 +132,7 @@ def write_json(
     """Write statistics to a JSON file."""
     path = Path(json_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    entries = [
-        {"identifier": ident, "statistics": stats} for ident, stats in results
-    ]
+    entries = [{"identifier": ident, "statistics": stats} for ident, stats in results]
     if diff is not None:
         entries.append({"identifier": "DIFF", "statistics": diff})
     path.write_text(json.dumps(entries, indent=4))
