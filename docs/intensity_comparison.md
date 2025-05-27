@@ -56,21 +56,22 @@ Difference (mean): 0.4
 Figure saved to figures/intensity_comparison.png
 ```
 
-### Comparing a Video Plume to Crimaldi
+### Compare the Crimaldi Plume to a Custom AVI File
 
-If you have a custom plume movie, extract the intensity values in MATLAB and compare them to the Crimaldi data. Below is a minimal script `video_script.m`:
+To directly compare the canonical Crimaldi plume dataset to an AVI movie of your own experiment, first extract the movie’s intensity values in MATLAB. Below is a minimal script `video_script.m` that loads `my_plume.avi` and writes out a temporary MAT file:
 
 ```matlab
 plume = load_plume_video('my_plume.avi', 20, 40);
 all_intensities = plume.data(:);
-save('temp_intensities.mat', 'all_intensities');
-fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
+save('custom_intensities.mat', 'all_intensities');
+fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('custom_intensities.mat'));
 ```
 
-Run the comparison using the development environment created with `./setup_env.sh --dev`:
+Run the comparison using the development environment created with `./setup_env.sh --dev`.
+Here `AVI` labels your custom movie and `CRIM` refers to the bundled Crimaldi plume dataset:
 
 ```bash
-conda run --prefix ./dev-env python Code/compare_intensity_stats.py VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
+conda run --prefix ./dev-env python Code/compare_intensity_stats.py AVI video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
 ```
 
 ## Notes
