@@ -1,8 +1,44 @@
 # Intensity Dataset Comparison
 
 This page describes how to characterise the intensity of individual odour plumes and how to compare multiple intensity datasets.
-Before running any commands, create the development environment using `./setup_env.sh --dev`.
-Use the module form `python -m Code.<script>` when executing scripts so the repository root is on `sys.path`.
+
+## Initial Setup
+
+1. **Set up the development environment**:
+   ```bash
+   ./setup_env.sh --dev
+   ```
+
+2. **Update your paths**:
+   The project uses a centralized path configuration. After setup, source the paths:
+   ```bash
+   source ./paths.sh
+   ```
+   This sets up all necessary environment variables and paths. You can run this anytime to update paths without rebuilding the conda environment.
+
+3. **Running scripts**:
+   Use the module form when executing Python scripts to ensure the repository root is on `sys.path`:
+   ```bash
+   python -m Code.<script>
+   ```
+
+## Path Management
+
+The project uses `project_paths.yaml` for managing file paths. Key features:
+
+- **Automatic Path Resolution**: All paths are relative to the project root
+- **Environment Variables**: Uses `PROJECT_DIR` and `TMPDIR`
+- **Generated Files**: `project_paths.yaml` is automatically generated from the template
+
+To regenerate paths configuration:
+```bash
+rm configs/project_paths.yaml && ./paths.sh
+```
+
+Key paths are available as environment variables after sourcing `paths.sh`:
+- `$PROJECT_DIR`: Root directory of the project
+- `$PYTHONPATH`: Includes the `Code` directory
+- `$TMPDIR`: System temporary directory
 
 ## Characterising a Single Plume
 
@@ -97,7 +133,102 @@ conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
     --matlab_exec /path/to/matlab/executable
 ```
 
-### MATLAB Script Execution and Path Management
+### MATLAB Script Execution
+
+The project includes `video_script.m` for processing smoke video data. This script is designed to work with the project's path management system.
+
+#### video_script.m
+
+This script processes smoke video data and extracts intensity values. It's designed to be called from Python but can also be run directly in MATLAB.
+
+```matlab
+% video_script.m
+% Processes smoke video data and extracts intensity values
+plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', 6.536, 60);
+all_intensities = plume.data(:);
+save('temp_intensities.mat', 'all_intensities');
+fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
+```
+
+**Key Features**:
+- Loads and processes smoke video data
+- Saves intensity values to a temporary MAT file
+- Outputs the path to the generated file for Python integration
+
+#### Running from Python
+
+Use the `compare_intensity_stats.py` script to process video data. The MATLAB configuration is automatically handled by the `paths.sh` script using settings from `configs/project_paths.yaml`.
+
+```bash
+# First source the paths if you haven't already
+source ./paths.sh
+
+# Then run the comparison
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+    CRIM data/10302017_10cms_bounded_2.h5 \
+    SMOKE video_script.m \
+    ${MATLAB_EXEC:+--matlab_exec "$MATLAB_EXEC"}
+```
+
+#### MATLAB Configuration
+
+The MATLAB configuration is stored in `configs/project_paths.yaml` under the `matlab` section. You can edit this file directly or let the system auto-detect MATLAB.
+
+```yaml
+matlab:
+  # Path to MATLAB executable (auto-detected if not specified)
+  # executable: "/Applications/MATLAB_R2023a.app/bin/matlab"
+  
+  # Additional MATLAB paths to add (relative to project root)
+  paths:
+    - "${PROJECT_DIR}/Code"
+    - "${PROJECT_DIR}"
+  
+  # MATLAB toolboxes required (for documentation purposes)
+  required_toolboxes:
+    - "Image Processing Toolbox"
+    - "Statistics and Machine Learning Toolbox"
+```
+
+#### Custom MATLAB Path
+
+If you need to specify a custom MATLAB path, you can either:
+
+1. Edit `configs/project_paths.yaml` and set the `matlab.executable` path
+2. Or set it via environment variable before sourcing `paths.sh`:
+   ```bash
+   MATLAB_EXEC="/path/to/matlab" source ./paths.sh
+   ```
+
+#### What the Script Does
+
+1. Checks for MATLAB configuration in `project_paths.yaml`
+2. If not found, auto-detects MATLAB installation
+3. Updates the configuration with the detected path (if yq is installed)
+4. Sets up MATLAB paths as specified in the configuration
+5. Makes the MATLAB executable available via `$MATLAB_EXEC`
+6. Processes the video and generates comparison plots
+
+#### MATLAB Path Management
+
+When running MATLAB scripts, ensure:
+1. MATLAB is in your system PATH
+2. Required toolboxes are installed:
+   - Image Processing Toolbox
+   - Statistics and Machine Learning Toolbox
+3. The repository contains the required data files in the expected locations
+
+For development, you can test the MATLAB script directly:
+
+```matlab
+% In MATLAB
+cd /path/to/project
+video_script  % Run the script
+load('temp_intensities.mat');  % Load the results
+whos all_intensities  % Verify the output
+```
+
+For production use, the Python wrapper handles all path resolution and file management automatically.
 
 When processing video data, the system uses a MATLAB script (`process_smoke_video.m`) to extract intensity values. The script execution follows this workflow:
 

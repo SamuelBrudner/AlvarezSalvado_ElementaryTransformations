@@ -39,3 +39,16 @@ output:
   figures: "${PROJECT_DIR}/figures"
   # Directory for temporary MATLAB outputs
   matlab_temp: "${TMPDIR:-/tmp}"
+
+# MATLAB configuration
+matlab:
+  # Path to MATLAB executable (auto-detected if not specified)
+  # executable: "/Applications/MATLAB_R2023a.app/bin/matlab"
+  # Additional MATLAB paths to add (relative to project root)
+  paths:
+    - "${PROJECT_DIR}/Code"
+    - "${PROJECT_DIR}"
+  # MATLAB toolboxes required (for documentation purposes)
+  required_toolboxes:
+    - "Image Processing Toolbox"
+    - "Statistics and Machine Learning Toolbox"

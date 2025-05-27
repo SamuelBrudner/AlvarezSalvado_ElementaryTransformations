@@ -1,0 +1,54 @@
+# Paths configuration
+# This file is auto-generated during setup - do not edit directly
+# Copy to paths.yaml and customize as needed
+
+# Project root directory (auto-populated)
+project_root: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations"
+
+# Script directories
+scripts:
+  # Directory containing MATLAB analysis scripts (orig_script_dir will point here)
+  matlab: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations"  # Root directory for MATLAB scripts
+  # Directory containing Python modules and utilities
+  python: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/Code"
+  # Directory for temporary script execution (used by MATLAB wrapper)
+  temp: "${TMPDIR:-/tmp}/matlab_scripts"
+
+# Data files
+data:
+  # Crimaldi HDF5 data file
+  crimaldi: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/data/10302017_10cms_bounded_2.h5"
+  # Video file for analysis
+  video: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/data/smoke_1a_bgsub_raw.avi"
+
+# Configuration files
+configs:
+  # Main plume configuration
+  plume: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/configs/my_complex_plume_config.yaml"
+  # Path to this file (auto-populated)
+  paths: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/configs/paths.yaml"
+
+# Temporary directory for processing
+# Uses system TMPDIR if available, falls back to /tmp
+tmp_dir: "${TMPDIR:-/tmp}"
+
+# Output directories (relative to project root)
+output:
+  raw: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/data/raw"
+  processed: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/data/processed"
+  figures: "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/figures"
+  # Directory for temporary MATLAB outputs
+  matlab_temp: "${TMPDIR:-/tmp}"
+
+# MATLAB configuration
+matlab:
+  # Path to MATLAB executable (auto-detected if not specified)
+  # executable: "/Applications/MATLAB_R2023a.app/bin/matlab"
+  # Additional MATLAB paths to add (relative to project root)
+  paths:
+    - "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations/Code"
+    - "/Users/samuelbrudner/Yale University Dropbox/Samuel Brudner/AlvarezSalvado_ElementaryTransformations"
+  # MATLAB toolboxes required (for documentation purposes)
+  required_toolboxes:
+    - "Image Processing Toolbox"
+    - "Statistics and Machine Learning Toolbox"

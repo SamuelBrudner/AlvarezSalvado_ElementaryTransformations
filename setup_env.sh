@@ -15,13 +15,13 @@ readonly BASE_ENV_FILE="environment.yml"
 readonly DEV_ENV_FILE="dev-environment.yml"
 readonly PRE_COMMIT_TEMPLATE=".pre-commit-config.yaml.template"
 readonly PRE_COMMIT_CONFIG=".pre-commit-config.yaml"
-readonly PATHS_TEMPLATE="configs/paths.yaml.template"
-readonly PATHS_CONFIG="configs/paths.yaml"
+readonly PATHS_SCRIPT="$(dirname "$0")/paths.sh"
 # ---
 
 # Setup usage function
 usage() {
-  log INFO "Usage: $0 [--dev] [--no-tests] [--skip-conda-lock] [--help]"
+  log INFO "Usage: $0 [--dev] [rm configs/paths.yaml
+  ./paths.sh--no-tests] [--skip-conda-lock] [--help]"
   log INFO "  --dev        Install development dependencies and set up pre-commit hooks"
   log INFO "  --no-tests   Skip running tests after setup"
   log INFO "  --skip-conda-lock   Skip conda-lock installation and lock file generation"
@@ -351,41 +351,27 @@ main() {
 # Run the main function
 main "$@"
 
-# Simple variable substitution function
-substitute_vars() {
-    local content
-    content=$(<"$1")
-    
-    # Replace ${VAR} or $VAR with their values
-    while [[ $content =~ (\$\{([a-zA-Z_][a-zA-Z0-9_]*)(:[-=][^}]*)?\}|\$([a-zA-Z_][a-zA-Z0-9_]*)) ]]; do
-        var_full=${BASH_REMATCH[0]}
-        var_name=${BASH_REMATCH[2]:-${BASH_REMATCH[4]}}
-        
-        # Handle default values
-        if [[ ${BASH_REMATCH[3]} =~ ^:- ]]; then
-            default_value=${BASH_REMATCH[3]:2}
-            var_value=${!var_name:-$default_value}
-        else
-            var_value=${!var_name}
+# Source the paths script if it exists
+setup_paths() {
+    if [ -f "$PATHS_SCRIPT" ]; then
+        log INFO "Setting up paths using $PATHS_SCRIPT..."
+        # Source the script to set up paths in the current shell
+        if ! source "$PATHS_SCRIPT"; then
+            log ERROR "Failed to set up paths using $PATHS_SCRIPT"
+            return 1
         fi
-        
-        content=${content//"$var_full"/"$var_value"}
-    done
-    
-    echo "$content"
-}
-
-# Setup paths configuration
-setup_paths_config() {
-    if [ -f "$PATHS_TEMPLATE" ] && [ ! -f "$PATHS_CONFIG" ]; then
-        log INFO "Setting up paths configuration..."
-        export PROJECT_DIR="$PWD"
-        substitute_vars "$PATHS_TEMPLATE" > "$PATHS_CONFIG"
-        log SUCCESS "Created paths configuration at $PATHS_CONFIG"
-        log INFO "Please review and edit $PATHS_CONFIG if needed"
+        # Run the setup_paths function if it exists
+        if command -v setup_paths >/dev/null 2>&1; then
+            setup_paths
+        fi
+    else
+        log WARNING "Paths script not found: $PATHS_SCRIPT"
+        return 1
     fi
 }
-setup_paths_config
+
+# Set up paths at the end of the environment setup
+setup_paths
 
 # Print success message and usage instructions
 log SUCCESS "Environment setup complete!"
