@@ -560,7 +560,7 @@ python -m Code.characterize_plume_intensities \
 
 First create a small MATLAB script to load your movie and write out the
 intensity vector. For ``data/smoke_1a_bgsub_raw.avi`` the script might look like
-``video_script.m``:
+``docs/video_script_example.m``:
 
 ```matlab
 plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', 20, 40);
@@ -569,12 +569,12 @@ save('temp_intensities.mat', 'all_intensities');
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 ```
 
-Run the utility with the path to this script:
+Run the utility with the path to this script (or your own variant):
 
 ```bash
 python -m Code.characterize_plume_intensities \
     --plume_type video \
-    --file_path path/to/video_script.m \
+    --file_path docs/video_script_example.m \
     --plume_id my_video \
     --px_per_mm 20 \
     --frame_rate 40 \
@@ -606,10 +606,10 @@ python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5 \
 To compare a custom video plume against Crimaldi, first create the development environment with `./setup_env.sh --dev` (compatible with old and new Conda) and then run:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video docs/video_script_example.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
 ```
 
-``path/to/video_script.m`` should point to the MATLAB file shown above that
+``--file_path`` should point to `docs/video_script_example.m` or your own MATLAB file that
 loads your ``.avi`` movie and writes ``temp_intensities.mat``.
 
 ## Repository Layout

@@ -67,7 +67,7 @@ Figure saved to figures/intensity_comparison.png
 ### Comparing a Video Plume to Crimaldi
 
 If you have a custom plume movie, extract the intensity values in MATLAB and compare
-them to the Crimaldi data. Below is a minimal script `video_script.m`. Replace
+them to the Crimaldi data. Below is a minimal script `docs/video_script_example.m`. Replace
 `'my_plume.avi'` with the path to your movie, for example
 `'data/smoke_1a_bgsub_raw.avi'`:
 
@@ -78,15 +78,17 @@ save('temp_intensities.mat', 'all_intensities');
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 ```
 
-Save the script and pass **its full path** to the Python utility. The
+Save the script as `docs/video_script_example.m` (or your own version) and pass **its full path** to the Python utility. The
 `TEMP_MAT_FILE_SUCCESS` line is used by `compare_intensity_stats.py` to locate the
 generated MAT-file.
 
 Run the comparison using the development environment created with `./setup_env.sh --dev`:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video docs/video_script_example.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
 ```
+
+In this example, `--file_path` points to `docs/video_script_example.m`. You can also provide the path to your own MATLAB script that outputs `temp_intensities.mat`.
 
 ## Notes
 
