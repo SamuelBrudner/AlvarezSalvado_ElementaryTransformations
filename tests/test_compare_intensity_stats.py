@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from Code import compare_intensity_stats as cis
 import csv
+import json
 
 
 def create_hdf5(path, data):
@@ -136,4 +137,46 @@ def test_csv_output_and_directory_creation(monkeypatch, tmp_path):
 
     assert float(rows[1][1]) == approx_float(stats_vid['mean'])
     assert float(rows[2][1]) == approx_float(stats_crim['mean'])
+
+
+def test_json_output_and_directory_creation(monkeypatch, tmp_path):
+    hfile = tmp_path / 'c.h5'
+    arr_crim = np.array([5.0, 15.0], dtype=float)
+    create_hdf5(hfile, arr_crim)
+
+    script = tmp_path / 'video_script.m'
+    script.write_text("disp('hi')")
+    arr_vid = np.array([1.0, 2.0], dtype=float)
+
+    monkeypatch.setattr(
+        cis,
+        'get_intensities_from_video_via_matlab',
+        lambda s, m='matlab': arr_vid,
+    )
+
+    json_path = tmp_path / 'nested' / 'results' / 'stats.json'
+    cis.main([
+        'VID',
+        'video',
+        str(script),
+        'CRIM',
+        'crimaldi',
+        str(hfile),
+        '--json',
+        str(json_path),
+    ])
+
+    assert json_path.exists()
+    assert json_path.parent.is_dir()
+
+    data = json.loads(json_path.read_text())
+
+    assert data[0]['identifier'] == 'VID'
+    assert data[1]['identifier'] == 'CRIM'
+
+    stats_vid = cis.calculate_intensity_stats_dict(arr_vid)
+    stats_crim = cis.calculate_intensity_stats_dict(arr_crim)
+
+    assert data[0]['statistics']['mean'] == pytest.approx(stats_vid['mean'])
+    assert data[1]['statistics']['mean'] == pytest.approx(stats_crim['mean'])
 

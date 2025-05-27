@@ -39,6 +39,13 @@ To see the mean and median differences when exactly two datasets are provided, a
 conda run --prefix ./dev-env python -m Code.compare_intensity_stats A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --diff
 ```
 
+To save the computed statistics, provide a path via `--csv` or `--json`:
+
+```bash
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --json results/stats.json
+```
+The JSON file contains a list of objects with ``identifier`` and ``statistics`` keys for each plume.
+
 Sample output:
 
 ```
