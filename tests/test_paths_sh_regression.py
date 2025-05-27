@@ -10,20 +10,12 @@ def test_paths_sh_runs_without_syntaxerror(tmp_path):
     shutil.copy(repo_root / "paths.sh", tmp_path / "paths.sh")
     shutil.copy(repo_root / "setup_utils.sh", tmp_path / "setup_utils.sh")
 
-    configs_dir = tmp_path / "configs"
-    configs_dir.mkdir()
-    shutil.copy(
-        repo_root / "configs" / "project_paths.yaml.template",
-        configs_dir / "project_paths.yaml.template",
+    configs_dir = _extracted_from_test_paths_sh_runs_without_syntaxerror_8(
+        tmp_path, "configs", repo_root, "project_paths.yaml.template"
     )
-
-    scripts_dir = tmp_path / "scripts"
-    scripts_dir.mkdir()
-    shutil.copy(
-        repo_root / "scripts" / "make_paths_relative.py",
-        scripts_dir / "make_paths_relative.py",
+    scripts_dir = _extracted_from_test_paths_sh_runs_without_syntaxerror_8(
+        tmp_path, "scripts", repo_root, "make_paths_relative.py"
     )
-
     result = subprocess.run(
         ["bash", str(tmp_path / "paths.sh")],
         capture_output=True,
@@ -33,3 +25,12 @@ def test_paths_sh_runs_without_syntaxerror(tmp_path):
     assert result.returncode == 0, result.stderr + result.stdout
     assert "SyntaxError" not in result.stderr
     assert (configs_dir / "project_paths.yaml").exists()
+
+
+# TODO Rename this here and in `test_paths_sh_runs_without_syntaxerror`
+def _extracted_from_test_paths_sh_runs_without_syntaxerror_8(tmp_path, arg1, repo_root, arg3):
+    result = tmp_path / arg1
+    result.mkdir()
+    shutil.copy(repo_root / arg1 / arg3, result / arg3)
+
+    return result
