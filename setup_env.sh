@@ -59,6 +59,33 @@ conda_supports_force() {
   conda env create --help 2>&1 | grep -q -- '--force'
 }
 
+# Ensure conda-lock command exists and functions
+ensure_conda_lock() {
+  if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
+    log INFO "Installing conda-lock"
+    if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
+      log WARNING "conda install failed, attempting pip fallback"
+      if ! run_command_verbose python -m pip install --user conda-lock; then
+        error "Failed to install conda-lock with conda or pip"
+      fi
+      export PATH="$HOME/.local/bin:${PATH}"
+    fi
+
+    # Refresh the shell to update PATH
+    if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
+      source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
+    fi
+
+    # Add conda to PATH if not already there
+    export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
+
+    # Verify installation
+    if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
+      error "Failed to install or verify conda-lock"
+    fi
+  fi
+}
+
 # --- Main setup function ---
 setup_environment() {
   section "Starting environment setup"
@@ -97,35 +124,8 @@ setup_environment() {
     error "Base environment file '$BASE_ENV_FILE' not found in the current directory."
   fi
 
-  # Ensure conda-lock is installed and generate lock file
-  if ! command -v conda-lock >/dev/null 2>&1; then
-    log INFO "Installing conda-lock"
-    if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
-      log WARNING "conda install failed, attempting pip fallback"
-      if ! run_command_verbose python -m pip install --user conda-lock; then
-        error "Failed to install conda-lock with conda or pip"
-      fi
-      export PATH="$HOME/.local/bin:${PATH}"
-    fi
-
-    # Refresh the shell to update PATH
-    if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-      source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
-    fi
-
-    # Add conda to PATH if not already there
-    export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
-
-    # Verify installation
-    if ! command -v conda-lock >/dev/null 2>&1; then
-      error "Failed to install conda-lock or make it available in PATH"
-    fi
-
-    # Ensure conda-lock command works
-    if ! conda-lock --version >/dev/null 2>&1; then
-      error "conda-lock installation succeeded but 'conda-lock --version' failed"
-    fi
-  fi
+  # Ensure conda-lock is installed and functional
+  ensure_conda_lock
 
   # Get platform information safely
   if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then

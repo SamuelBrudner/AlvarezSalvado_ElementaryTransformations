@@ -35,6 +35,12 @@ def test_setup_env_has_conda_lock_pip_fallback():
     assert 'conda-lock --version' in content
 
 
+def test_setup_env_checks_existing_conda_lock():
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1' in content
+
+
 def test_setup_env_handles_old_conda_versions():
     """Script should support old Conda without --force."""
     with open('setup_env.sh') as f:
