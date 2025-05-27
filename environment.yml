@@ -1,4 +1,4 @@
-name: elementary
+name: elementary-transformations
 channels:
   - conda-forge
 dependencies:

@@ -52,7 +52,7 @@ Python dependencies are managed using Conda and are split into two files:
    ```bash
    # Create and activate the base environment
    conda env create -f environment.yml
-   conda activate elementary
+   conda activate elementary-transformations
    ```
 
 2. **For development, set up the development environment**:
