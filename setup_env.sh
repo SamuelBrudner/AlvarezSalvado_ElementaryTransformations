@@ -1,12 +1,54 @@
 #!/bin/bash
 # Set up local conda prefix environment for the project
-set -euo pipefail
 
-# Exit immediately if a command fails, but allow for pipefail to work properly
-set -o pipefail || true
+# Handle both sourced and direct execution
+(return 0 2>/dev/null) && SOURCED=1 || SOURCED=0
+
+# Only set these options when not sourced to prevent exiting the parent shell
+if [ "$SOURCED" -eq 0 ]; then
+    set -euo pipefail
+    set -o pipefail || true
+else
+    set -u  # Only fail on undefined variables when sourced
+fi
+
+# Function to safely exit or return
+safe_exit() {
+    local exit_code=$1
+    shift
+    [ "$SOURCED" -eq 1 ] && return $exit_code || exit $exit_code
+}
+
+# Debug function
+debug() {
+    if [ "${DEBUG:-0}" -eq 1 ]; then
+        echo "[DEBUG] $*" >&2
+    fi
+}
 
 # Load utility functions
-source "$(dirname "$0")/setup_utils.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" && pwd)"
+
+# Source setup_utils.sh safely
+if [ ! -f "${SCRIPT_DIR}/setup_utils.sh" ]; then
+    echo "Error: setup_utils.sh not found in ${SCRIPT_DIR}/" >&2
+    safe_exit 1
+fi
+
+# shellcheck source=./setup_utils.sh
+if ! source "${SCRIPT_DIR}/setup_utils.sh"; then
+    echo "Error: Failed to source setup_utils.sh" >&2
+    safe_exit 1
+fi
+
+debug "Script directory: $SCRIPT_DIR"
+debug "SOURCED: $SOURCED"
+
+# Only proceed with setup if not sourced or if explicitly run
+if [ "$SOURCED" -eq 1 ] && [ "${1:-}" != "--run-setup" ]; then
+    debug "Script sourced, not running setup. Use 'source $0 --run-setup' to force setup."
+    return 0 2>/dev/null || safe_exit 0
+fi
 
 # --- Configuration ---
 # Readonly constants for better maintainability
@@ -20,13 +62,30 @@ readonly PATHS_SCRIPT="$(dirname "$0")/paths.sh"
 
 # Setup usage function
 usage() {
-  log INFO "Usage: $0 [--dev] [rm configs/paths.yaml
-  ./paths.sh--no-tests] [--skip-conda-lock] [--help]"
-  log INFO "  --dev        Install development dependencies and set up pre-commit hooks"
-  log INFO "  --no-tests   Skip running tests after setup"
-  log INFO "  --skip-conda-lock   Skip conda-lock installation and lock file generation"
-  log INFO "  --help       Show this help message"
-  exit 0
+  cat <<EOF
+Usage: $0 [options]
+
+Options:
+  --dev                Install development dependencies and set up pre-commit hooks
+  --no-tests           Skip running tests after setup
+  --skip-conda-lock    Skip conda-lock installation and lock file generation
+  --help               Show this help message
+  --debug              Enable debug output
+
+When sourced, the script will set up the environment but not run any installation steps.
+When executed directly, it will perform the full setup process.
+
+Examples:
+  # Source the script to set up environment variables
+  source $0
+
+  # Run the full setup
+  $0 --dev
+
+  # Run with debug output
+  DEBUG=1 $0 --dev
+EOF
+  safe_exit 0
 }
 
 # Parse command line arguments
@@ -348,8 +407,17 @@ main() {
   exit 0
 }
 
-# Run the main function
-main "$@"
+# --- Main execution ---
+if [ "$SOURCED" -eq 1 ] && [ "${1:-}" == "--run-setup" ]; then
+    # Remove --run-setup from arguments
+    shift
+    debug "Running setup in sourced mode with args: $*"
+    main "$@"
+elif [ "$SOURCED" -eq 0 ]; then
+    # Run normally when executed directly
+    debug "Running in direct execution mode with args: $*"
+    main "$@"
+fi
 
 # Source the paths script if it exists
 setup_paths() {
@@ -371,9 +439,24 @@ setup_paths() {
 }
 
 # Set up paths at the end of the environment setup
-setup_paths
+if [ "$SOURCED" -eq 1 ]; then
+    # Only set up paths if not in direct execution mode (already handled in main)
+    if [ "${1:-}" != "--run-setup" ]; then
+        if command -v setup_paths >/dev/null 2>&1; then
+            setup_paths
+        else
+            debug "setup_paths function not found"
+        fi
+    fi
+else
+    setup_paths
+fi
 
 # Print success message and usage instructions
+if [ "$SOURCED" -eq 1 ]; then
+    log INFO "Environment sourced successfully"
+    log INFO "To run the full setup, use: source $0 --run-setup [options]"
+fi
 log SUCCESS "Environment setup complete!"
 echo
 log INFO "To use this environment:"

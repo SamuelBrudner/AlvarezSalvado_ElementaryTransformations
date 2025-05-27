@@ -2,8 +2,22 @@
 # Set up environment paths for the project
 # Can be sourced directly or called as a script
 
-# Exit on error and undefined variables
-set -euo pipefail
+# Handle both sourced and direct execution
+(return 0 2>/dev/null) && SOURCED=1 || SOURCED=0
+
+# Only set these options when not sourced to prevent exiting the parent shell
+if [ "$SOURCED" -eq 0 ]; then
+    set -euo pipefail
+else
+    set -u  # Only fail on undefined variables when sourced
+fi
+
+# Function to safely exit or return
+safe_exit() {
+    local exit_code=$1
+    shift
+    [ "$SOURCED" -eq 1 ] && return $exit_code || exit $exit_code
+}
 
 # Function to find MATLAB executable
 find_matlab() {
@@ -35,10 +49,34 @@ find_matlab() {
     return 1
 }
 
+# Function to make paths relative to project root when possible
+make_relative_path() {
+    local target_path="$1"
+    local project_root="$2"
+    
+    # If the path is already relative, return as is
+    if [[ "$target_path" != /* ]]; then
+        echo "$target_path"
+        return 0
+    fi
+    
+    # Try to make path relative to project root
+    if [[ "$target_path" == "$project_root"/* ]]; then
+        echo "${target_path#$project_root/}"
+    elif [[ "$target_path" == "$project_root" ]]; then
+        echo "."
+    else
+        echo "$target_path"
+    fi
+}
+
 # Debug info
-echo "Starting paths.sh"
-echo "Script directory: $(pwd)"
-echo "BASH_SOURCE[0]: ${BASH_SOURCE[0]:-not set}"
+if [ "${DEBUG:-0}" -eq 1 ]; then
+    echo "[DEBUG] Starting paths.sh"
+    echo "[DEBUG] Script directory: $(pwd)"
+    echo "[DEBUG] BASH_SOURCE[0]: ${BASH_SOURCE[0]:-not set}"
+    echo "[DEBUG] SOURCED: $SOURCED"
+fi
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" && pwd)"
@@ -47,13 +85,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" && pwd)"
 if [ ! -f "${SCRIPT_DIR}/setup_utils.sh" ]; then
     echo "Error: setup_utils.sh not found in ${SCRIPT_DIR}/" >&2
     echo "Please ensure you're running this from the project root directory" >&2
-    return 1 2>/dev/null || exit 1
+    safe_exit 1
 fi
 
 # shellcheck source=./setup_utils.sh
 if ! source "${SCRIPT_DIR}/setup_utils.sh"; then
     echo "Error: Failed to source setup_utils.sh" >&2
-    return 1 2>/dev/null || exit 1
+    safe_exit 1
 fi
 
 # Configuration
@@ -71,6 +109,7 @@ generate_paths_config() {
     
     # Export PROJECT_DIR for the template
     export PROJECT_DIR="$SCRIPT_DIR"
+    export TMPDIR="${TMPDIR:-/tmp}"
     
     # Generate paths.yaml from template if it doesn't exist
     if [ ! -f "$PATHS_TEMPLATE" ]; then
@@ -78,19 +117,24 @@ generate_paths_config() {
         return 1
     fi
     
-    if [ ! -f "$PATHS_CONFIG" ]; then
-        log INFO "Generating $PATHS_CONFIG from template..."
-        
-        # Try using substitute_vars if available, otherwise use envsubst
-        if command -v envsubst >/dev/null 2>&1; then
-            log INFO "Using envsubst for variable substitution"
-            if ! envsubst < "$PATHS_TEMPLATE" > "$PATHS_CONFIG"; then
-                log ERROR "Failed to generate $PATHS_CONFIG using envsubst"
-                return 1
-            fi
-        elif command -v python3 >/dev/null 2>&1; then
-            log INFO "Using Python for variable substitution"
-            if ! python3 -c "
+    # Always generate the config file to ensure it's up to date
+    log INFO "Generating $PATHS_CONFIG from template..."
+    
+    # Create a temporary file for the processed template
+    local temp_template
+    temp_template="${TMPDIR}/paths_template_${RANDOM}.yaml"
+    
+    # Process the template with environment variables
+    if command -v envsubst >/dev/null 2>&1; then
+        log INFO "Using envsubst for variable substitution"
+        if ! envsubst < "$PATHS_TEMPLATE" > "$temp_template"; then
+            log ERROR "Failed to process template with envsubst"
+            rm -f "$temp_template" 2>/dev/null || true
+            return 1
+        fi
+    elif command -v python3 >/dev/null 2>&1; then
+        log INFO "Using Python for variable substitution"
+        if ! python3 -c "
 import os
 import sys
 
@@ -108,24 +152,79 @@ def substitute_vars(template_path, output_path):
     with open(output_path, 'w') as f:
         f.write(content)
 
-substitute_vars('$PATHS_TEMPLATE', '$PATHS_CONFIG')
-            "; then
-                log ERROR "Failed to generate $PATHS_CONFIG using Python"
-                return 1
-            fi
-        else
-            log ERROR "Neither envsubst nor Python is available for variable substitution"
+substitute_vars('$PATHS_TEMPLATE', '$temp_template')
+        "; then
+            log ERROR "Failed to process template with Python"
+            rm -f "$temp_template" 2>/dev/null || true
             return 1
         fi
-        log SUCCESS "Created paths configuration at $PATHS_CONFIG"
     else
-        log INFO "Paths configuration already exists at $PATHS_CONFIG"
+        log ERROR "Neither envsubst nor Python is available for variable substitution"
+        return 1
     fi
+    
+    # Process the template to make paths relative where possible
+    if command -v python3 >/dev/null 2>&1; then
+        log INFO "Processing paths to make them relative where possible..."
+        if ! python3 -c "
+import os
+import yaml
+
+def make_paths_relative(config_path, project_root):
+    # Load the YAML file
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f) or {}
+    
+    # Process each path in the config
+    def process_value(value, key_path=''):
+        if isinstance(value, dict):
+            return {k: process_value(v, f"{key_path}.{k}" if key_path else k) 
+                   for k, v in value.items()}
+        elif isinstance(value, list):
+            return [process_item(item, f"{key_path}[]") for item in value]
+        elif isinstance(value, str) and value.startswith(project_root):
+            # Make path relative to project root
+            rel_path = os.path.relpath(value, project_root)
+            if not rel_path.startswith('..'):
+                return rel_path
+        return value
+    
+    def process_item(item, key_path):
+        if isinstance(item, dict):
+            return {k: process_value(v, f"{key_path}.{k}") for k, v in item.items()}
+        elif isinstance(item, str) and item.startswith(project_root):
+            rel_path = os.path.relpath(item, project_root)
+            if not rel_path.startswith('..'):
+                return rel_path
+        return item
+    
+    # Process the config
+    processed_config = process_value(config)
+    
+    # Save the processed config back to the file
+    with open(config_path, 'w') as f:
+        yaml.dump(processed_config, f, default_flow_style=False, sort_keys=False)
+
+# Process the template file
+make_paths_relative('$temp_template', '$PROJECT_DIR')
+        "; then
+            log WARNING "Failed to process paths to be relative, using absolute paths"
+        fi
+    fi
+    
+    # Move the temporary file to the final location
+    if ! mv "$temp_template" "$PATHS_CONFIG"; then
+        log ERROR "Failed to create $PATHS_CONFIG"
+        rm -f "$temp_template" 2>/dev/null || true
+        return 1
+    fi
+    
+    log SUCCESS "Created/updated paths configuration at $PATHS_CONFIG"
     
     # Set up additional environment paths
     export PYTHONPATH="${PYTHONPATH:-}${PYTHONPATH:+:}${SCRIPT_DIR}/Code"
 
-        # Load MATLAB configuration from project_paths.yaml if it exists
+    # Load MATLAB configuration from project_paths.yaml if it exists
     if [ -f "$PATHS_CONFIG" ] && command -v yq >/dev/null 2>&1; then
         # Check if MATLAB path is explicitly set in config
         if CONFIG_MATLAB=$(yq eval '.matlab.executable // ""' "$PATHS_CONFIG" 2>/dev/null) && 
@@ -178,7 +277,19 @@ setup_paths() {
     fi
 }
 
-# If script is executed directly, run setup_paths
-if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]]; then
-    setup_paths
+# Main execution
+if [ "$SOURCED" -eq 1 ]; then
+    # When sourced, run setup_paths and capture the return code
+    if ! setup_paths; then
+        echo "Warning: Failed to set up some paths. Some functionality may be limited." >&2
+    fi
+else
+    # When executed directly, run setup_paths and exit with appropriate status
+    if setup_paths; then
+        echo "Successfully set up project paths"
+        exit 0
+    else
+        echo "Failed to set up project paths" >&2
+        exit 1
+    fi
 fi
