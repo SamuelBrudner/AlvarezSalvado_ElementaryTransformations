@@ -104,7 +104,7 @@ When processing video data, the system uses a MATLAB script (`process_smoke_vide
 1. **Path Configuration**: The system loads paths from `configs/paths.yaml`
 2. **Script Preparation**: The MATLAB script is copied to a temporary directory for execution
 3. **Path Variables**: The following variables are automatically set:
-   - `original_script_dir`: Points to the MATLAB scripts directory from `paths.yaml`
+   - `orig_script_dir`: Points to the MATLAB scripts directory from `paths.yaml`
    - `scriptDir`: Set to the temporary execution directory
 
 This ensures that while the script executes in a temporary directory, it can still locate all necessary dependencies through the configured paths.
@@ -113,7 +113,7 @@ This ensures that while the script executes in a temporary directory, it can sti
 
 ```yaml
 scripts:
-  matlab: "${PROJECT_DIR}/scripts"  # Original script directory (original_script_dir)
+  matlab: "${PROJECT_DIR}/scripts"  # Original script directory (orig_script_dir)
   python: "${PROJECT_DIR}/Code"     # Python modules
   temp: "${TMPDIR}/matlab_scripts"   # Temporary execution directory
 ```
