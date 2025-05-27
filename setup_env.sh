@@ -102,7 +102,7 @@ setup_environment() {
     log INFO "Installing conda-lock"
     if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
       log WARNING "conda install failed, attempting pip fallback"
-      if ! run_command_verbose pip install --user conda-lock; then
+      if ! run_command_verbose python -m pip install --user conda-lock; then
         error "Failed to install conda-lock with conda or pip"
       fi
       export PATH="$HOME/.local/bin:${PATH}"
@@ -119,6 +119,11 @@ setup_environment() {
     # Verify installation
     if ! command -v conda-lock >/dev/null 2>&1; then
       error "Failed to install conda-lock or make it available in PATH"
+    fi
+
+    # Ensure conda-lock command works
+    if ! conda-lock --version >/dev/null 2>&1; then
+      error "conda-lock installation succeeded but 'conda-lock --version' failed"
     fi
   fi
 
