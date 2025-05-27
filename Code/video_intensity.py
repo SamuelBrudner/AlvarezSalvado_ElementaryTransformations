@@ -145,44 +145,76 @@ def get_intensities_from_video_via_matlab(
         raise
 
     try:
-        script_file = tempfile.NamedTemporaryFile(delete=False, suffix=".m")
+        script_file = tempfile.NamedTemporaryFile(suffix=".m", delete=False)
         header_lines = []
-        # Add all optional parameters that are not None
-        header_lines.extend(
-            line
-            for line in [
-                f"cd('{work_dir}')" if work_dir is not None else None,
-                f"px_per_mm = {px_per_mm};" if px_per_mm is not None else None,
-                f"frame_rate = {frame_rate};" if frame_rate is not None else None,
-                (
-                    f"orig_script_path = '{orig_script_path}';"
-                    if orig_script_path is not None
-                    else None
-                ),
-                (
-                    "orig_script_dir = fileparts(orig_script_path);"
-                    if orig_script_path is not None
-                    else None
-                ),
-            ]
-            if line is not None
-        )
-        full_contents = "\n".join(header_lines + [script_contents])
-        script_file.write(full_contents.encode())
+        if px_per_mm is not None:
+            header_lines.append(f"px_per_mm = {px_per_mm};")
+        if frame_rate is not None:
+            header_lines.append(f"frame_rate = {frame_rate};")
+        if orig_script_path is not None:
+            # Escape single quotes in the path for MATLAB
+            safe_path = orig_script_path.replace("'", "''")
+            header_lines.extend(
+                [
+                    f"orig_script_path = '{safe_path}';",
+                    "orig_script_dir = fileparts(orig_script_path);",
+                ]
+            )
+        if work_dir is not None:
+            header_lines.append(f"cd('{work_dir}')")
+        # Write the header lines and script contents
+        header = "\n".join(header_lines) + "\n\n" if header_lines else ""
+        script_file.write((header + script_contents).encode())
         script_file.flush()
+
+        # Create a safe path for MATLAB
         safe_path = script_file.name.replace("'", "''")
-        matlab_cmd = [matlab_exec_path, "-batch", f"run('{safe_path}')"]
+        matlab_cmd = [
+            matlab_exec_path,
+            "-nosplash",
+            "-nodesktop",
+            "-noFigureWindows",
+            "-batch",
+            f"try, run('{safe_path}'), catch ME, disp('MATLAB Error: ' + getReport(ME, 'extended')); exit(1); end",
+        ]
+
         logger.info(
             "Running MATLAB script %s in %s",
             script_file.name,
             work_dir or os.getcwd(),
         )
-        proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
-        if proc.returncode != 0:
-            hint = "" if orig_script_path is None else f" (script: {orig_script_path})"
-            raise RuntimeError(
-                f"MATLAB failed{hint}: {proc.stderr.strip()}\nCheck that orig_script_dir is correct"
+        logger.debug(
+            "MATLAB command: %s",
+            " ".join(f'"{x}"' if " " in x else x for x in matlab_cmd),
+        )
+
+        # Run MATLAB with timeout (30 minutes)
+        try:
+            proc = subprocess.run(
+                matlab_cmd,
+                capture_output=True,
+                text=True,
+                timeout=1800,  # 30 minute timeout
+                cwd=work_dir or os.getcwd(),
             )
+
+            # Log MATLAB output for debugging
+            if proc.stdout:
+                logger.debug("MATLAB stdout:\n%s", proc.stdout)
+            if proc.stderr:
+                logger.error("MATLAB stderr:\n%s", proc.stderr)
+
+            if proc.returncode != 0:
+                hint = (
+                    "" if orig_script_path is None else f" (script: {orig_script_path})"
+                )
+                error_msg = proc.stderr.strip() or "No error message from MATLAB"
+                raise RuntimeError(
+                    f"MATLAB failed with exit code {proc.returncode}{hint}: {error_msg}"
+                )
+
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("MATLAB script execution timed out after 30 minutes")
 
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
