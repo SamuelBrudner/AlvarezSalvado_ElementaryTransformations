@@ -71,14 +71,18 @@ them to the Crimaldi data. Below is a minimal script `video_script.m`. Replace
 `'my_plume.avi'` with the path to your movie. The example below loads
 `configs/my_complex_plume_config.yaml` so the pixel conversion and frame rate
 are pulled from that file. The YAML file defines `px_per_mm` and
-`frame_rate` used by `load_plume_video`:
+`frame_rate` used by `load_plume_video`.
+`get_intensities_from_video_via_matlab` now also exposes ``orig_script_path`` and
+``orig_script_dir`` variables for convenience:
 
 ```matlab
 % When run via `compare_intensity_stats.py` this script is copied to a
 % temporary location. The helper function `get_intensities_from_video_via_matlab`
 % automatically inserts ``cd(work_dir)`` so `pwd` points to the original
-% directory. Rely on `pwd` or supply an absolute path.
-cfgPath = fullfile(pwd, 'configs', 'my_complex_plume_config.yaml');
+% directory. It now also exposes ``orig_script_path`` and ``orig_script_dir`` to
+% help resolve resources relative to the original script folder. Use
+% ``orig_script_dir`` in preference to `pwd` when constructing paths.
+cfgPath = fullfile(orig_script_dir, 'configs', 'my_complex_plume_config.yaml');
 cfg = load_config(cfgPath);
 plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', cfg.px_per_mm, cfg.frame_rate);
 all_intensities = plume.data(:);
@@ -88,9 +92,10 @@ fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 
 `compare_intensity_stats.py` executes a temporary copy of the script so
 ``mfilename('fullpath')`` refers to that temporary location. Because
-``get_intensities_from_video_via_matlab`` inserts ``cd(work_dir)``, the
-current directory is the original script folder. Use ``pwd`` or an
-absolute path to find configuration files reliably.
+``get_intensities_from_video_via_matlab`` inserts ``cd(work_dir)`` and now
+defines ``orig_script_path`` and ``orig_script_dir`` variables, the
+current directory is the original script folder. Prefer ``orig_script_dir``
+or an absolute path when locating configuration files.
 
 Save the script and pass **its full path** to the Python utility. The
 `TEMP_MAT_FILE_SUCCESS` line is used by `compare_intensity_stats.py` to locate the
