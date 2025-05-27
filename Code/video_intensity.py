@@ -22,10 +22,14 @@ Create the development environment and run a short Python snippet inside it::
 
 from __future__ import annotations
 
+import contextlib
+import glob
 import logging
 import os
+import shutil
 import subprocess
 import tempfile
+from typing import List, Optional
 
 import numpy as np
 from scipy.io import loadmat
@@ -33,13 +37,55 @@ from scipy.io import loadmat
 logger = logging.getLogger(__name__)
 
 
+def find_matlab_executable(user_path: Optional[str] = None) -> str:
+    """Find MATLAB executable in common locations.
+
+    Args:
+        user_path: Optional path to MATLAB executable provided by user.
+
+    Returns:
+        Path to MATLAB executable.
+
+    Raises:
+        FileNotFoundError: If MATLAB executable cannot be found.
+    """
+    # Check user-provided path first
+    if user_path and os.path.isfile(user_path) and os.access(user_path, os.X_OK):
+        return user_path
+
+    # Check common MATLAB locations
+    common_paths: List[str] = [
+        "/usr/local/MATLAB/*/bin/matlab",
+        "/opt/MATLAB/*/bin/matlab",
+        "/Applications/MATLAB_*.app/bin/matlab",
+        os.path.expanduser("~/bin/matlab"),
+        "/usr/bin/matlab",
+        "/usr/local/bin/matlab",
+    ]
+
+    for path_pattern in common_paths:
+        for path in glob.glob(path_pattern):
+            if os.path.isfile(path) and os.access(path, os.X_OK):
+                return path
+
+    # Check if matlab is in PATH
+    if matlab_path := shutil.which("matlab"):
+        return matlab_path
+
+    raise FileNotFoundError(
+        "MATLAB executable not found. Please specify the path to MATLAB using the "
+        "MATLAB_EXEC environment variable or the --matlab_exec command line argument. "
+        "Common locations were checked: " + ", ".join(common_paths)
+    )
+
+
 def get_intensities_from_video_via_matlab(
     script_contents: str,
-    matlab_exec_path: str,
-    px_per_mm: float | None = None,
-    frame_rate: float | None = None,
-    work_dir: str | None = None,
-    orig_script_path: str | None = None,
+    matlab_exec_path: Optional[str] = None,
+    px_per_mm: Optional[float] = None,
+    frame_rate: Optional[float] = None,
+    work_dir: Optional[str] = None,
+    orig_script_path: Optional[str] = None,
 ) -> np.ndarray:
     """Run a MATLAB script and return the extracted intensity vector.
 
@@ -85,19 +131,42 @@ def get_intensities_from_video_via_matlab(
     logger = logging.getLogger(__name__)
     script_file = None
     mat_path = None
+
+    # Find MATLAB executable
+    try:
+        matlab_path = find_matlab_executable(matlab_exec_path)
+        logger.info("Using MATLAB at: %s", matlab_path)
+    except FileNotFoundError as e:
+        logger.error("Failed to find MATLAB executable: %s", e)
+        logger.info(
+            "You can specify the MATLAB path using the MATLAB_EXEC environment variable"
+        )
+        logger.info("or the --matlab_exec command line argument.")
+        raise
+
     try:
         script_file = tempfile.NamedTemporaryFile(delete=False, suffix=".m")
         header_lines = []
-        if work_dir is not None:
-            header_lines.append(f"cd('{work_dir}')")
-        if px_per_mm is not None:
-            header_lines.append(f"px_per_mm = {px_per_mm};")
-        if frame_rate is not None:
-            header_lines.append(f"frame_rate = {frame_rate};")
-        if orig_script_path is not None:
-            header_lines.append(f"orig_script_path = '{orig_script_path}';")
-
-            header_lines.append("orig_script_dir = fileparts(orig_script_path);")
+        # Add all optional parameters that are not None
+        header_lines.extend(
+            line
+            for line in [
+                f"cd('{work_dir}')" if work_dir is not None else None,
+                f"px_per_mm = {px_per_mm};" if px_per_mm is not None else None,
+                f"frame_rate = {frame_rate};" if frame_rate is not None else None,
+                (
+                    f"orig_script_path = '{orig_script_path}';"
+                    if orig_script_path is not None
+                    else None
+                ),
+                (
+                    "orig_script_dir = fileparts(orig_script_path);"
+                    if orig_script_path is not None
+                    else None
+                ),
+            ]
+            if line is not None
+        )
         full_contents = "\n".join(header_lines + [script_contents])
         script_file.write(full_contents.encode())
         script_file.flush()
@@ -115,7 +184,6 @@ def get_intensities_from_video_via_matlab(
                 f"MATLAB failed{hint}: {proc.stderr.strip()}\nCheck that orig_script_dir is correct"
             )
 
-
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
                 mat_path = line.split(":", 1)[1].strip()
@@ -129,12 +197,8 @@ def get_intensities_from_video_via_matlab(
         return np.asarray(data["all_intensities"]).flatten()
     finally:
         if script_file is not None:
-            try:
+            with contextlib.suppress(FileNotFoundError):
                 os.unlink(script_file.name)
-            except FileNotFoundError:
-                pass
         if mat_path is not None:
-            try:
+            with contextlib.suppress(FileNotFoundError):
                 os.unlink(mat_path)
-            except FileNotFoundError:
-                pass

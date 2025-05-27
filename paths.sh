@@ -21,32 +21,68 @@ safe_exit() {
 
 # Function to find MATLAB executable
 find_matlab() {
+    # First check if MATLAB is already in PATH
+    if command -v matlab >/dev/null 2>&1; then
+        command -v matlab
+        return 0
+    fi
+    
     # Try common MATLAB executable locations
     local matlab_paths=(
-        "$(command -v matlab 2>/dev/null)"
-        "/Applications/MATLAB_*/bin/matlab"
         "/usr/local/MATLAB/*/bin/matlab"
         "/opt/matlab/*/bin/matlab"
+        "/Applications/MATLAB_*/bin/matlab"
+        "/usr/local/bin/matlab"
+        "/usr/bin/matlab"
     )
     
-    for path in "${matlab_paths[@]}"; do
-        if [ -n "$path" ] && [ -x "$path" ]; then
-            echo "$path"
-            return 0
-        fi
+    for path_pattern in "${matlab_paths[@]}"; do
+        # Expand the glob pattern
+        for path in $path_pattern; do
+            if [ -x "$path" ]; then
+                echo "$path"
+                return 0
+            fi
+        done
     done
     
-    # If not found, try to find it using which
-    if command -v which >/dev/null 2>&1; then
-        local which_matlab
-        which_matlab=$(which matlab 2>/dev/null)
-        if [ -n "$which_matlab" ] && [ -x "$which_matlab" ]; then
-            echo "$which_matlab"
+    # Try module system if available
+    if command -v module >/dev/null 2>&1; then
+        module load MATLAB 2>/dev/null || true
+        if command -v matlab >/dev/null 2>&1; then
+            command -v matlab
             return 0
         fi
     fi
     
     return 1
+}
+
+# Function to setup MATLAB environment
+setup_matlab() {
+    # If MATLAB_EXEC is already set, use it
+    if [ -n "${MATLAB_EXEC:-}" ] && [ -x "$MATLAB_EXEC" ]; then
+        echo "Using MATLAB from MATLAB_EXEC: $MATLAB_EXEC"
+        return 0
+    fi
+    
+    # Try to find MATLAB
+    local matlab_path
+    if matlab_path=$(find_matlab); then
+        export MATLAB_EXEC="$matlab_path"
+        # Add MATLAB's bin directory to PATH if not already there
+        local matlab_bin="$(dirname "$matlab_path")"
+        if [[ ":$PATH:" != *":$matlab_bin:"* ]]; then
+            export PATH="$matlab_bin:$PATH"
+            echo "Added MATLAB to PATH: $matlab_bin"
+        fi
+        echo "Found MATLAB at: $matlab_path"
+        return 0
+    else
+        echo "WARNING: MATLAB not found. Some functionality may be limited."
+        echo "         You can set MATLAB_EXEC environment variable to the MATLAB executable path."
+        return 1
+    fi
 }
 
 # Function to make paths relative to project root when possible
@@ -279,10 +315,19 @@ make_paths_relative('$temp_template', '$PROJECT_DIR')
 }
 
 setup_paths() {
+    # First set up the basic paths configuration
     if ! generate_paths_config; then
         log ERROR "Failed to set up paths configuration"
         return 1
     fi
+    
+    # Set up MATLAB if available
+    if ! setup_matlab; then
+        log WARNING "MATLAB setup failed - some functionality may be limited"
+        # Don't fail the entire setup if MATLAB isn't available
+    fi
+    
+    return 0
 }
 
 # Main execution
