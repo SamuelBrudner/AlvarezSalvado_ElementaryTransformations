@@ -4,8 +4,9 @@
 % and save the results to a MAT file for further analysis.
 % 
 % The script uses the project's paths configuration (configs/paths.yaml) to manage
-% file locations. The 'original_script_dir' variable is automatically set to the
-% MATLAB scripts directory defined in the paths configuration.
+% file locations. The 'orig_script_dir' variable is automatically set by the
+% Python wrapper to the MATLAB scripts directory defined in the paths
+% configuration.
 % 
 % The script expects the following variables to be defined in the workspace:
 %   - video_path: Path to the input video file
@@ -14,12 +15,16 @@
 %   - frame_rate: Video frame rate in Hz (optional)
 %   - start_frame: First frame to process (optional, default=1)
 %   - end_frame: Last frame to process (optional, default=end of video)
-%   - original_script_dir: Automatically set by the Python wrapper to the
-%                         MATLAB scripts directory from paths.yaml configuration
+%   - orig_script_dir: Automatically set by the Python wrapper to the
+%                     MATLAB scripts directory from paths.yaml configuration
 
 % Add scripts directory to path
-scriptDir = fileparts(mfilename('fullpath'));
-addpath(fullfile(scriptDir, '..', 'scripts'));
+if exist('orig_script_dir', 'var')
+    projectRoot = orig_script_dir;
+else
+    projectRoot = fileparts(mfilename('fullpath'));
+end
+addpath(fullfile(projectRoot, 'scripts'));
 
 % Load paths configuration
 try
