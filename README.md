@@ -557,6 +557,21 @@ python -m Code.characterize_plume_intensities \
     --output_json plume_stats.json
 
 # Video plume example
+
+First create a small MATLAB script to load your movie and write out the
+intensity vector. For ``data/smoke_1a_bgsub_raw.avi`` the script might look like
+``video_script.m``:
+
+```matlab
+plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', 20, 40);
+all_intensities = plume.data(:);
+save('temp_intensities.mat', 'all_intensities');
+fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
+```
+
+Run the utility with the path to this script:
+
+```bash
 python -m Code.characterize_plume_intensities \
     --plume_type video \
     --file_path path/to/video_script.m \
@@ -593,6 +608,9 @@ To compare a custom video plume against Crimaldi, first create the development e
 ```bash
 conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
 ```
+
+``path/to/video_script.m`` should point to the MATLAB file shown above that
+loads your ``.avi`` movie and writes ``temp_intensities.mat``.
 
 ## Repository Layout
 

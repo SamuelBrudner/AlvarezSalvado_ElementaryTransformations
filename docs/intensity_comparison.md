@@ -66,14 +66,21 @@ Figure saved to figures/intensity_comparison.png
 
 ### Comparing a Video Plume to Crimaldi
 
-If you have a custom plume movie, extract the intensity values in MATLAB and compare them to the Crimaldi data. Below is a minimal script `video_script.m`:
+If you have a custom plume movie, extract the intensity values in MATLAB and compare
+them to the Crimaldi data. Below is a minimal script `video_script.m`. Replace
+`'my_plume.avi'` with the path to your movie, for example
+`'data/smoke_1a_bgsub_raw.avi'`:
 
 ```matlab
-plume = load_plume_video('my_plume.avi', 20, 40);
+plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', 20, 40);
 all_intensities = plume.data(:);
 save('temp_intensities.mat', 'all_intensities');
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 ```
+
+Save the script and pass **its full path** to the Python utility. The
+`TEMP_MAT_FILE_SUCCESS` line is used by `compare_intensity_stats.py` to locate the
+generated MAT-file.
 
 Run the comparison using the development environment created with `./setup_env.sh --dev`:
 
