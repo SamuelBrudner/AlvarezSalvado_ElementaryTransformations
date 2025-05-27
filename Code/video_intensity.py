@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 import subprocess
 import tempfile
-from pathlib import Path
 
 import numpy as np
 from scipy.io import loadmat
@@ -39,6 +38,12 @@ def get_intensities_from_video_via_matlab(
         Frame rate of the video in Hz. As with ``px_per_mm``, the value is
         embedded in the temporary MATLAB script for use by helper routines.
 
+    Notes
+    -----
+    The temporary script path is embedded in a ``run('...')`` command.
+    Any single quotes in the path are escaped for MATLAB by doubling them so
+    paths with spaces or quotes are handled correctly.
+
     Returns
     -------
     numpy.ndarray
@@ -56,7 +61,8 @@ def get_intensities_from_video_via_matlab(
         full_contents = "\n".join(header_lines + [script_contents])
         script_file.write(full_contents.encode())
         script_file.flush()
-        matlab_cmd = [matlab_exec_path, "-batch", Path(script_file.name).stem]
+        safe_path = script_file.name.replace("'", "''")
+        matlab_cmd = [matlab_exec_path, "-batch", f"run('{safe_path}')"]
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
             raise RuntimeError(f"MATLAB failed: {proc.stdout}\n{proc.stderr}")

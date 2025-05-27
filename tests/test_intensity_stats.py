@@ -43,3 +43,14 @@ def test_main_plot_histogram(monkeypatch, tmp_path):
                                   show=lambda *a, **k: None)
     monkeypatch.setitem(sys.modules, 'matplotlib.pyplot', dummy)
     main(["plumeB", str(f), "--plot_histogram"])
+
+
+def test_empty_intensity_stats_returns_nans():
+    stats = calculate_intensity_stats_dict(np.array([]))
+    assert np.isnan(stats["mean"])
+    assert np.isnan(stats["median"])
+    assert np.isnan(stats["p95"])
+    assert np.isnan(stats["p99"])
+    assert np.isnan(stats["min"])
+    assert np.isnan(stats["max"])
+    assert stats["count"] == 0
