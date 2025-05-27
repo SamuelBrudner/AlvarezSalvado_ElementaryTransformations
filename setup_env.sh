@@ -54,13 +54,72 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Detect whether 'conda env create --force' is supported
+conda_supports_force() {
+  conda env create --help 2>&1 | grep -q -- '--force'
+}
+
+# Attempt to load Conda via the environment modules system
+try_load_conda_module() {
+  if type module >/dev/null 2>&1; then
+    for m in miniconda anaconda conda; do
+      if module avail "$m" 2>&1 | grep -qi "$m"; then
+        log INFO "Loading $m module for Conda"
+        if module load "$m"; then
+          return 0
+        fi
+      fi
+    done
+
+  fi
+  return 1
+}
+
+# Ensure conda-lock command exists and functions
+ensure_conda_lock() {
+    if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
+        log INFO "Installing conda-lock"
+        if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
+            log WARNING "conda install failed, attempting pip fallback"
+            if ! run_command_verbose python -m pip install --user conda-lock; then
+                error "Failed to install conda-lock with conda or pip"
+            fi
+        fi
+
+
+        # Refresh the shell to update PATH
+        if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
+            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
+        fi
+
+        # Add conda to PATH if not already there
+        export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
+
+        # If pip installed into user base, ensure that directory is on PATH
+        if ! command -v conda-lock >/dev/null 2>&1; then
+            USER_BIN="$(python -m site --user-base)/bin"
+            if [ -x "${USER_BIN}/conda-lock" ]; then
+                export PATH="${USER_BIN}:${PATH}"
+                hash -r
+            fi
+        fi
+
+        # Verify installation
+        if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
+            error "conda-lock installed but not on PATH. Add ${USER_BIN} to PATH."
+        fi
+    fi
+}
+
 # --- Main setup function ---
 setup_environment() {
   section "Starting environment setup"
   
-  # Check if conda is installed
+  # Check if conda is installed, attempt to load via modules if missing
   if ! command -v conda >/dev/null 2>&1; then
-    if [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
+    if try_load_conda_module && command -v conda >/dev/null 2>&1; then
+      log INFO "Loaded Conda via module system"
+    elif [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
       log WARNING "conda not found, installing Miniconda"
       if ! command -v wget >/dev/null 2>&1; then
         run_command_verbose apt-get update
@@ -70,7 +129,7 @@ setup_environment() {
       run_command_verbose bash /tmp/miniconda.sh -b -p "$HOME/miniconda"
       export PATH="$HOME/miniconda/bin:$PATH"
     else
-      error "conda is required but not found in PATH. Please install Miniconda or Anaconda."
+      error "conda is required but not found in PATH. Please load the appropriate module or install Miniconda."
     fi
   fi
 
@@ -92,30 +151,8 @@ setup_environment() {
     error "Base environment file '$BASE_ENV_FILE' not found in the current directory."
   fi
 
-  # Ensure conda-lock is installed and generate lock file
-  if ! command -v conda-lock >/dev/null 2>&1; then
-    log INFO "Installing conda-lock"
-    if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
-      log WARNING "conda install failed, attempting pip fallback"
-      if ! run_command_verbose pip install --user conda-lock; then
-        error "Failed to install conda-lock with conda or pip"
-      fi
-      export PATH="$HOME/.local/bin:${PATH}"
-    fi
-
-    # Refresh the shell to update PATH
-    if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-      source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
-    fi
-
-    # Add conda to PATH if not already there
-    export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
-
-    # Verify installation
-    if ! command -v conda-lock >/dev/null 2>&1; then
-      error "Failed to install conda-lock or make it available in PATH"
-    fi
-  fi
+  # Ensure conda-lock is installed and functional
+  ensure_conda_lock
 
   # Get platform information safely
   if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
@@ -151,10 +188,22 @@ setup_environment() {
   log INFO "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
   
   if [ -f "conda-lock.yml" ]; then
-    run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
+    if conda_supports_force; then
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
+    else
+      log INFO "Old conda detected - removing existing environment"
+      run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
+    fi
   else
     log WARNING "conda-lock.yml not found, falling back to direct environment creation"
-    run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
+    if conda_supports_force; then
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
+    else
+      log INFO "Old conda detected - removing existing environment"
+      run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
+    fi
   fi
   
   log SUCCESS "Base environment './${LOCAL_ENV_DIR}' created/updated successfully."
@@ -295,25 +344,6 @@ main() {
 
 # Run the main function
 main "$@"
-
-if [ "$RUN_TESTS" -eq 1 ]; then
-  section "Running tests"
-  # Get the absolute path to the project root
-  PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  
-  # Activate the environment
-  log INFO "Activating the environment..."
-  eval "$(conda shell.bash hook)"
-  conda activate "$PROJECT_ROOT/$LOCAL_ENV_DIR"
-  
-  # Run tests with the project root in PYTHONPATH
-  log INFO "Running tests..."
-  PYTHONPATH="$PROJECT_ROOT" pytest -v tests/ || \
-    log WARNING "Some tests failed"
-  
-  # Deactivate the environment
-  conda deactivate
-fi
 
 # Simple variable substitution function
 substitute_vars() {
