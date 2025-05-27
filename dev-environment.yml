@@ -1,4 +1,4 @@
-name: elementary-dev
+name: elementary-transformations-dev
 channels:
   - conda-forge
   - defaults
