@@ -229,6 +229,27 @@ changes. Ensure all tests pass before committing.
 - Regenerate `conda-lock.yml` whenever `environment.yml` changes to keep
   dependencies pinned.
 
+### Troubleshooting Environment Setup
+
+If the environment fails to initialise or tests cannot find required
+packages, recreate the local Conda environment and rerun the test suite:
+
+```bash
+./setup_env.sh --dev
+conda run --prefix ./dev-env pytest
+```
+
+Should you encounter missing path errors, regenerate the project path
+configuration with:
+
+```bash
+./paths.sh
+```
+
+This rebuilds `configs/project_paths.yaml` using your current machine
+configuration.
+
+
 
 ## Data Organization
 
