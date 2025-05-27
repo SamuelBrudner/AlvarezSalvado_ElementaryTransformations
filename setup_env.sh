@@ -54,6 +54,11 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Detect whether 'conda env create --force' is supported
+conda_supports_force() {
+  conda env create --help 2>&1 | grep -q -- '--force'
+}
+
 # --- Main setup function ---
 setup_environment() {
   section "Starting environment setup"
@@ -151,10 +156,22 @@ setup_environment() {
   log INFO "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
   
   if [ -f "conda-lock.yml" ]; then
-    run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
+    if conda_supports_force; then
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
+    else
+      log INFO "Old conda detected - removing existing environment"
+      run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
+    fi
   else
     log WARNING "conda-lock.yml not found, falling back to direct environment creation"
-    run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
+    if conda_supports_force; then
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
+    else
+      log INFO "Old conda detected - removing existing environment"
+      run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
+      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
+    fi
   fi
   
   log SUCCESS "Base environment './${LOCAL_ENV_DIR}' created/updated successfully."
