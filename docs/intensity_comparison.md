@@ -68,11 +68,14 @@ Figure saved to figures/intensity_comparison.png
 
 If you have a custom plume movie, extract the intensity values in MATLAB and compare
 them to the Crimaldi data. Below is a minimal script `video_script.m`. Replace
-`'my_plume.avi'` with the path to your movie, for example
-`'data/smoke_1a_bgsub_raw.avi'`:
+`'my_plume.avi'` with the path to your movie. The example below loads
+`configs/my_complex_plume_config.yaml` so the pixel conversion and frame rate
+are pulled from that file. The YAML file defines `px_per_mm` and
+`frame_rate` used by `load_plume_video`:
 
 ```matlab
-plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', 20, 40);
+cfg = load_config('configs/my_complex_plume_config.yaml');
+plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', cfg.px_per_mm, cfg.frame_rate);
 all_intensities = plume.data(:);
 save('temp_intensities.mat', 'all_intensities');
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
