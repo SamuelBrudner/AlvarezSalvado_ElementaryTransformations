@@ -38,12 +38,13 @@ def load_intensities(
     if plume_type == "crimaldi":
         return get_intensities_from_crimaldi(path)
     if plume_type == "video":
-        script_contents = Path(path).read_text()
+        script_path = Path(path).resolve()
+        script_contents = script_path.read_text()
         return get_intensities_from_video_via_matlab(
             script_contents,
             matlab_exec_path,
-            work_dir=str(Path(path).parent),
-            orig_script_path=str(path),
+            work_dir=str(script_path.parent),
+            orig_script_path=str(script_path),
         )
 
     raise ValueError(f"Unknown plume_type: {plume_type}")
