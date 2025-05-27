@@ -17,8 +17,24 @@ function plume = load_plume_video(filename, px_per_mm, frame_rate)
 %   The movie is converted to grayscale and normalised in the range [0,1].
 
 v = VideoReader(filename);
-numFrames = floor(v.Duration * v.FrameRate);
-frames = zeros(v.Height, v.Width, numFrames);
+
+% Initialize variables
+frames = [];
+frameCount = 0;
+
+% First, count the actual number of frames
+while hasFrame(v)
+    frame = readFrame(v);
+    frameCount = frameCount + 1;
+end
+
+% Reset the video reader to the beginning
+v = VideoReader(filename);
+
+% Pre-allocate array with the actual frame count
+frames = zeros(v.Height, v.Width, frameCount, 'double');
+
+% Read frames
 count = 1;
 while hasFrame(v)
     frame = readFrame(v);
@@ -28,6 +44,12 @@ while hasFrame(v)
     frames(:,:,count) = im2double(frame);
     count = count + 1;
 end
+
+% In case frame count was misreported, trim any extra pre-allocated space
+if count <= size(frames,3)
+    frames = frames(:,:,1:count-1);
+end
+
 plume.data = frames;
 plume.px_per_mm = px_per_mm;
 plume.frame_rate = frame_rate;
