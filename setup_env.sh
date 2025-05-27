@@ -318,25 +318,6 @@ main() {
 # Run the main function
 main "$@"
 
-if [ "$RUN_TESTS" -eq 1 ]; then
-  section "Running tests"
-  # Get the absolute path to the project root
-  PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  
-  # Activate the environment
-  log INFO "Activating the environment..."
-  eval "$(conda shell.bash hook)"
-  conda activate "$PROJECT_ROOT/$LOCAL_ENV_DIR"
-  
-  # Run tests with the project root in PYTHONPATH
-  log INFO "Running tests..."
-  PYTHONPATH="$PROJECT_ROOT" pytest -v tests/ || \
-    log WARNING "Some tests failed"
-  
-  # Deactivate the environment
-  conda deactivate
-fi
-
 # Simple variable substitution function
 substitute_vars() {
     local content
