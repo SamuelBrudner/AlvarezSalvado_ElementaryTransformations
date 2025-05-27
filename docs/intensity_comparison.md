@@ -74,10 +74,11 @@ are pulled from that file. The YAML file defines `px_per_mm` and
 `frame_rate` used by `load_plume_video`:
 
 ```matlab
-% Construct an absolute path so MATLAB can locate the YAML file even when
-% the script is executed from a temporary directory.
-thisDir = fileparts(mfilename('fullpath'));
-cfgPath = fullfile(thisDir, '..', 'configs', 'my_complex_plume_config.yaml');
+% When run via `compare_intensity_stats.py` this script is copied to a
+% temporary location. The helper function `get_intensities_from_video_via_matlab`
+% automatically inserts ``cd(work_dir)`` so `pwd` points to the original
+% directory. Rely on `pwd` or supply an absolute path.
+cfgPath = fullfile(pwd, 'configs', 'my_complex_plume_config.yaml');
 cfg = load_config(cfgPath);
 plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', cfg.px_per_mm, cfg.frame_rate);
 all_intensities = plume.data(:);
@@ -85,9 +86,11 @@ save('temp_intensities.mat', 'all_intensities');
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 ```
 
-The first two lines compute the configuration path relative to the
-script's location, ensuring `load_config` can find the YAML file even
-though MATLAB temporarily changes directories when executing the script.
+`compare_intensity_stats.py` executes a temporary copy of the script so
+``mfilename('fullpath')`` refers to that temporary location. Because
+``get_intensities_from_video_via_matlab`` inserts ``cd(work_dir)``, the
+current directory is the original script folder. Use ``pwd`` or an
+absolute path to find configuration files reliably.
 
 Save the script and pass **its full path** to the Python utility. The
 `TEMP_MAT_FILE_SUCCESS` line is used by `compare_intensity_stats.py` to locate the
