@@ -30,24 +30,33 @@ def load_intensities(
     """
 
     if plume_type is None:
-        if path.lower().endswith((".h5", ".hdf5")):
-            plume_type = "crimaldi"
-        else:
-            plume_type = "video"
-
+        plume_type = "crimaldi" if path.lower().endswith((".h5", ".hdf5")) else "video"
     if plume_type == "crimaldi":
         return get_intensities_from_crimaldi(path)
     if plume_type == "video":
-        script_path = Path(path).resolve()
-        script_contents = script_path.read_text()
-        return get_intensities_from_video_via_matlab(
-            script_contents,
-            matlab_exec_path,
-            work_dir=str(script_path.parent),
-            orig_script_path=str(script_path),
-        )
-
+        return _extracted_from_load_intensities_22(path, matlab_exec_path)
     raise ValueError(f"Unknown plume_type: {plume_type}")
+
+
+# TODO Rename this here and in `load_intensities`
+def _extracted_from_load_intensities_22(path, matlab_exec_path):
+    script_path = Path(path).resolve()
+    script_dir = script_path.parent
+
+    # Read the script contents
+    with open(script_path, "r") as f:
+        script_contents = f.read()
+
+    # Add the video file path to the MATLAB workspace
+    video_file = str(script_dir / "data" / "10302017_10cms_bounded_2.h5")
+    script_contents = f"video_file = '{video_file}';\n\n{script_contents}"
+
+    return get_intensities_from_video_via_matlab(
+        script_contents,
+        matlab_exec_path,
+        work_dir=str(script_dir),
+        orig_script_path=str(script_path),
+    )
 
 
 def compare_intensity_stats(
@@ -94,7 +103,7 @@ def format_table(
         lines.append("\t".join(row))
     if diff is not None:
         diff_row = ["DIFF"] + [
-            (f"{diff['delta_' + k]:.3f}" if k != "count" else str(diff["delta_" + k]))
+            f"{diff[f'delta_{k}']:.3f}" if k != "count" else str(diff[f"delta_{k}"])
             for k in keys
         ]
         lines.append("\t".join(diff_row))

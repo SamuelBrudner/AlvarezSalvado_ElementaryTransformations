@@ -10,20 +10,28 @@ end
 addpath(genpath(codeDir));  % Add Code directory and all subdirectories
 fprintf('Added to path: %s\n', codeDir);
 
+% Check if we have a video file path passed as a parameter
+if exist('video_file', 'var') && ~isempty(video_file)
+    videoPath = video_file;
+    fprintf('Using provided video file: %s\n', videoPath);
+else
+    % Fall back to default path if no parameter provided
+    videoRelativePath = 'data/smoke_1a_bgsub_raw.avi';
+    videoPath = fullfile(scriptDir, videoRelativePath);
+    fprintf('No video file provided, using default: %s\n', videoPath);
+end
+
+% Check if video file exists
+if ~exist(videoPath, 'file')
+    error('Video file not found: %s', videoPath);
+end
+fprintf('Found video file: %s\n', videoPath);
+
 % List all functions in the path that match 'load_plume_video'
 fprintf('Searching for load_plume_video in path...\n');
 which('load_plume_video', '-all')
 
 try
-    % Define the video path
-    videoRelativePath = 'data/smoke_1a_bgsub_raw.avi';
-    videoPath = fullfile(scriptDir, videoRelativePath);
-    
-    % Check if video file exists
-    if ~exist(videoPath, 'file')
-        error('Video file not found: %s (resolved to: %s)', videoRelativePath, videoPath);
-    end
-    fprintf('Found video file: %s\n', videoPath);
     
     % Display MATLAB version and toolboxes
     ver

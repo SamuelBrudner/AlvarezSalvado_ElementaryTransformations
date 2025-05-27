@@ -213,8 +213,10 @@ def get_intensities_from_video_via_matlab(
                     f"MATLAB failed with exit code {proc.returncode}{hint}: {error_msg}"
                 )
 
-        except subprocess.TimeoutExpired:
-            raise RuntimeError("MATLAB script execution timed out after 30 minutes")
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(
+                "MATLAB script execution timed out after 30 minutes"
+            ) from exc
 
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
