@@ -21,7 +21,7 @@ def test_work_dir_passed_to_video_loader(monkeypatch, tmp_path):
     mfile.write_text('disp("hi")')
     captured = {}
 
-    def fake_video(contents, matlab_exec_path='matlab', px_per_mm=None, frame_rate=None, work_dir=None):
+    def fake_video(contents, matlab_exec_path='matlab', px_per_mm=None, frame_rate=None, work_dir=None, orig_script_path=None):
         captured['work_dir'] = work_dir
         return [1]
 

@@ -93,6 +93,7 @@ def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
             px_per_mm=ns.px_per_mm,
             frame_rate=ns.frame_rate,
             work_dir=str(Path(ns.file_path).parent),
+            orig_script_path=str(ns.file_path),
         )
     else:
         intensities = get_intensities_from_crimaldi(ns.file_path)
