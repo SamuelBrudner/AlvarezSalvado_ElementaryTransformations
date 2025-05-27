@@ -1,7 +1,10 @@
 import os
-import numpy as np
-import h5py
 import unittest
+
+import pytest
+
+np = pytest.importorskip("numpy")
+h5py = pytest.importorskip("h5py")
 
 from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
 

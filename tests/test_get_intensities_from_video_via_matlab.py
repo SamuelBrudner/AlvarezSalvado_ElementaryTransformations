@@ -4,7 +4,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy")
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 

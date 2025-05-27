@@ -3,7 +3,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import pandas as pd
+import pytest
+
+pd = pytest.importorskip("pandas")
 
 from Code.trajectory_animation import animate_trajectories
 
