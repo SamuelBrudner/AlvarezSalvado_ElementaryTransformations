@@ -27,3 +27,8 @@ def test_setup_env_script_runs_idempotently():
     assert result1.returncode == 0
     result2 = subprocess.run(['bash', '-c', cmd], capture_output=True, text=True)
     assert result2.returncode == 0
+
+def test_setup_env_has_conda_lock_pip_fallback():
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'pip install --user conda-lock' in content

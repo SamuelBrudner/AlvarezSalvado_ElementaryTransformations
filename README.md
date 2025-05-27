@@ -66,6 +66,12 @@ Python dependencies are managed using Conda and are split into two files:
    # This will create a local environment in ./dev-env
    ./setup_env.sh --dev
    ```
+   This prepares the development environment. Run scripts located in the
+   `Code` package with the module syntax so the repository root is added to
+   `sys.path`:
+   ```bash
+   python -m Code.some_script
+   ```
 
 4. **Activate the development environment**:
    ```bash
@@ -534,14 +540,14 @@ video plumes processed via MATLAB.
 
 ```bash
 # Crimaldi plume example
-python Code/characterize_plume_intensities.py \
+python -m Code.characterize_plume_intensities \
     --plume_type crimaldi \
     --file_path data/10302017_10cms_bounded.hdf5 \
     --plume_id crimaldi \
     --output_json plume_stats.json
 
 # Video plume example
-python Code/characterize_plume_intensities.py \
+python -m Code.characterize_plume_intensities \
     --plume_type video \
     --file_path path/to/video_script.m \
     --plume_id my_video \
@@ -562,11 +568,11 @@ variables.
 
 ```bash
 # Display results in the terminal
-python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5
+python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5
     --matlab_exec /path/to/matlab
 
 # Write to CSV
-python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
+python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5 \
     --csv intensity_comparison.csv
     --matlab_exec /path/to/matlab
 ```
@@ -575,7 +581,7 @@ python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
 To compare a custom video plume against Crimaldi, first create the development environment with `./setup_env.sh --dev` and then run:
 
 ```bash
-conda run --prefix ./dev-env python Code/compare_intensity_stats.py VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
 ```
 
 ## Repository Layout
