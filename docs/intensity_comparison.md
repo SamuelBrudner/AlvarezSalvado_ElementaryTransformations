@@ -162,9 +162,39 @@ fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', outputFile);
 
 ## Configuration
 
+### Project Structure
+
+```
+project_root/
+├── Code/                  # Python modules and utilities
+├── configs/               # Configuration files
+│   └── paths.yaml         # Local paths configuration (generated from template)
+├── data/                  # Data files (HDF5, videos, etc.)
+│   ├── raw/               # Raw data files
+│   └── processed/         # Processed data files
+├── scripts/               # MATLAB scripts and functions
+└── figures/               # Output figures
+```
+
 ### Local Paths Configuration
 
 Each user should have their own local `configs/paths.yaml` file (gitignored for security). A template is provided at `configs/paths.yaml.template`.
+
+Key paths configured in `paths.yaml`:
+- `scripts.matlab`: Points to the project root where MATLAB scripts are located
+- `scripts.python`: Points to the `Code` directory with Python modules
+- `data.*`: Paths to various data files and directories
+
+### MATLAB Path Resolution
+
+When running MATLAB scripts through the Python wrapper:
+1. The `orig_script_dir` variable is set to the project root directory
+2. The MATLAB path is automatically configured to include:
+   - The project root directory
+   - All subdirectories under `Code/`
+   - The `scripts/` directory
+
+For direct MATLAB execution, ensure your MATLAB path includes these directories.
 
 To set up your local configuration:
 

@@ -8,7 +8,7 @@ project_root: "${PROJECT_DIR}"
 # Script directories
 scripts:
   # Directory containing MATLAB analysis scripts (orig_script_dir will point here)
-  matlab: "${PROJECT_DIR}/scripts"
+  matlab: "${PROJECT_DIR}"  # Root directory for MATLAB scripts
   # Directory containing Python modules and utilities
   python: "${PROJECT_DIR}/Code"
   # Directory for temporary script execution (used by MATLAB wrapper)

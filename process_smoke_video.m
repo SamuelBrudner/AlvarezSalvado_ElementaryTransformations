@@ -18,13 +18,22 @@
 %   - orig_script_dir: Automatically set by the Python wrapper to the
 %                     MATLAB scripts directory from paths.yaml configuration
 
-% Add scripts directory to path
+% Add project directories to MATLAB path
 if exist('orig_script_dir', 'var')
+    % When called from Python wrapper, use the provided script directory
     projectRoot = orig_script_dir;
 else
+    % Fallback: use the directory containing this script
     projectRoot = fileparts(mfilename('fullpath'));
 end
-addpath(fullfile(projectRoot, 'scripts'));
+
+% Add necessary directories to MATLAB path
+addpath(genpath(fullfile(projectRoot, 'Code')));  % Add all subdirectories in Code
+addpath(fullfile(projectRoot, 'scripts'));        % Add scripts directory
+
+% Display path information for debugging
+fprintf('Project root: %s\n', projectRoot);
+fprintf('MATLAB path contains %d directories\n', length(strsplit(path, pathsep)));
 
 % Load paths configuration
 try
