@@ -19,12 +19,15 @@ Create the development environment and run a short Python snippet inside it::
 
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import tempfile
 
 import numpy as np
 from scipy.io import loadmat
+
+logger = logging.getLogger(__name__)
 
 
 def get_intensities_from_video_via_matlab(
@@ -33,6 +36,7 @@ def get_intensities_from_video_via_matlab(
     px_per_mm: float | None = None,
     frame_rate: float | None = None,
     work_dir: str | None = None,
+    orig_script_path: str | None = None,
 ) -> np.ndarray:
     """Run a MATLAB script and return the extracted intensity vector.
 
@@ -51,6 +55,9 @@ def get_intensities_from_video_via_matlab(
         embedded in the temporary MATLAB script for use by helper routines.
     work_dir : str, optional
         Directory MATLAB should change into before running the temporary script.
+    orig_script_path : str, optional
+        Path to the original MATLAB script. Used for error reporting when the
+        MATLAB process fails.
 
     Notes
     -----
@@ -88,7 +95,13 @@ def get_intensities_from_video_via_matlab(
         matlab_cmd = [matlab_exec_path, "-batch", f"run('{safe_path}')"]
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
-            raise RuntimeError(f"MATLAB failed: {proc.stdout}\n{proc.stderr}")
+            failure_msg = (
+                f"MATLAB failed while running {orig_script_path or script_file.name!r} in {work_dir!r}.\n"
+                "Check configuration paths relative to `pwd` or `orig_script_dir`.\n"
+                f"stdout: {proc.stdout}\nstderr: {proc.stderr}"
+            )
+            logger.warning(failure_msg)
+            raise RuntimeError(failure_msg)
 
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
