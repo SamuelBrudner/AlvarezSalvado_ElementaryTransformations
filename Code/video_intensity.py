@@ -32,6 +32,7 @@ def get_intensities_from_video_via_matlab(
     matlab_exec_path: str,
     px_per_mm: float | None = None,
     frame_rate: float | None = None,
+    work_dir: str | None = None,
 ) -> np.ndarray:
     """Run a MATLAB script and return the extracted intensity vector.
 
@@ -48,6 +49,8 @@ def get_intensities_from_video_via_matlab(
     frame_rate : float, optional
         Frame rate of the video in Hz. As with ``px_per_mm``, the value is
         embedded in the temporary MATLAB script for use by helper routines.
+    work_dir : str, optional
+        Directory MATLAB should change into before running the temporary script.
 
     Notes
     -----
@@ -72,6 +75,8 @@ def get_intensities_from_video_via_matlab(
     try:
         script_file = tempfile.NamedTemporaryFile(delete=False, suffix=".m")
         header_lines = []
+        if work_dir is not None:
+            header_lines.append(f"cd('{work_dir}')")
         if px_per_mm is not None:
             header_lines.append(f"px_per_mm = {px_per_mm};")
         if frame_rate is not None:
