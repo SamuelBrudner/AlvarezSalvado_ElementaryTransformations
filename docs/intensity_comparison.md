@@ -200,47 +200,7 @@ If you need to specify a custom MATLAB path, you can either:
    MATLAB_EXEC="/path/to/matlab" source ./paths.sh
    ```
 
-#### What the Script Does
-
-1. Checks for MATLAB configuration in `project_paths.yaml`
-2. If not found, auto-detects MATLAB installation
-3. Updates the configuration with the detected path (if yq is installed)
-4. Sets up MATLAB paths as specified in the configuration
-5. Makes the MATLAB executable available via `$MATLAB_EXEC`
-6. Processes the video and generates comparison plots
-
-#### MATLAB Path Management
-
-When running MATLAB scripts, ensure:
-1. MATLAB is in your system PATH
-2. Required toolboxes are installed:
-   - Image Processing Toolbox
-   - Statistics and Machine Learning Toolbox
-3. The repository contains the required data files in the expected locations
-
-For development, you can test the MATLAB script directly:
-
-```matlab
-% In MATLAB
-cd /path/to/project
-video_script  % Run the script
-load('temp_intensities.mat');  % Load the results
-whos all_intensities  % Verify the output
-```
-
-For production use, the Python wrapper handles all path resolution and file management automatically.
-
-When processing video data, the system uses a MATLAB script (`process_smoke_video.m`) to extract intensity values. The script execution follows this workflow:
-
-1. **Path Configuration**: The system loads paths from `configs/paths.yaml`
-2. **Script Preparation**: The MATLAB script is copied to a temporary directory for execution
-3. **Path Variables**: The following variables are automatically set:
-   - `orig_script_dir`: Points to the MATLAB scripts directory from `paths.yaml`
-   - `scriptDir`: Set to the temporary execution directory
-
-This ensures that while the script executes in a temporary directory, it can still locate all necessary dependencies through the configured paths.
-
-#### Key Paths in `paths.yaml`
+#### Key Paths in `project_paths.yaml`
 
 ```yaml
 scripts:
@@ -299,7 +259,7 @@ fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', outputFile);
 project_root/
 ├── Code/                  # Python modules and utilities
 ├── configs/               # Configuration files
-│   └── paths.yaml         # Local paths configuration (generated from template)
+│   └── project_paths.yaml         # Local paths configuration (generated from template)
 ├── data/                  # Data files (HDF5, videos, etc.)
 │   ├── raw/               # Raw data files
 │   └── processed/         # Processed data files
@@ -309,9 +269,9 @@ project_root/
 
 ### Local Paths Configuration
 
-Each user should have their own local `configs/paths.yaml` file (gitignored for security). A template is provided at `configs/paths.yaml.template`.
+Each user should have their own local `configs/project_paths.yaml` file (gitignored for security). A template is provided at `configs/project_paths.yaml.template`.
 
-Key paths configured in `paths.yaml`:
+Key paths configured in `project_paths.yaml`:
 - `scripts.matlab`: Points to the project root where MATLAB scripts are located
 - `scripts.python`: Points to the `Code` directory with Python modules
 - `data.*`: Paths to various data files and directories
@@ -331,10 +291,10 @@ To set up your local configuration:
 
 1. Copy the template to create your local config:
    ```bash
-   cp configs/paths.yaml.template configs/paths.yaml
+   cp configs/project_paths.yaml.template configs/project_paths.yaml
    ```
 
-2. Edit `configs/paths.yaml` to set the correct paths for your system, particularly:
+2. Edit `configs/project_paths.yaml` to set the correct paths for your system, particularly:
    - `crimaldi_hdf5`: Path to your Crimaldi HDF5 file
    - `output` directories: Where to store processed files and figures
 
@@ -353,5 +313,5 @@ export PATH="/path/to/matlab/bin:$PATH"
 ## Notes
 
 - All commands assume the development environment created via `./setup_env.sh --dev`
-- Output paths are controlled by `configs/paths.yaml`
+- Output paths are controlled by `configs/project_paths.yaml`
 - The MATLAB script `process_smoke_video.m` is pre-configured to work with the default paths
