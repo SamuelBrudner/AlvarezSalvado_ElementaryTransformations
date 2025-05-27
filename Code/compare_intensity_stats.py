@@ -43,7 +43,7 @@ def load_intensities(
             script_contents,
             matlab_exec_path,
             work_dir=str(Path(path).parent),
-            orig_script_path=str(Path(path)),
+            orig_script_path=str(path),
         )
 
     raise ValueError(f"Unknown plume_type: {plume_type}")

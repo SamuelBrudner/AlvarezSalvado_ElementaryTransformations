@@ -49,7 +49,7 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
 
     captured = {}
 
-    def fake_func(s, m='matlab'):
+    def fake_func(s, m='matlab', orig_script_path=None):
         captured['matlab_exec'] = m
         return arr_vid
 
@@ -77,7 +77,7 @@ def test_matlab_exec_option(monkeypatch, tmp_path):
     arr_vid = np.array([1.0], dtype=float)
     captured = {}
 
-    def fake_func(s, m='matlab'):
+    def fake_func(s, m='matlab', orig_script_path=None):
         captured['matlab_exec'] = m
         return arr_vid
 
@@ -104,7 +104,7 @@ def test_csv_output_and_directory_creation(monkeypatch, tmp_path):
     monkeypatch.setattr(
         cis,
         'get_intensities_from_video_via_matlab',
-        lambda s, m='matlab': arr_vid,
+        lambda s, m='matlab', orig_script_path=None: arr_vid,
     )
 
     csv_path = tmp_path / 'nested' / 'results' / 'stats.csv'
@@ -151,7 +151,7 @@ def test_json_output_and_directory_creation(monkeypatch, tmp_path):
     monkeypatch.setattr(
         cis,
         'get_intensities_from_video_via_matlab',
-        lambda s, m='matlab': arr_vid,
+        lambda s, m='matlab', orig_script_path=None: arr_vid,
     )
 
     json_path = tmp_path / 'nested' / 'results' / 'stats.json'

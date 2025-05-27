@@ -59,8 +59,9 @@ def get_intensities_from_video_via_matlab(
     work_dir : str, optional
         Directory MATLAB should change into before running the temporary script.
     orig_script_path : str, optional
-        Path to the original MATLAB script. Used for error reporting when the
-        MATLAB process fails.
+        Original path of the MATLAB script. When provided, the generated
+        temporary script defines ``orig_script_path`` and ``orig_script_dir`` so
+        that downstream code can reference the original location.
 
 
     Notes
@@ -93,9 +94,9 @@ def get_intensities_from_video_via_matlab(
             header_lines.append(f"px_per_mm = {px_per_mm};")
         if frame_rate is not None:
             header_lines.append(f"frame_rate = {frame_rate};")
-        if orig_script_path:
-            safe = orig_script_path.replace("'", "''")
-            header_lines.append(f"orig_script_path = '{safe}';")
+        if orig_script_path is not None:
+            header_lines.append(f"orig_script_path = '{orig_script_path}';")
+
             header_lines.append("orig_script_dir = fileparts(orig_script_path);")
         full_contents = "\n".join(header_lines + [script_contents])
         script_file.write(full_contents.encode())
@@ -109,13 +110,11 @@ def get_intensities_from_video_via_matlab(
         )
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
-            failure_msg = (
-                f"MATLAB failed while running {orig_script_path or script_file.name!r} in {work_dir!r}.\n"
-                "Check configuration paths relative to `pwd` or `orig_script_dir`.\n"
-                f"stdout: {proc.stdout}\nstderr: {proc.stderr}"
+            hint = "" if orig_script_path is None else f" (script: {orig_script_path})"
+            raise RuntimeError(
+                f"MATLAB failed{hint}: {proc.stderr.strip()}\nCheck that orig_script_dir is correct"
             )
-            logger.warning(failure_msg)
-            raise RuntimeError(failure_msg)
+
 
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
