@@ -76,17 +76,15 @@ def compare_intensity_stats(
         ValueError: If intensity vectors have different lengths
     """
     results: List[Tuple[str, Stats]] = []
-    first_len: int | None = None
+    expected_len: int | None = None
 
     for identifier, path, plume_type in sources:
         intensities = load_intensities(path, plume_type, matlab_exec_path)
-        current_len = getattr(intensities, "size", len(intensities))
-
-        if first_len is None:
-            first_len = current_len
-        elif current_len != first_len:
+        if expected_len is None:
+            expected_len = len(intensities)
+        elif len(intensities) != expected_len:
             raise ValueError(
-                f"Intensity length mismatch: expected {first_len} but got {current_len} for {identifier}"
+                f"Expected intensities of length {expected_len}, got {len(intensities)}"
             )
 
         stats = calculate_intensity_stats_dict(intensities)
