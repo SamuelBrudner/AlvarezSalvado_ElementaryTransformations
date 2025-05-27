@@ -86,7 +86,6 @@ ensure_conda_lock() {
             fi
         fi
 
-
         # Refresh the shell to update PATH
         if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
             source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
