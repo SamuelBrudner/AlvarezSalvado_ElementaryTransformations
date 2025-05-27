@@ -70,6 +70,7 @@ try_load_conda_module() {
         fi
       fi
     done
+
   fi
   return 1
 }
@@ -84,6 +85,7 @@ ensure_conda_lock() {
                 error "Failed to install conda-lock with conda or pip"
             fi
         fi
+
 
         # Refresh the shell to update PATH
         if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
