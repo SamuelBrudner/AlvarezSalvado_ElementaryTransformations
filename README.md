@@ -62,11 +62,12 @@ Python dependencies are managed using Conda and are split into two files:
    ```
 
 3. **Alternative: Use the setup script**:
-   ```bash
-   # This will create a local environment in ./dev-env
-   ./setup_env.sh --dev
-   # Compatible with both new and older Conda versions
-   ```
+  ```bash
+  # This will create a local environment in ./dev-env
+  ./setup_env.sh --dev
+  # Compatible with both new and older Conda versions
+  # Skip lock generation with --skip-conda-lock if conda-lock is unavailable
+  ```
    This prepares the development environment. Run scripts located in the
    `Code` package with the module syntax so the repository root is added to
    `sys.path`:

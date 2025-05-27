@@ -21,9 +21,10 @@ readonly PATHS_CONFIG="configs/paths.yaml"
 
 # Setup usage function
 usage() {
-  log INFO "Usage: $0 [--dev] [--no-tests] [--help]"
+  log INFO "Usage: $0 [--dev] [--no-tests] [--skip-conda-lock] [--help]"
   log INFO "  --dev        Install development dependencies and set up pre-commit hooks"
   log INFO "  --no-tests   Skip running tests after setup"
+  log INFO "  --skip-conda-lock   Skip conda-lock installation and lock file generation"
   log INFO "  --help       Show this help message"
   exit 0
 }
@@ -31,6 +32,7 @@ usage() {
 # Parse command line arguments
 INSTALL_DEV_EXTRAS=0
 RUN_TESTS=1
+SKIP_CONDA_LOCK=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -41,6 +43,10 @@ while [[ $# -gt 0 ]]; do
     --no-tests)
       RUN_TESTS=0
       log INFO "Tests will be skipped after setup."
+      ;;
+    --skip-conda-lock)
+      SKIP_CONDA_LOCK=1
+      log INFO "Skipping conda-lock installation and lock file generation."
       ;;
     -h|--help)
       usage
@@ -146,36 +152,38 @@ setup_environment() {
     error "Base environment file '$BASE_ENV_FILE' not found in the current directory."
   fi
 
-  # Ensure conda-lock is installed and functional
-  ensure_conda_lock
+  if [ "$SKIP_CONDA_LOCK" -ne 1 ]; then
+    # Ensure conda-lock is installed and functional
+    ensure_conda_lock
 
-  # Get platform information safely
-  if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
-    # Fallback for older conda versions or if json parsing fails
-    PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
-    log WARNING "Could not detect conda platform, using fallback: $PLATFORM"
-  fi
+    # Get platform information safely
+    if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
+      # Fallback for older conda versions or if json parsing fails
+      PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+      log WARNING "Could not detect conda platform, using fallback: $PLATFORM"
+    fi
 
-  # Always regenerate lock file to ensure consistency
-  section "Generating conda environment lock file"
-  log INFO "Generating conda-lock.yml for $PLATFORM"
-  
-  if [ -f "conda-lock.yml" ]; then
-    log INFO "Removing existing conda-lock.yml"
-    rm -f "conda-lock.yml"
-  fi
+    # Always regenerate lock file to ensure consistency
+    section "Generating conda environment lock file"
+    log INFO "Generating conda-lock.yml for $PLATFORM"
 
-  # Get conda-lock version to handle different versions
-  CONDA_LOCK_VERSION=$(conda-lock --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+    if [ -f "conda-lock.yml" ]; then
+      log INFO "Removing existing conda-lock.yml"
+      rm -f "conda-lock.yml"
+    fi
 
-  log INFO "Creating conda-lock file from $BASE_ENV_FILE"
-  if [ -z "$CONDA_LOCK_VERSION" ]; then
-    # If we can't determine version, try without --overwrite
-    run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
-  else
-    # For versions that support --overwrite
-    run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml --overwrite 2>/dev/null || \
+    # Get conda-lock version to handle different versions
+    CONDA_LOCK_VERSION=$(conda-lock --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+
+    log INFO "Creating conda-lock file from $BASE_ENV_FILE"
+    if [ -z "$CONDA_LOCK_VERSION" ]; then
+      # If we can't determine version, try without --overwrite
       run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
+    else
+      # For versions that support --overwrite
+      run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml --overwrite 2>/dev/null || \
+        run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
+    fi
   fi
 
   # Create/update the local prefix environment

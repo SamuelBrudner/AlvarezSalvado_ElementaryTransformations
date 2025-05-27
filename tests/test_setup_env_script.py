@@ -63,3 +63,50 @@ def test_setup_env_attempts_module_load():
         content = f.read()
     assert 'try_load_conda_module' in content or 'module load' in content
 
+
+def test_skip_conda_lock_flag_skips_commands(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ "$1" = "info" ] && [ "$2" = "--base" ]; then
+  echo "{conda_base}"
+elif [ "$1" = "info" ] && [ "$2" = "--json" ]; then
+  echo '{{"platform":"linux-64"}}'
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    conda_lock_script = bin_dir / "conda-lock"
+    conda_lock_script.write_text(
+        """#!/bin/bash
+if [ "$1" = "--version" ]; then
+  echo "conda-lock 1.0.0"
+else
+  echo "conda-lock $@" >&2
+fi
+"""
+    )
+    conda_lock_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+
+    result = subprocess.run(
+        ["bash", "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    output = result.stdout + result.stderr
+    assert "Unknown option" not in output
+    assert "conda-lock lock" not in output
+
