@@ -50,3 +50,14 @@ run_command_verbose() {
   fi
   return 0
 }
+
+# Prepend directory to PATH if it is not already included
+append_path_if_missing() {
+  local dir="$1"
+  case ":$PATH:" in
+    *":${dir}:"*) ;;
+    *)
+      export PATH="${dir}:${PATH}"
+      ;;
+  esac
+}

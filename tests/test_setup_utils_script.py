@@ -12,6 +12,7 @@ def test_setup_utils_functions_defined():
     assert 'error()' in content
     assert 'run_command_verbose()' in content
     assert 'log()' in content
+    assert 'append_path_if_missing()' in content
 
 
 def test_setup_env_sources_utils():

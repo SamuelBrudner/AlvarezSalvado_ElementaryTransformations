@@ -40,7 +40,18 @@ def test_setup_env_exports_user_bin_for_conda_lock():
     with open('setup_env.sh') as f:
         content = f.read()
     assert 'site --user-base' in content
+    assert 'append_path_if_missing "${USER_BIN}"' in content
     assert 'hash -r' in content
+
+
+def test_setup_env_invokes_append_path_helper_after_pip():
+    """append_path_if_missing should run after pip fallback and before hash."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    pip_idx = content.index('python -m pip install --user conda-lock')
+    append_idx = content.index('append_path_if_missing "${USER_BIN}"')
+    hash_idx = content.index('hash -r')
+    assert pip_idx < append_idx < hash_idx
 
 
 def test_setup_env_checks_existing_conda_lock():
