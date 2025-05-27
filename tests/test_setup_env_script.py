@@ -22,7 +22,7 @@ def test_setup_env_script_contains_expected_commands():
 def test_setup_env_script_runs_idempotently():
     if shutil.which('conda') is None:
         pytest.skip('conda not available')
-    cmd = 'source setup_env.sh --dev'
+    cmd = 'bash ./setup_env.sh --dev'
     result1 = subprocess.run(['bash', '-c', cmd], capture_output=True, text=True)
     assert result1.returncode == 0
     result2 = subprocess.run(['bash', '-c', cmd], capture_output=True, text=True)

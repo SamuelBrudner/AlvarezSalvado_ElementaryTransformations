@@ -64,7 +64,7 @@ MATLAB_OPTIONS=${MATLAB_OPTIONS:--nodisplay -nosplash}
 
 # Setup conda environment if available
 if [ -f setup_env.sh ]; then
-    source setup_env.sh --dev
+    bash ./setup_env.sh --dev
     conda activate .env
 fi
 
