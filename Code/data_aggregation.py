@@ -1,4 +1,12 @@
-"""Aggregate agent metrics based on analysis configuration."""
+"""Aggregate agent metrics based on analysis configuration.
+
+Examples
+--------
+>>> records = [{'plume': 'A', 'metric': 1.0}, {'plume': 'A', 'metric': 3.0}]
+>>> cfg = {'aggregation_options': {'group_by_keys': ['plume']}}
+>>> aggregate_metrics(records, cfg)[('A',)]['metric']['count']
+2
+"""
 
 from __future__ import annotations
 
@@ -24,6 +32,13 @@ def aggregate_metrics(records: List[Dict[str, Any]], cfg: Dict[str, Any]) -> Dic
     dict
         Nested dictionary keyed by the grouping tuple. Each metric has another
         dictionary with computed statistics.
+    
+    Examples
+    --------
+    >>> records = [{'plume': 'A', 'metric': 1.0}, {'plume': 'A', 'metric': 3.0}]
+    >>> cfg = {'aggregation_options': {'group_by_keys': ['plume']}}
+    >>> aggregate_metrics(records, cfg)[('A',)]['metric']['mean']
+    2.0
     """
     opts = cfg.get("aggregation_options", {})
     group_keys = opts.get("group_by_keys", [])

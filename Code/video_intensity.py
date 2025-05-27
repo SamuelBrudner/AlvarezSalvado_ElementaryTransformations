@@ -4,6 +4,17 @@ The helper function in this module writes a temporary MATLAB script to disk and
 executes it using ``matlab -batch``.  If ``px_per_mm`` and ``frame_rate`` values
 are supplied, they are inserted as variable assignments at the beginning of the
 script so that MATLAB code can access them directly.
+
+Examples
+--------
+Create the development environment and run a short Python snippet inside it::
+
+    ./setup_env.sh --dev
+    conda run --prefix ./dev-env python - <<'PY'
+    from Code.video_intensity import get_intensities_from_video_via_matlab
+    arr = get_intensities_from_video_via_matlab('myscript.m', 'matlab')
+    print(arr.shape)
+    PY
 """
 
 from __future__ import annotations
@@ -48,6 +59,13 @@ def get_intensities_from_video_via_matlab(
     -------
     numpy.ndarray
         Flattened array of the intensity values extracted from the MAT-file.
+
+    Examples
+    --------
+    >>> from Code.video_intensity import get_intensities_from_video_via_matlab
+    >>> arr = get_intensities_from_video_via_matlab('myscript.m', 'matlab')
+    >>> arr.size >= 0
+    True
     """
     script_file = None
     mat_path = None

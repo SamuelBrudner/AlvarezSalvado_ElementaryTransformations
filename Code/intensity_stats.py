@@ -1,4 +1,12 @@
-"""Utility functions for plume intensity statistics."""
+"""Utility functions for plume intensity statistics.
+
+Examples
+--------
+Run the CLI inside the project environment::
+
+    ./setup_env.sh --dev
+    conda run --prefix ./dev-env python -m Code.intensity_stats plumeA intensities.txt
+"""
 
 from __future__ import annotations
 
@@ -12,7 +20,13 @@ except Exception as exc:  # pragma: no cover
 
 
 def calculate_intensity_stats_dict(intensities: Sequence[float]) -> Dict[str, float]:
-    """Return basic statistics for the provided intensities."""
+    """Return basic statistics for the provided intensities.
+
+    Examples
+    --------
+    >>> calculate_intensity_stats_dict([1, 2, 3])['count']
+    3
+    """
     arr = np.asarray(intensities, dtype=float)
     if arr.size == 0:
         return {
