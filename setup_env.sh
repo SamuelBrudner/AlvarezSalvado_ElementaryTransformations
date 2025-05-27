@@ -70,6 +70,7 @@ try_load_conda_module() {
         fi
       fi
     done
+
   fi
   return 1
 }

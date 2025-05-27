@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
@@ -120,6 +121,20 @@ def write_csv(
             )
 
 
+def write_json(
+    results: Iterable[Tuple[str, Stats]], json_path: str, diff: Stats | None = None
+) -> None:
+    """Write statistics to a JSON file."""
+    path = Path(json_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    entries = [
+        {"identifier": ident, "statistics": stats} for ident, stats in results
+    ]
+    if diff is not None:
+        entries.append({"identifier": "DIFF", "statistics": diff})
+    path.write_text(json.dumps(entries, indent=4))
+
+
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
     parser = argparse.ArgumentParser(description="Compare intensity statistics")
     parser.add_argument(
@@ -128,6 +143,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         help="identifier [plume_type] path entries; plume_type optional",
     )
     parser.add_argument("--csv", dest="csv_path", help="Output CSV file")
+    parser.add_argument("--json", dest="json_path", help="Output JSON file")
     parser.add_argument(
         "--matlab_exec", default="matlab", help="Path to MATLAB executable"
     )
@@ -161,7 +177,9 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
 
     if ns.csv_path:
         write_csv(results, ns.csv_path, diff)
-    else:
+    if ns.json_path:
+        write_json(results, ns.json_path, diff)
+    if not ns.csv_path and not ns.json_path:
         print(format_table(results, diff))
 
 

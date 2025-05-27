@@ -62,3 +62,4 @@ def test_setup_env_attempts_module_load():
     with open('setup_env.sh') as f:
         content = f.read()
     assert 'try_load_conda_module' in content or 'module load' in content
+
