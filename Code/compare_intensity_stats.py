@@ -63,11 +63,32 @@ def compare_intensity_stats(
     sources: Iterable[Tuple[str, str, str | None]],
     matlab_exec_path: str = "matlab",
 ) -> List[Tuple[str, Stats]]:
-    """Return statistics for each identifier/path/type triple."""
+    """Return statistics for each identifier/path/type triple.
 
+    Args:
+        sources: Iterable of (identifier, path, plume_type) tuples
+        matlab_exec_path: Path to MATLAB executable
+
+    Returns:
+        List of (identifier, stats_dict) tuples
+
+    Raises:
+        ValueError: If intensity vectors have different lengths
+    """
     results: List[Tuple[str, Stats]] = []
+    first_len: int | None = None
+
     for identifier, path, plume_type in sources:
         intensities = load_intensities(path, plume_type, matlab_exec_path)
+        current_len = getattr(intensities, "size", len(intensities))
+
+        if first_len is None:
+            first_len = current_len
+        elif current_len != first_len:
+            raise ValueError(
+                f"Intensity length mismatch: expected {first_len} but got {current_len} for {identifier}"
+            )
+
         stats = calculate_intensity_stats_dict(intensities)
         results.append((identifier, stats))
     return results
