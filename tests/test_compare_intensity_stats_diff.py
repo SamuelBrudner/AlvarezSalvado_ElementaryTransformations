@@ -131,7 +131,7 @@ def test_diff_option_prints_table(cis, monkeypatch, capsys):
     out_lines = capsys.readouterr().out.strip().splitlines()
     assert out_lines[-1].startswith('DIFF')
 
-def test_diff_option_writes_csv(cis, monkeypatch, tmp_path):
+def test_diff_option_writes_csv(cis, monkeypatch, tmp_path, capsys):
     arr_a = [1.0, 2.0]
     arr_b = [3.0, 5.0]
 
@@ -143,6 +143,8 @@ def test_diff_option_writes_csv(cis, monkeypatch, tmp_path):
 
     csv_path = tmp_path / 'stats.csv'
     cis.main(['A', 'path1', 'B', 'path2', '--diff', '--csv', str(csv_path)])
+
+    out_lines = capsys.readouterr().out.strip().splitlines()
 
     with csv_path.open(newline='') as f:
         rows = list(csv.reader(f))
