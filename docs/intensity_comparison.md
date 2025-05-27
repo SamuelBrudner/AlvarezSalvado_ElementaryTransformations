@@ -97,6 +97,27 @@ conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
     --matlab_exec /path/to/matlab/executable
 ```
 
+### MATLAB Script Execution and Path Management
+
+When processing video data, the system uses a MATLAB script (`process_smoke_video.m`) to extract intensity values. The script execution follows this workflow:
+
+1. **Path Configuration**: The system loads paths from `configs/paths.yaml`
+2. **Script Preparation**: The MATLAB script is copied to a temporary directory for execution
+3. **Path Variables**: The following variables are automatically set:
+   - `original_script_dir`: Points to the MATLAB scripts directory from `paths.yaml`
+   - `scriptDir`: Set to the temporary execution directory
+
+This ensures that while the script executes in a temporary directory, it can still locate all necessary dependencies through the configured paths.
+
+#### Key Paths in `paths.yaml`
+
+```yaml
+scripts:
+  matlab: "${PROJECT_DIR}/scripts"  # Original script directory (original_script_dir)
+  python: "${PROJECT_DIR}/Code"     # Python modules
+  temp: "${TMPDIR}/matlab_scripts"   # Temporary execution directory
+```
+
 #### Custom MATLAB Scripts
 
 If you need to create a custom MATLAB script, follow this template:

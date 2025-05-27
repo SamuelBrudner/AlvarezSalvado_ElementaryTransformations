@@ -1,37 +1,54 @@
-%% Process smoke video for intensity comparison
-% This script is designed to be called by compare_intensity_stats.py
-% It processes a smoke video and extracts intensity values for comparison with Crimaldi data
+%% Process smoke video data to extract intensity measurements
+% 
+% This script processes smoke video data to extract intensity measurements
+% and save the results to a MAT file for further analysis.
+% 
+% The script uses the project's paths configuration (configs/paths.yaml) to manage
+% file locations. The 'original_script_dir' variable is automatically set to the
+% MATLAB scripts directory defined in the paths configuration.
+% 
+% The script expects the following variables to be defined in the workspace:
+%   - video_path: Path to the input video file
+%   - output_path: Path where to save the output MAT file
+%   - px_per_mm: Pixels per millimeter conversion factor (optional)
+%   - frame_rate: Video frame rate in Hz (optional)
+%   - start_frame: First frame to process (optional, default=1)
+%   - end_frame: Last frame to process (optional, default=end of video)
+%   - original_script_dir: Automatically set by the Python wrapper to the
+%                         MATLAB scripts directory from paths.yaml configuration
 
-% Get the path to the original script directory for loading config files
-% Note: orig_script_dir is set by the Python wrapper
-if ~exist('orig_script_dir', 'var')
-    % If not set by Python, use the current directory
-    orig_script_dir = pwd;
+% Add scripts directory to path
+scriptDir = fileparts(mfilename('fullpath'));
+addpath(fullfile(scriptDir, '..', 'scripts'));
+
+% Load paths configuration
+try
+    paths = load_paths_config();
+catch ME
+    error('Failed to load paths configuration: %s', ME.message);
 end
 
-% Construct path to config file
-cfgPath = fullfile(orig_script_dir, 'configs', 'my_complex_plume_config.yaml');
-if ~exist(cfgPath, 'file')
-    error('Config file not found: %s', cfgPath);
+% Load plume configuration
+if ~exist(paths.configs.plume, 'file')
+    error('Plume config file not found: %s', paths.configs.plume);
 end
-
-% Load configuration
-cfg = load_config(cfgPath);
+cfg = load_config(paths.configs.plume);
 
 % Process the smoke video
-videoPath = fullfile(orig_script_dir, 'data', 'smoke_1a_bgsub_raw.avi');
-if ~exist(videoPath, 'file')
-    error('Video file not found: %s', videoPath);
+if ~exist(paths.data.video, 'file')
+    error('Video file not found: %s', paths.data.video);
 end
 
-plume = load_plume_video(videoPath, cfg.px_per_mm, cfg.frame_rate);
+fprintf('Processing video: %s\n', paths.data.video);
+plume = load_plume_video(paths.data.video, cfg.px_per_mm, cfg.frame_rate);
 
 % Flatten the data to a 1D array of intensities
 all_intensities = plume.data(:);
+fprintf('Extracted %d intensity values\n', numel(all_intensities));
 
 % Save the intensities to a temporary file
-outputFile = fullfile(tempdir, 'temp_intensities.mat');
-save(outputFile, 'all_intensities');
+outputFile = fullfile(paths.output.matlab_temp, 'temp_intensities.mat');
+save(outputFile, 'all_intensities', '-v7.3');
 
 % Print the path to the temporary file for the Python script to find
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', outputFile);

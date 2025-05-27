@@ -2,9 +2,31 @@
 # This file is auto-generated during setup - do not edit directly
 # Copy to paths.yaml and customize as needed
 
-# Path to the Crimaldi HDF5 data file
-# Place your HDF5 file in the data/ directory
-crimaldi_hdf5: "${PROJECT_DIR}/data/10302017_10cms_bounded.hdf5"
+# Project root directory (auto-populated)
+project_root: "${PROJECT_DIR}"
+
+# Script directories
+scripts:
+  # Directory containing MATLAB analysis scripts (original_script_dir will point here)
+  matlab: "${PROJECT_DIR}/scripts"
+  # Directory containing Python modules and utilities
+  python: "${PROJECT_DIR}/Code"
+  # Directory for temporary script execution (used by MATLAB wrapper)
+  temp: "${TMPDIR:-/tmp}/matlab_scripts"
+
+# Data files
+data:
+  # Crimaldi HDF5 data file
+  crimaldi: "${PROJECT_DIR}/data/10302017_10cms_bounded_2.h5"
+  # Video file for analysis
+  video: "${PROJECT_DIR}/data/smoke_1a_bgsub_raw.avi"
+
+# Configuration files
+configs:
+  # Main plume configuration
+  plume: "${PROJECT_DIR}/configs/my_complex_plume_config.yaml"
+  # Path to this file (auto-populated)
+  paths: "${PROJECT_DIR}/configs/paths.yaml"
 
 # Temporary directory for processing
 # Uses system TMPDIR if available, falls back to /tmp
@@ -12,6 +34,8 @@ tmp_dir: "${TMPDIR:-/tmp}"
 
 # Output directories (relative to project root)
 output:
-  raw: "data/raw"
-  processed: "data/processed"
-  figures: "figures"
+  raw: "${PROJECT_DIR}/data/raw"
+  processed: "${PROJECT_DIR}/data/processed"
+  figures: "${PROJECT_DIR}/figures"
+  # Directory for temporary MATLAB outputs
+  matlab_temp: "${TMPDIR:-/tmp}"
