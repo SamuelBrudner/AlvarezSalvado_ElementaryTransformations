@@ -47,3 +47,24 @@ def test_setup_env_handles_old_conda_versions():
         content = f.read()
     assert 'conda_supports_force' in content
     assert 'conda env remove --prefix "./${LOCAL_ENV_DIR}" -y' in content
+
+
+def test_setup_env_attempts_module_load():
+    """Script should try loading Conda via environment modules."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'try_load_conda_module' in content or 'module load' in content
+
+
+def test_setup_env_exports_local_bin_after_pip():
+    """Script should export user local bin path after pip fallback."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'export PATH="$HOME/.local/bin:${PATH}"' in content
+
+
+def test_setup_env_warns_base_env_not_writable():
+    """Script should warn when the base Conda environment isn't writable."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'Base environment not writable' in content
