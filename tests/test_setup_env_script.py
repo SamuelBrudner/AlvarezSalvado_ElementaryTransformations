@@ -47,3 +47,11 @@ def test_setup_env_handles_old_conda_versions():
         content = f.read()
     assert 'conda_supports_force' in content
     assert 'conda env remove --prefix "./${LOCAL_ENV_DIR}" -y' in content
+
+
+def test_setup_env_attempts_module_load():
+    """Script should try loading Conda via environment modules."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'try_load_conda_module' in content
+    assert '/etc/profile.d/modules.sh' in content or 'Modules/init/bash' in content

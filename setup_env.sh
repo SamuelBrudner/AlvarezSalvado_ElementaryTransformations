@@ -59,6 +59,32 @@ conda_supports_force() {
   conda env create --help 2>&1 | grep -q -- '--force'
 }
 
+# Attempt to load Conda via the environment modules system
+try_load_conda_module() {
+  # Ensure the 'module' command is available
+  if ! type module >/dev/null 2>&1; then
+    if [ -f /etc/profile.d/modules.sh ]; then
+      # shellcheck source=/dev/null
+      source /etc/profile.d/modules.sh
+    elif [ -f /usr/share/Modules/init/bash ]; then
+      # shellcheck source=/dev/null
+      source /usr/share/Modules/init/bash
+    fi
+  fi
+
+  if type module >/dev/null 2>&1; then
+    local found
+    found=$(module avail 2>&1 | grep -iE "(miniconda|anaconda|conda)" | head -n 1 | awk '{print $1}')
+    if [ -n "$found" ]; then
+      log INFO "Loading $found module for Conda"
+      if module load "$found"; then
+        return 0
+      fi
+    fi
+  fi
+  return 1
+}
+
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
   if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
@@ -90,9 +116,11 @@ ensure_conda_lock() {
 setup_environment() {
   section "Starting environment setup"
   
-  # Check if conda is installed
+  # Check if conda is installed, attempt to load via modules if missing
   if ! command -v conda >/dev/null 2>&1; then
-    if [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
+    if try_load_conda_module && command -v conda >/dev/null 2>&1; then
+      log INFO "Loaded Conda via module system"
+    elif [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
       log WARNING "conda not found, installing Miniconda"
       if ! command -v wget >/dev/null 2>&1; then
         run_command_verbose apt-get update
@@ -102,7 +130,7 @@ setup_environment() {
       run_command_verbose bash /tmp/miniconda.sh -b -p "$HOME/miniconda"
       export PATH="$HOME/miniconda/bin:$PATH"
     else
-      error "conda is required but not found in PATH. Please install Miniconda or Anaconda."
+      error "conda is required but not found in PATH. Please load the appropriate module or install Miniconda."
     fi
   fi
 
