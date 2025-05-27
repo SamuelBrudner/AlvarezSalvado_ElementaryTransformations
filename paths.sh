@@ -199,59 +199,10 @@ substitute_vars('$PATHS_TEMPLATE', '$temp_template')
         return 1
     fi
     
-    # Process the template to make paths relative where possible
+    # Process the template to make paths relative where possible using helper script
     if command -v python3 >/dev/null 2>&1; then
         log INFO "Processing paths to make them relative where possible..."
-        if ! python3 -c "
-import os
-import yaml
-
-def make_paths_relative(config_path, project_root):
-    # Load the YAML file
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f) or {}
-    
-    # Skip paths that should remain absolute
-    skip_paths = {
-        'matlab.executable',  # MATLAB executable should remain absolute
-        'scripts.temp',       # Temp directory should remain absolute
-        'tmp_dir',            # System temp dir should remain absolute
-        'output.matlab_temp'  # MATLAB temp dir should remain absolute
-    }
-    
-    # Process each path in the config
-    def process_value(value, key_path=''):
-        if isinstance(value, dict):
-            return {k: process_value(v, f"{key_path}.{k}" if key_path else k) 
-                   for k, v in value.items()}
-        elif isinstance(value, list):
-            return [process_item(item, f"{key_path}[]") for item in value]
-        elif isinstance(value, str) and value.startswith(project_root) and key_path not in skip_paths:
-            # Make path relative to project root
-            rel_path = os.path.relpath(value, project_root)
-            if not rel_path.startswith('..'):
-                return rel_path
-        return value
-    
-    def process_item(item, key_path):
-        if isinstance(item, dict):
-            return {k: process_value(v, f"{key_path}.{k}") for k, v in item.items()}
-        elif isinstance(item, str) and item.startswith(project_root) and key_path not in skip_paths:
-            rel_path = os.path.relpath(item, project_root)
-            if not rel_path.startswith('..'):
-                return rel_path
-        return item
-    
-    # Process the config
-    processed_config = process_value(config)
-    
-    # Save the processed config back to the file
-    with open(config_path, 'w') as f:
-        yaml.dump(processed_config, f, default_flow_style=False, sort_keys=False)
-
-# Process the template file
-make_paths_relative('$temp_template', '$PROJECT_DIR')
-        "; then
+        if ! python3 "$SCRIPT_DIR/scripts/make_paths_relative.py" "$temp_template" "$PROJECT_DIR"; then
             log WARNING "Failed to process paths to be relative, using absolute paths"
         fi
     fi
