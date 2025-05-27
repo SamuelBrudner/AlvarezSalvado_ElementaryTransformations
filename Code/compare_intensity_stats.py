@@ -40,7 +40,10 @@ def load_intensities(
     if plume_type == "video":
         script_contents = Path(path).read_text()
         return get_intensities_from_video_via_matlab(
-            script_contents, matlab_exec_path, work_dir=str(Path(path).parent)
+            script_contents,
+            matlab_exec_path,
+            work_dir=str(Path(path).parent),
+            orig_script_path=str(Path(path)),
         )
 
     raise ValueError(f"Unknown plume_type: {plume_type}")
@@ -129,9 +132,7 @@ def write_json(
     """Write statistics to a JSON file."""
     path = Path(json_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    entries = [
-        {"identifier": ident, "statistics": stats} for ident, stats in results
-    ]
+    entries = [{"identifier": ident, "statistics": stats} for ident, stats in results]
     if diff is not None:
         entries.append({"identifier": "DIFF", "statistics": diff})
     path.write_text(json.dumps(entries, indent=4))
