@@ -30,6 +30,8 @@ import tempfile
 import numpy as np
 from scipy.io import loadmat
 
+logger = logging.getLogger(__name__)
+
 
 def get_intensities_from_video_via_matlab(
     script_contents: str,
@@ -57,10 +59,9 @@ def get_intensities_from_video_via_matlab(
     work_dir : str, optional
         Directory MATLAB should change into before running the temporary script.
     orig_script_path : str, optional
-        Full path of the original MATLAB script that ``script_contents`` came
-        from.  When provided, ``orig_script_path`` and ``orig_script_dir`` are
-        defined at the top of the generated script so other MATLAB functions can
-        reference the source location.
+        Path to the original MATLAB script. Used for error reporting when the
+        MATLAB process fails.
+
 
     Notes
     -----
@@ -108,7 +109,13 @@ def get_intensities_from_video_via_matlab(
         )
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
-            raise RuntimeError(f"MATLAB failed: {proc.stdout}\n{proc.stderr}")
+            failure_msg = (
+                f"MATLAB failed while running {orig_script_path or script_file.name!r} in {work_dir!r}.\n"
+                "Check configuration paths relative to `pwd` or `orig_script_dir`.\n"
+                f"stdout: {proc.stdout}\nstderr: {proc.stderr}"
+            )
+            logger.warning(failure_msg)
+            raise RuntimeError(failure_msg)
 
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
