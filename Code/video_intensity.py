@@ -3,7 +3,10 @@
 The helper function in this module writes a temporary MATLAB script to disk and
 executes it using ``matlab -batch``.  If ``px_per_mm`` and ``frame_rate`` values
 are supplied, they are inserted as variable assignments at the beginning of the
-script so that MATLAB code can access them directly.
+script so that MATLAB code can access them directly.  When
+``orig_script_path`` is provided, the variables ``orig_script_path`` and
+``orig_script_dir`` are also defined, pointing to the path of the original
+script and its directory, respectively.
 
 Examples
 --------
@@ -59,6 +62,7 @@ def get_intensities_from_video_via_matlab(
         Path to the original MATLAB script. Used for error reporting when the
         MATLAB process fails.
 
+
     Notes
     -----
     The temporary script path is embedded in a ``run('...')`` command.
@@ -77,6 +81,7 @@ def get_intensities_from_video_via_matlab(
     >>> arr.size >= 0
     True
     """
+    logger = logging.getLogger(__name__)
     script_file = None
     mat_path = None
     try:
@@ -88,11 +93,20 @@ def get_intensities_from_video_via_matlab(
             header_lines.append(f"px_per_mm = {px_per_mm};")
         if frame_rate is not None:
             header_lines.append(f"frame_rate = {frame_rate};")
+        if orig_script_path:
+            safe = orig_script_path.replace("'", "''")
+            header_lines.append(f"orig_script_path = '{safe}';")
+            header_lines.append("orig_script_dir = fileparts(orig_script_path);")
         full_contents = "\n".join(header_lines + [script_contents])
         script_file.write(full_contents.encode())
         script_file.flush()
         safe_path = script_file.name.replace("'", "''")
         matlab_cmd = [matlab_exec_path, "-batch", f"run('{safe_path}')"]
+        logger.info(
+            "Running MATLAB script %s in %s",
+            script_file.name,
+            work_dir or os.getcwd(),
+        )
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
             failure_msg = (

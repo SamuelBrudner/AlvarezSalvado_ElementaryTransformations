@@ -123,3 +123,4 @@ def test_error_message_includes_path_and_workdir(monkeypatch, tmp_path, caplog):
     assert str(tmp_path) in msg
     assert "orig_script_dir" in msg
     assert any("MATLAB failed while running" in r.message for r in caplog.records)
+
