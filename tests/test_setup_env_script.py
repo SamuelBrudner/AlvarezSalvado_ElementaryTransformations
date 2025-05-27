@@ -31,7 +31,8 @@ def test_setup_env_script_runs_idempotently():
 def test_setup_env_has_conda_lock_pip_fallback():
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'pip install --user conda-lock' in content
+    assert 'python -m pip install --user conda-lock' in content
+    assert 'conda-lock --version' in content
 
 
 def test_setup_env_handles_old_conda_versions():
