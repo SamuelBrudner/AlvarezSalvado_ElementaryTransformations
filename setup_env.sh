@@ -96,12 +96,15 @@ ensure_conda_lock() {
         export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
 
         # Always include user's pip bin directory
-        export PATH="${USER_BIN}:${PATH}"
+        append_path_if_missing "${USER_BIN}"
+        if [ -x "${USER_BIN}/conda-lock" ]; then
+            "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
+        fi
         hash -r
 
         # Verify installation
         if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-            error "conda-lock installed but not on PATH. Add ${USER_BIN} to PATH."
+            error "conda-lock installed but not on PATH. Add ${USER_BIN}/conda-lock to PATH."
         fi
     fi
 }
