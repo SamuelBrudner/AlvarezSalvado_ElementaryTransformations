@@ -80,6 +80,8 @@ Python dependencies are managed using Conda and are split into two files:
    ```
 
 5. **Install pre-commit hooks (optional but recommended)**:
+   If you ran the setup script with the `--dev` flag, hooks were installed
+   automatically. Otherwise, you can install them manually:
    ```bash
    pre-commit install
    ```
@@ -133,7 +135,9 @@ Key features:
   (compatible with both new and old Conda versions)
 - **Portable**: Configuration works across different machines and platforms
 - **Consistent**: Uses the project's conda environment for all tools
-- **Local Configuration**: The `.pre-commit-config.yaml` file is generated locally and should not be committed to version control (it's in `.gitignore`)
+- **Local Configuration**: The `.pre-commit-config.yaml` file is generated from
+  `.pre-commit-config.yaml.template` during environment setup and is ignored by
+  Git
 
 Available hooks include:
 - **Black**: Code formatting
