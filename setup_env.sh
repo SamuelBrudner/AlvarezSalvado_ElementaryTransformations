@@ -61,15 +61,27 @@ conda_supports_force() {
 
 # Attempt to load Conda via the environment modules system
 try_load_conda_module() {
+  # Ensure the 'module' command is available
+  if ! type module >/dev/null 2>&1; then
+    if [ -f /etc/profile.d/modules.sh ]; then
+      # shellcheck source=/dev/null
+      source /etc/profile.d/modules.sh
+    elif [ -f /usr/share/Modules/init/bash ]; then
+      # shellcheck source=/dev/null
+      source /usr/share/Modules/init/bash
+    fi
+  fi
+
   if type module >/dev/null 2>&1; then
-    for m in miniconda anaconda conda; do
-      if module avail "$m" 2>&1 | grep -qi "$m"; then
-        log INFO "Loading $m module for Conda"
-        if module load "$m"; then
-          return 0
-        fi
+    local found
+    found=$(module avail 2>&1 | grep -iE "(miniconda|anaconda|conda)" | head -n 1 | awk '{print $1}')
+    if [ -n "$found" ]; then
+      log INFO "Loading $found module for Conda"
+      if module load "$found"; then
+        return 0
       fi
-    done
+    fi
+
   fi
   return 1
 }

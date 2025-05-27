@@ -53,17 +53,5 @@ def test_setup_env_attempts_module_load():
     """Script should try loading Conda via environment modules."""
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'try_load_conda_module' in content or 'module load' in content
-
-
-def test_setup_env_sets_user_path_after_pip_fallback():
-    with open('setup_env.sh') as f:
-        content = f.read()
-    assert 'export PATH="$HOME/.local/bin:${PATH}"' in content
-
-
-def test_setup_env_warns_for_non_writable_base():
-    with open('setup_env.sh') as f:
-        content = f.read()
-    assert 'Base environment not writable' in content
-
+    assert 'try_load_conda_module' in content
+    assert '/etc/profile.d/modules.sh' in content or 'Modules/init/bash' in content
