@@ -66,3 +66,4 @@ def test_setup_env_warns_for_non_writable_base():
     with open('setup_env.sh') as f:
         content = f.read()
     assert 'Base environment not writable' in content
+
