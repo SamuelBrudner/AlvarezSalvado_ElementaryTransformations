@@ -558,8 +558,7 @@ variables.
 
 ### Compare intensity statistics
 
-`Code/compare_intensity_stats.py` reads intensity vectors from one or more HDF5
-files and prints a table of summary statistics or writes them to CSV.
+`Code/compare_intensity_stats.py` reads intensity vectors from one or more HDF5 files and prints a table of summary statistics or writes them to CSV. It also accepts MATLAB scripts that output a MAT-file of intensities, enabling comparisons between video plumes and the Crimaldi dataset.
 
 ```bash
 # Display results in the terminal
@@ -572,6 +571,12 @@ python Code/compare_intensity_stats.py A data/crimaldi.hdf5 B data/custom.hdf5 \
     --matlab_exec /path/to/matlab
 ```
 
+
+To compare a custom video plume against Crimaldi, first create the development environment with `./setup_env.sh --dev` and then run:
+
+```bash
+conda run --prefix ./dev-env python Code/compare_intensity_stats.py VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
+```
 
 ## Repository Layout
 
