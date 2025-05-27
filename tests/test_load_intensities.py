@@ -50,3 +50,20 @@ def test_m_file_uses_video_loader(monkeypatch, tmp_path):
     assert np.array_equal(arr, np.array([2.0, 3.0]))
     assert captured['contents'] == mfile.read_text()
     assert captured['matlab'] == 'matlab'
+
+
+def test_work_dir_passed_to_video_loader(monkeypatch, tmp_path):
+    mfile = tmp_path / 'nested' / 'script.m'
+    mfile.parent.mkdir()
+    mfile.write_text('disp("hi")')
+    captured = {}
+
+    def fake_video(contents, matlab_exec_path='matlab', px_per_mm=None, frame_rate=None, work_dir=None):
+        captured['work_dir'] = work_dir
+        return [1]
+
+    monkeypatch.setattr(cis, 'get_intensities_from_crimaldi', lambda *a, **k: [_ for _ in ()])
+    monkeypatch.setattr(cis, 'get_intensities_from_video_via_matlab', fake_video)
+
+    cis.load_intensities(str(mfile), plume_type='video')
+    assert captured['work_dir'] == str(mfile.parent)
