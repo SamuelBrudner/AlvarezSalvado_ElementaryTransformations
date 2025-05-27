@@ -95,16 +95,22 @@ setup_environment() {
   # Ensure conda-lock is installed and generate lock file
   if ! command -v conda-lock >/dev/null 2>&1; then
     log INFO "Installing conda-lock"
-    run_command_verbose conda install -y -n base -c conda-forge conda-lock
-    
+    if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
+      log WARNING "conda install failed, attempting pip fallback"
+      if ! run_command_verbose pip install --user conda-lock; then
+        error "Failed to install conda-lock with conda or pip"
+      fi
+      export PATH="$HOME/.local/bin:${PATH}"
+    fi
+
     # Refresh the shell to update PATH
     if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
       source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
     fi
-    
+
     # Add conda to PATH if not already there
     export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
-    
+
     # Verify installation
     if ! command -v conda-lock >/dev/null 2>&1; then
       error "Failed to install conda-lock or make it available in PATH"
