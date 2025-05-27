@@ -1,8 +1,11 @@
 import os
 import sys
-import yaml
 import json
 import csv
+
+import pytest
+
+yaml = pytest.importorskip("yaml")
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
