@@ -542,6 +542,10 @@ Two Python helper scripts simplify working with plume intensity data. See
 [docs/intensity_comparison.md](docs/intensity_comparison.md) for a concise
 overview of the workflow and example commands.
 
+Run all scripts inside the project's Conda environment. Create it with
+`./setup_env.sh --dev` and prefix each command below with
+`conda run --prefix ./dev-env`.
+
 ### Characterize plume intensities
 
 `Code/characterize_plume_intensities.py` computes basic statistics for a plume
@@ -550,11 +554,11 @@ video plumes processed via MATLAB.
 
 ```bash
 # Crimaldi plume example
-python -m Code.characterize_plume_intensities \
+conda run --prefix ./dev-env python -m Code.characterize_plume_intensities \
     --plume_type crimaldi \
     --file_path data/10302017_10cms_bounded.hdf5 \
-    --plume_id crimaldi \
-    --output_json plume_stats.json
+   --plume_id crimaldi \
+   --output_json plume_stats.json
 
 # Video plume example
 
@@ -572,7 +576,7 @@ fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 Run the utility with the path to this script (or your own variant):
 
 ```bash
-python -m Code.characterize_plume_intensities \
+conda run --prefix ./dev-env python -m Code.characterize_plume_intensities \
     --plume_type video \
     --file_path docs/video_script_example.m \
     --plume_id my_video \
@@ -593,11 +597,11 @@ variables.
 
 ```bash
 # Display results in the terminal
-python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5
     --matlab_exec /path/to/matlab
 
 # Write to CSV
-python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5 \
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats A data/crimaldi.hdf5 B data/custom.hdf5 \
     --csv intensity_comparison.csv
     --matlab_exec /path/to/matlab
 ```
