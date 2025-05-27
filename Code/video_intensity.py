@@ -3,7 +3,10 @@
 The helper function in this module writes a temporary MATLAB script to disk and
 executes it using ``matlab -batch``.  If ``px_per_mm`` and ``frame_rate`` values
 are supplied, they are inserted as variable assignments at the beginning of the
-script so that MATLAB code can access them directly.
+script so that MATLAB code can access them directly.  When
+``orig_script_path`` is provided, the variables ``orig_script_path`` and
+``orig_script_dir`` are also defined, pointing to the path of the original
+script and its directory, respectively.
 
 Examples
 --------
@@ -19,6 +22,7 @@ Create the development environment and run a short Python snippet inside it::
 
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import tempfile
@@ -33,6 +37,7 @@ def get_intensities_from_video_via_matlab(
     px_per_mm: float | None = None,
     frame_rate: float | None = None,
     work_dir: str | None = None,
+    orig_script_path: str | None = None,
 ) -> np.ndarray:
     """Run a MATLAB script and return the extracted intensity vector.
 
@@ -51,6 +56,11 @@ def get_intensities_from_video_via_matlab(
         embedded in the temporary MATLAB script for use by helper routines.
     work_dir : str, optional
         Directory MATLAB should change into before running the temporary script.
+    orig_script_path : str, optional
+        Full path of the original MATLAB script that ``script_contents`` came
+        from.  When provided, ``orig_script_path`` and ``orig_script_dir`` are
+        defined at the top of the generated script so other MATLAB functions can
+        reference the source location.
 
     Notes
     -----
@@ -70,6 +80,7 @@ def get_intensities_from_video_via_matlab(
     >>> arr.size >= 0
     True
     """
+    logger = logging.getLogger(__name__)
     script_file = None
     mat_path = None
     try:
@@ -81,11 +92,20 @@ def get_intensities_from_video_via_matlab(
             header_lines.append(f"px_per_mm = {px_per_mm};")
         if frame_rate is not None:
             header_lines.append(f"frame_rate = {frame_rate};")
+        if orig_script_path:
+            safe = orig_script_path.replace("'", "''")
+            header_lines.append(f"orig_script_path = '{safe}';")
+            header_lines.append("orig_script_dir = fileparts(orig_script_path);")
         full_contents = "\n".join(header_lines + [script_contents])
         script_file.write(full_contents.encode())
         script_file.flush()
         safe_path = script_file.name.replace("'", "''")
         matlab_cmd = [matlab_exec_path, "-batch", f"run('{safe_path}')"]
+        logger.info(
+            "Running MATLAB script %s in %s",
+            script_file.name,
+            work_dir or os.getcwd(),
+        )
         proc = subprocess.run(matlab_cmd, capture_output=True, text=True)
         if proc.returncode != 0:
             raise RuntimeError(f"MATLAB failed: {proc.stdout}\n{proc.stderr}")
