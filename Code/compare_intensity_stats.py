@@ -34,12 +34,13 @@ def load_intensities(
     if plume_type == "crimaldi":
         return get_intensities_from_crimaldi(path)
     if plume_type == "video":
-        return _extracted_from_load_intensities_22(path, matlab_exec_path)
+        return load_video_script_intensities(path, matlab_exec_path)
     raise ValueError(f"Unknown plume_type: {plume_type}")
 
 
-# TODO Rename this here and in `load_intensities`
-def _extracted_from_load_intensities_22(path, matlab_exec_path):
+def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarray:
+    """Return intensities from a MATLAB video script."""
+
     script_path = Path(path).resolve()
     script_dir = script_path.parent
 
