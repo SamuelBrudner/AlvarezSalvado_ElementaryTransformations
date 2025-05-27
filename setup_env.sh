@@ -78,8 +78,14 @@ try_load_conda_module() {
 ensure_conda_lock() {
   if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
     log INFO "Installing conda-lock"
-    if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
-      log WARNING "conda install failed, attempting pip fallback"
+    local output
+    if ! output=$(conda install -y -n base -c conda-forge conda-lock 2>&1); then
+      echo "$output"
+      if echo "$output" | grep -q "EnvironmentNotWritableError"; then
+        log WARNING "Base environment not writable. Falling back to pip --user"
+      else
+        log WARNING "conda install failed, attempting pip fallback"
+      fi
       if ! run_command_verbose python -m pip install --user conda-lock; then
         error "Failed to install conda-lock with conda or pip"
       fi
