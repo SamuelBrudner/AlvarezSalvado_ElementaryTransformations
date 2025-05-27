@@ -111,8 +111,13 @@ fi
 
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
 
+    (tmp_path / "environment.yml").write_text("channels:\n- defaults\n")
+    shutil.copy("setup_env.sh", tmp_path / "setup_env.sh")
+    shutil.copy("setup_utils.sh", tmp_path / "setup_utils.sh")
+
     result = subprocess.run(
-        ["bash", "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        ["bash", "setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
@@ -120,4 +125,56 @@ fi
     output = result.stdout + result.stderr
     assert "Unknown option" not in output
     assert "conda-lock lock" not in output
+
+
+def test_error_when_lockfile_missing_platform(tmp_path, monkeypatch):
+    """Script should fail if lock file lacks entries for the current platform."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
+  echo \"{conda_base}\"
+elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
+  echo '{{"platform":"linux-64"}}'
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    conda_lock_script = bin_dir / "conda-lock"
+    conda_lock_script.write_text(
+        """#!/bin/bash
+if [ \"$1\" = \"--version\" ]; then
+  echo \"conda-lock 1.0.0\"
+else
+  echo \"conda-lock $@\" >&2
+fi
+"""
+    )
+    conda_lock_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+
+    (tmp_path / "conda-lock.yml").write_text("metadata:\n  platforms:\n  - osx-arm64\n")
+    (tmp_path / "environment.yml").write_text("channels:\n- defaults\n")
+    shutil.copy("setup_env.sh", tmp_path / "setup_env.sh")
+    shutil.copy("setup_utils.sh", tmp_path / "setup_utils.sh")
+
+    result = subprocess.run(
+        ["bash", "setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "lacks platform" in result.stderr or "lacks platform" in result.stdout
 

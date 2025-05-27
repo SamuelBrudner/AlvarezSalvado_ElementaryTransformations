@@ -115,6 +115,16 @@ ensure_conda_lock() {
     fi
 }
 
+# Validate that a conda-lock file contains entries for the current platform
+check_lockfile_platform() {
+  local lockfile="$1"
+  local platform="$2"
+  if [ -f "$lockfile" ] && ! grep -q "$platform" "$lockfile"; then
+    log ERROR "Lock file '$lockfile' lacks platform '$platform'. Re-run setup without --skip-conda-lock to generate a compatible lock file."
+    return 1
+  fi
+}
+
 # --- Main setup function ---
 setup_environment() {
   section "Starting environment setup"
@@ -155,16 +165,15 @@ setup_environment() {
     error "Base environment file '$BASE_ENV_FILE' not found in the current directory."
   fi
 
+  # Determine the current platform for lock file operations
+  if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
+    PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+    log WARNING "Could not detect conda platform, using fallback: $PLATFORM"
+  fi
+
   if [ "$SKIP_CONDA_LOCK" -ne 1 ]; then
     # Ensure conda-lock is installed and functional
     ensure_conda_lock
-
-    # Get platform information safely
-    if ! PLATFORM="$(conda info --json 2>/dev/null | python -c 'import sys,json;print(json.load(sys.stdin).get("platform", ""))' 2>/dev/null)" || [ -z "$PLATFORM" ]; then
-      # Fallback for older conda versions or if json parsing fails
-      PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
-      log WARNING "Could not detect conda platform, using fallback: $PLATFORM"
-    fi
 
     # Always regenerate lock file to ensure consistency
     section "Generating conda environment lock file"
@@ -194,6 +203,9 @@ setup_environment() {
   log INFO "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
   
   if [ -f "conda-lock.yml" ]; then
+    if [ "$SKIP_CONDA_LOCK" -eq 1 ]; then
+      check_lockfile_platform "conda-lock.yml" "$PLATFORM" || return 1
+    fi
     if conda_supports_force; then
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
     else
