@@ -89,19 +89,15 @@ ensure_conda_lock() {
 
         # Refresh the shell to update PATH
         if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
+            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" 
         fi
 
-        # Add conda to PATH if not already there
+        # Add conda to PATH
         export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
 
-        # If pip installed into user base, ensure that directory is on PATH
-        if ! command -v conda-lock >/dev/null 2>&1; then
-            if [ -x "${USER_BIN}/conda-lock" ]; then
-                export PATH="${USER_BIN}:${PATH}"
-                hash -r
-            fi
-        fi
+        # Always include user's pip bin directory
+        export PATH="${USER_BIN}:${PATH}"
+        hash -r
 
         # Verify installation
         if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
