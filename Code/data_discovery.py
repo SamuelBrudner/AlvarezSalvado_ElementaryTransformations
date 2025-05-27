@@ -1,4 +1,16 @@
-"""Utilities for discovering processed data files based on a config."""
+"""Utilities for discovering processed data files based on a config.
+
+Examples
+--------
+Run discovery using the project environment::
+
+    ./setup_env.sh --dev
+    conda run --prefix ./dev-env python - <<'PY'
+    from Code.data_discovery import discover_processed_data
+    cfg = {'data_paths': {'processed_base_dirs': ['data/processed']}}
+    list(discover_processed_data(cfg))
+    PY
+"""
 
 from __future__ import annotations
 
@@ -76,6 +88,13 @@ def discover_processed_data(cfg: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
         Dictionary with keys ``path`` and ``metadata`` plus optional entries
         for ``config``, ``summary``, ``params``, and ``trajectories`` depending
         on ``data_loading_options``.
+
+    Examples
+    --------
+    >>> cfg = {'data_paths': {'processed_base_dirs': ['data/processed']}}
+    >>> gen = discover_processed_data(cfg)
+    >>> isinstance(next(gen, {}), dict)
+    True
     """
     base_dirs = cfg.get("data_paths", {}).get("processed_base_dirs", [])
     template = cfg.get("metadata_extraction", {}).get(
@@ -175,6 +194,12 @@ def check_parameter_consistency(records: List[Dict[str, Any]], cfg: Dict[str, An
         Records returned by :func:`discover_processed_data`.
     cfg : dict
         Analysis configuration containing ``parameter_usage`` options.
+
+    Examples
+    --------
+    >>> recs = [{'metadata': {'plume': 'A', 'mode': 'm'}, 'params': {'tau': 1}}]
+    >>> cfg = {'parameter_usage': {'check_model_parameter_consistency': {'enabled': True, 'parameters_to_check': ['tau']}}}
+    >>> check_parameter_consistency(recs, cfg)
     """
     param_cfg = cfg.get("parameter_usage", {}).get(
         "check_model_parameter_consistency", {}
