@@ -69,6 +69,7 @@ slurm*.err
 .env.local
 .env.*.local
 tmp/
+configs/project_paths.yaml
 
 # Project specific
 notebooks/
@@ -81,5 +82,6 @@ data/*
 results/
 figures/
 tmp_*
+
 
 data/
