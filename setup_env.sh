@@ -61,26 +61,15 @@ conda_supports_force() {
 
 # Attempt to load Conda via the environment modules system
 try_load_conda_module() {
-  # Ensure the 'module' command is available
-  if ! type module >/dev/null 2>&1; then
-    if [ -f /etc/profile.d/modules.sh ]; then
-      # shellcheck source=/dev/null
-      source /etc/profile.d/modules.sh
-    elif [ -f /usr/share/Modules/init/bash ]; then
-      # shellcheck source=/dev/null
-      source /usr/share/Modules/init/bash
-    fi
-  fi
-
   if type module >/dev/null 2>&1; then
-    local found
-    found=$(module avail 2>&1 | grep -iE "(miniconda|anaconda|conda)" | head -n 1 | awk '{print $1}')
-    if [ -n "$found" ]; then
-      log INFO "Loading $found module for Conda"
-      if module load "$found"; then
-        return 0
+    for m in miniconda anaconda conda; do
+      if module avail "$m" 2>&1 | grep -qi "$m"; then
+        log INFO "Loading $m module for Conda"
+        if module load "$m"; then
+          return 0
+        fi
       fi
-    fi
+    done
 
   fi
   return 1
@@ -88,35 +77,38 @@ try_load_conda_module() {
 
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
-  if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-    log INFO "Installing conda-lock"
-    local output
-    if ! output=$(conda install -y -n base -c conda-forge conda-lock 2>&1); then
-      echo "$output"
-      if echo "$output" | grep -q "EnvironmentNotWritableError"; then
-        log WARNING "Base environment not writable. Falling back to pip --user"
-      else
-        log WARNING "conda install failed, attempting pip fallback"
-      fi
-      if ! run_command_verbose python -m pip install --user conda-lock; then
-        error "Failed to install conda-lock with conda or pip"
-      fi
-      export PATH="$HOME/.local/bin:${PATH}"
-    fi
-
-    # Refresh the shell to update PATH
-    if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-      source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
-    fi
-
-    # Add conda to PATH if not already there
-    export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
-
-    # Verify installation
     if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-      error "Failed to install or verify conda-lock"
+        log INFO "Installing conda-lock"
+        if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
+            log WARNING "conda install failed, attempting pip fallback"
+            if ! run_command_verbose python -m pip install --user conda-lock; then
+                error "Failed to install conda-lock with conda or pip"
+            fi
+        fi
+
+
+        # Refresh the shell to update PATH
+        if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
+            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
+        fi
+
+        # Add conda to PATH if not already there
+        export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
+
+        # If pip installed into user base, ensure that directory is on PATH
+        if ! command -v conda-lock >/dev/null 2>&1; then
+            USER_BIN="$(python -m site --user-base)/bin"
+            if [ -x "${USER_BIN}/conda-lock" ]; then
+                export PATH="${USER_BIN}:${PATH}"
+                hash -r
+            fi
+        fi
+
+        # Verify installation
+        if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
+            error "conda-lock installed but not on PATH. Add ${USER_BIN} to PATH."
+        fi
     fi
-  fi
 }
 
 # --- Main setup function ---
