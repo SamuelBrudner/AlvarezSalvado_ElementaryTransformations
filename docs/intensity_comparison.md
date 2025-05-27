@@ -66,49 +66,110 @@ Figure saved to figures/intensity_comparison.png
 
 ### Comparing a Video Plume to Crimaldi
 
-If you have a custom plume movie, extract the intensity values in MATLAB and compare
-them to the Crimaldi data. Below is a minimal script `video_script.m`. Replace
-`'my_plume.avi'` with the path to your movie. The example below loads
-`configs/my_complex_plume_config.yaml` so the pixel conversion and frame rate
-are pulled from that file. The YAML file defines `px_per_mm` and
-`frame_rate` used by `load_plume_video`.
-`get_intensities_from_video_via_matlab` now also exposes ``orig_script_path`` and
-``orig_script_dir`` variables for convenience:
+To compare a video plume with Crimaldi data, you'll need to extract intensity values using MATLAB. The repository includes a pre-configured script `process_smoke_video.m` that handles this process with robust error checking and path handling.
 
-```matlab
-% When run via `compare_intensity_stats.py` this script is copied to a
-% temporary location. The helper function `get_intensities_from_video_via_matlab`
-% automatically inserts ``cd(work_dir)`` so `pwd` points to the original
-% directory. It now also exposes ``orig_script_path`` and ``orig_script_dir`` to
-% help resolve resources relative to the original script folder. Use
-% ``orig_script_dir`` in preference to `pwd` when constructing paths.
-cfgPath = fullfile(orig_script_dir, 'configs', 'my_complex_plume_config.yaml');
-cfg = load_config(cfgPath);
-plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', cfg.px_per_mm, cfg.frame_rate);
-all_intensities = plume.data(:);
-save('temp_intensities.mat', 'all_intensities');
-fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
-```
+#### Using the Pre-configured Script
 
-`compare_intensity_stats.py` executes a temporary copy of the script so
-``mfilename('fullpath')`` refers to that temporary location. Because
-``get_intensities_from_video_via_matlab`` inserts ``cd(work_dir)`` and now
-defines ``orig_script_path`` and ``orig_script_dir`` variables, the
-current directory is the original script folder. Prefer ``orig_script_dir``
-or an absolute path when locating configuration files.
+The `process_smoke_video.m` script is designed to work with the smoke video data and includes these features:
+- Automatic path resolution using `orig_script_dir`
+- File existence checks for all inputs
+- Proper temporary file handling with MATLAB's `tempdir()`
+- Clear error messages for troubleshooting
 
-Save the script and pass its path to the Python utility. Relative paths are
-resolved to absolute ones, so both `video_script.m` and `/abs/path/video_script.m`
-work. The `TEMP_MAT_FILE_SUCCESS` line is used by
-`compare_intensity_stats.py` to locate the generated MAT-file.
+#### Prerequisites
 
-Run the comparison using the development environment created with `./setup_env.sh --dev`:
+1. MATLAB must be installed and available in your system PATH
+2. The following MATLAB toolboxes are required:
+   - Image Processing Toolbox
+   - Statistics and Machine Learning Toolbox
+3. The repository must contain:
+   - `configs/my_complex_plume_config.yaml` with `px_per_mm` and `frame_rate`
+   - `data/smoke_1a_bgsub_raw.avi` (or update the path in the script)
+
+#### Running the Comparison
+
+Run the comparison using the development environment:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats VID video path/to/video_script.m CRIM crimaldi data/10302017_10cms_bounded.hdf5 --matlab_exec /path/to/matlab
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+    CRIM data/10302017_10cms_bounded_2.h5 \
+    SMOKE process_smoke_video.m \
+    --matlab_exec /path/to/matlab/executable
+```
+
+#### Custom MATLAB Scripts
+
+If you need to create a custom MATLAB script, follow this template:
+
+```matlab
+% Process smoke video for intensity comparison
+% This script is designed to be called by compare_intensity_stats.py
+
+% Get the path to the original script directory
+if ~exist('orig_script_dir', 'var')
+    orig_script_dir = pwd;
+end
+
+% Load configuration
+cfgPath = fullfile(orig_script_dir, 'configs', 'my_complex_plume_config.yaml');
+if ~exist(cfgPath, 'file')
+    error('Config file not found: %s', cfgPath);
+end
+cfg = load_config(cfgPath);
+
+% Process the smoke video
+videoPath = fullfile(orig_script_dir, 'data', 'smoke_1a_bgsub_raw.avi');
+if ~exist(videoPath, 'file')
+    error('Video file not found: %s', videoPath);
+end
+
+plume = load_plume_video(videoPath, cfg.px_per_mm, cfg.frame_rate);
+all_intensities = plume.data(:);
+
+% Save to temporary file
+outputFile = fullfile(tempdir, 'temp_intensities.mat');
+save(outputFile, 'all_intensities');
+fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', outputFile);
+```
+
+#### Notes on Execution
+
+- The script runs in a temporary directory, so always use absolute paths or `orig_script_dir`
+- MATLAB must be properly licensed and installed on the system
+- The script handles errors gracefully with descriptive messages
+- Temporary files are automatically cleaned up after execution
+
+## Configuration
+
+### Local Paths Configuration
+
+Each user should have their own local `configs/paths.yaml` file (gitignored for security). A template is provided at `configs/paths.yaml.template`.
+
+To set up your local configuration:
+
+1. Copy the template to create your local config:
+   ```bash
+   cp configs/paths.yaml.template configs/paths.yaml
+   ```
+
+2. Edit `configs/paths.yaml` to set the correct paths for your system, particularly:
+   - `crimaldi_hdf5`: Path to your Crimaldi HDF5 file
+   - `output` directories: Where to store processed files and figures
+
+### MATLAB Configuration
+
+For MATLAB integration, ensure you have these MATLAB toolboxes installed:
+- Image Processing Toolbox
+- Statistics and Machine Learning Toolbox
+
+Set the path to your MATLAB executable in your shell configuration (e.g., `~/.bashrc` or `~/.zshrc`):
+
+```bash
+export PATH="/path/to/matlab/bin:$PATH"
 ```
 
 ## Notes
 
-- All commands assume the development environment created via `./setup_env.sh --dev`.
-- Output paths are controlled by `configs/paths.yaml`.
+- All commands assume the development environment created via `./setup_env.sh --dev`
+- Output paths are controlled by `configs/paths.yaml`
+- The MATLAB script `process_smoke_video.m` is pre-configured to work with the default paths
