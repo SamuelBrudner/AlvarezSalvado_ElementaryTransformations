@@ -97,9 +97,10 @@ defines ``orig_script_path`` and ``orig_script_dir`` variables, the
 current directory is the original script folder. Prefer ``orig_script_dir``
 or an absolute path when locating configuration files.
 
-Save the script and pass **its full path** to the Python utility. The
-`TEMP_MAT_FILE_SUCCESS` line is used by `compare_intensity_stats.py` to locate the
-generated MAT-file.
+Save the script and pass its path to the Python utility. Relative paths are
+resolved to absolute ones, so both `video_script.m` and `/abs/path/video_script.m`
+work. The `TEMP_MAT_FILE_SUCCESS` line is used by
+`compare_intensity_stats.py` to locate the generated MAT-file.
 
 Run the comparison using the development environment created with `./setup_env.sh --dev`:
 
