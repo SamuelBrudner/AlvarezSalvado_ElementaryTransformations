@@ -2,6 +2,21 @@
 
 This repository provides the MATLAB implementation of the navigation model described in Álvarez-Salvado et al., "Elementary sensory-motor transformations underlying olfactory navigation in walking fruit flies" (eLife 2018, http://dx.doi.org/10.7554/eLife.37815).
 
+- [Quick Start](#quick-start)
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [Development Environment Setup](#development-environment-setup)
+- [Configuration](#configuration)
+- [Data Organization](#data-organization)
+- [Data Dictionary](#data-dictionary)
+- [Exporting Results to Open Formats](#exporting-results-to-open-formats)
+- [Running Simulations](#running-simulations)
+- [Analysis Configuration](#analysis-configuration)
+- [Plume Intensity Utilities](#plume-intensity-utilities)
+- [Repository Layout](#repository-layout)
+- [Citation](#citation)
+- [Roadmap](#roadmap)
+
 ## Quick Start
 
 Run a default simulation and export the results in just a few commands:
