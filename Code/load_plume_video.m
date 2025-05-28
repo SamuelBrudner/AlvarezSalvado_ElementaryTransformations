@@ -20,6 +20,19 @@ function plume = load_plume_video(filename, px_per_mm, frame_rate)
 
 v = VideoReader(filename);
 
+% Early exit if estimated array would exceed ~8 GB
+estFrames = ceil(v.FrameRate * v.Duration);
+bytesNeeded = double(v.Height) * double(v.Width) * double(estFrames) * 8;
+if bytesNeeded > 8 * 1024^3
+    warning('load_plume_video:MemoryExceeded', ...
+        'Estimated movie size %.1f GB exceeds 8 GB limit; aborting load.', ...
+        bytesNeeded / 1024^3);
+    plume.data = [];
+    plume.px_per_mm = px_per_mm;
+    plume.frame_rate = frame_rate;
+    return;
+end
+
 % Determine frame count and check frame sizes
 frameCount = 0;
 height = [];
