@@ -1,14 +1,19 @@
 function config = load_paths_config()
 % LOAD_PATHS_CONFIG Load the project paths configuration
-%   Loads the paths.yaml configuration file, expanding any environment variables.
-%   Returns a struct with the configuration values.
+%   Loads the project_paths.yaml configuration file (falling back to
+%   paths.yaml for backward compatibility), expanding any environment
+%   variables. Returns a struct with the configuration values.
 
     % Get the directory of the currently executing script
     scriptDir = fileparts(mfilename('fullpath'));
     projectRoot = fullfile(scriptDir, '..');
     
     % Path to the configuration file
-    configFile = fullfile(projectRoot, 'configs', 'paths.yaml');
+    configFile = fullfile(projectRoot, 'configs', 'project_paths.yaml');
+    if ~exist(configFile, 'file')
+        % Backward compatibility for older paths.yaml
+        configFile = fullfile(projectRoot, 'configs', 'paths.yaml');
+    end
     
     % Check if the file exists
     if ~exist(configFile, 'file')

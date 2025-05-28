@@ -2,8 +2,8 @@
 """
 Set up local configuration files for the project.
 
-This script creates a local paths.yaml configuration file based on the template,
-with paths adjusted for the current environment.
+This script creates a local project_paths.yaml configuration file based on the
+template, with paths adjusted for the current environment.
 """
 
 import os
@@ -16,8 +16,8 @@ def main():
     project_root = Path(__file__).parent.parent.resolve()
 
     # Define template and output paths
-    template_path = project_root / "configs" / "paths.yaml.template"
-    output_path = project_root / "configs" / "paths.yaml"
+    template_path = project_root / "configs" / "project_paths.yaml.template"
+    output_path = project_root / "configs" / "project_paths.yaml"
 
     # Check if the file already exists
     if output_path.exists():
