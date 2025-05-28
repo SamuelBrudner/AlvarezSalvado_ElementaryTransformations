@@ -23,7 +23,11 @@ This page describes how to characterise the intensity of individual odour plumes
    ```bash
    source ./paths.sh
    ```
-   This sets up all necessary environment variables and paths. You can run this anytime to update paths without rebuilding the conda environment.
+   This sets up all necessary environment variables and paths. If `matlab` isn't on your `PATH`,
+   `paths.sh` attempts to load a module named `MATLAB/$MATLAB_VERSION` (or the
+   value in `MATLAB_MODULE`). Set either variable before sourcing when working on
+   HPC clusters. You can run this anytime to update paths without rebuilding the
+   conda environment.
 
 3. **Running scripts**:
    Use the module form when executing Python scripts to ensure the repository root is on `sys.path`:
