@@ -22,10 +22,15 @@ For detailed instructions on environment setup and intensity comparison workflow
 
 ## Quick Start
 
-```bash
-./setup_env.sh --dev
-source ./paths.sh
-```
+Check if the conda environment exists, if not, create it.
+
+ - Check: `./dev_env` exists
+ - If not, run: `./setup_env.sh --dev`
+
+Check if pre commit hooks are installed, if not, install them.
+
+ - Check: `./dev_env/.git/hooks/pre-commit` exists
+ - If not, run: `conda run --prefix dev_env pre-commit install`
 
 Sourcing ``paths.sh`` creates ``configs/project_paths.yaml`` from the template
 if it does not already exist.
@@ -51,6 +56,8 @@ conda run --prefix ./dev-env python -m Code.some_script
 ```
 
 ## Step-by-Step
+
+1 and 2 are only *as required* -- check if there's evidence they've already run
 
 1. Run `./setup_env.sh --dev` to create `./dev-env`.
 2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing.

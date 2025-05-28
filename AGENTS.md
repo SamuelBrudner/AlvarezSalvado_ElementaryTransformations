@@ -33,10 +33,15 @@ Dependency graph	Generate with matlab.codetools.requiredFilesAndProducts and sav
 	2.	conda-lock.yml – pin exact versions (conda-lock lock).
 	3.	Developers run:
 
-./setup_env.sh --dev        # creates ./dev-env
-conda run --prefix ./dev-env pytest -q   # run tests
+Check if the conda environment exists, if not, create it.
 
-Pre-commit hooks invoke the environment automatically via conda run --prefix ./dev-env.
+ - Check: `./dev_env` exists
+ - If not, run: `./setup_env.sh --dev`
+
+Check if pre commit hooks are installed, if not, install them.
+
+ - Check: `./dev_env/.git/hooks/pre-commit` exists
+ - If not, run: `conda run --prefix dev_env pre-commit install`
 
 ⸻
 
