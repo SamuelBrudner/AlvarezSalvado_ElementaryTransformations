@@ -144,6 +144,17 @@ conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
 The MATLAB executable is auto-detected when you source `paths.sh`. Pass
 `--matlab_exec` only if you need to override the detected path.
 
+For convenience, you can also use `scripts/run_intensity_batch.py` which wraps
+`Code.compare_intensity_stats` for the common case of comparing the default
+Crimaldi dataset with a smoke plume script. The helper reads the MATLAB path
+from `configs/project_paths.yaml` if available.
+
+```bash
+conda run --prefix ./dev-env python scripts/run_intensity_batch.py \
+    data/10302017_10cms_bounded_2.h5 process_smoke_video.m
+```
+
+
 ### MATLAB Script Execution
 
 The project includes `video_script.m` for processing smoke video data. This script is designed to work with the project's path management system.
