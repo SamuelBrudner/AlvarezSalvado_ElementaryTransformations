@@ -1,32 +1,26 @@
 import os
-import unittest
+import sys
 
 import pytest
+
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 np = pytest.importorskip("numpy")
 h5py = pytest.importorskip("h5py")
 
 from Code.analyze_crimaldi_data import analyze_crimaldi_data
 
-class TestAnalyzeCrimaldiData(unittest.TestCase):
-    def setUp(self):
-        self.tmpfile = 'tests/sample_crimaldi.hdf5'
-        data = np.arange(27, dtype=np.float32).reshape(3,3,3)
-        with h5py.File(self.tmpfile, 'w') as f:
-            f.create_dataset('dataset_1', data=data)
-        self.data = data
 
-    def tearDown(self):
-        if os.path.isfile(self.tmpfile):
-            os.remove(self.tmpfile)
+def test_statistics(tmp_path):
+    tmpfile = tmp_path / "sample_crimaldi.hdf5"
+    data = np.arange(27, dtype=np.float32).reshape(3, 3, 3)
+    with h5py.File(tmpfile, "w") as f:
+        f.create_dataset("dataset_1", data=data)
 
-    def test_statistics(self):
-        stats = analyze_crimaldi_data(self.tmpfile)
-        self.assertEqual(stats['min'], float(self.data.min()))
-        self.assertEqual(stats['max'], float(self.data.max()))
-        self.assertAlmostEqual(stats['mean'], float(self.data.mean()))
-        self.assertAlmostEqual(stats['std'], float(self.data.std()))
-        self.assertAlmostEqual(stats['percentiles'][5], np.percentile(self.data, 5))
-
-if __name__ == '__main__':
-    unittest.main()
+    stats = analyze_crimaldi_data(str(tmpfile))
+    assert stats["min"] == float(data.min())
+    assert stats["max"] == float(data.max())
+    assert stats["mean"] == pytest.approx(float(data.mean()))
+    assert stats["std"] == pytest.approx(float(data.std()))
+    assert stats["percentiles"][5] == pytest.approx(np.percentile(data, 5))
