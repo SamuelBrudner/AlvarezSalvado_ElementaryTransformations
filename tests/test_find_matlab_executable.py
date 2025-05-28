@@ -27,3 +27,15 @@ def test_find_matlab_executable_from_project_paths(tmp_path, monkeypatch):
     finally:
         config_file.unlink()
 
+
+def test_find_matlab_executable_from_env(tmp_path, monkeypatch):
+    fake_matlab = tmp_path / "fake_matlab_env"
+    fake_matlab.write_text("#!/bin/sh\necho MATLAB")
+    fake_matlab.chmod(fake_matlab.stat().st_mode | stat.S_IXUSR)
+
+    monkeypatch.setenv("MATLAB_EXEC", str(fake_matlab))
+
+    video_intensity = importlib.reload(importlib.import_module("Code.video_intensity"))
+
+    assert video_intensity.find_matlab_executable() == str(fake_matlab)
+
