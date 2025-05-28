@@ -159,6 +159,8 @@ conda run --prefix ./dev-env python scripts/run_intensity_batch.py \
 
 The project includes `video_script.m` for processing smoke video data. This script is designed to work with the project's path management system.
 
+When `video_script.m` is launched via the Python wrapper, it receives an `orig_script_dir` variable pointing to the project root. This lets the script find the `Code/` directory and any data files even though MATLAB runs in a temporary directory.
+
 #### video_script.m
 
 This script processes smoke video data and extracts intensity values. It's designed to be called from Python but can also be run directly in MATLAB.
@@ -173,6 +175,8 @@ fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
 ```
 
 **Key Features**:
+- Automatic path handling: when invoked from Python, `orig_script_dir` is set so the script can locate `Code/` and data files even when run from a temporary directory
+- Improved error handling via a `try`/`catch` block that prints a stack trace on failure
 - Loads and processes smoke video data
 - Saves intensity values to a temporary MAT file
 - Outputs the path to the generated file for Python integration
