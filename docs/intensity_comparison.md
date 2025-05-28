@@ -266,6 +266,7 @@ fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', outputFile);
 
 ### Project Structure
 
+
 ```
 project_root/
 ├── Code/                  # Python modules and utilities
@@ -274,9 +275,13 @@ project_root/
 ├── data/                  # Data files (HDF5, videos, etc.)
 │   ├── raw/               # Raw data files
 │   └── processed/         # Processed data files
-├── scripts/               # MATLAB scripts and functions
-└── figures/               # Output figures
+├── scripts/               # Helper utilities (MATLAB & Python)
+├── figures/               # Output figures
+└── *.m                    # MATLAB scripts live at the project root
 ```
+
+MATLAB scripts like `video_script.m` and `process_smoke_video.m` reside directly
+in the project root. There is no dedicated `scripts/matlab` folder.
 
 ### Local Paths Configuration
 
@@ -292,9 +297,9 @@ Key paths configured in `project_paths.yaml`:
 When running MATLAB scripts through the Python wrapper:
 1. The `orig_script_dir` variable is set to the project root directory
 2. The MATLAB path is automatically configured to include:
-   - The project root directory
+   - The project root directory (where the MATLAB scripts live)
    - All subdirectories under `Code/`
-   - The `scripts/` directory
+   - The `scripts/` directory for helper utilities
 
 For direct MATLAB execution, ensure your MATLAB path includes these directories.
 
