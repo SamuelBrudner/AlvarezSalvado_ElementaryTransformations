@@ -152,7 +152,7 @@ generate_paths_config() {
     export PROJECT_DIR="$SCRIPT_DIR"
     export TMPDIR="${TMPDIR:-/tmp}"
     
-    # Generate paths.yaml from template if it doesn't exist
+    # Generate project_paths.yaml from template
     if [ ! -f "$PATHS_TEMPLATE" ]; then
         log ERROR "Template file not found: $PATHS_TEMPLATE"
         return 1
