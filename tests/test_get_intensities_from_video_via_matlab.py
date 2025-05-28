@@ -1,9 +1,9 @@
+import logging
 import os
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-import logging
 
 import pytest
 
@@ -11,7 +11,7 @@ np = pytest.importorskip("numpy")
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from Code.video_intensity import get_intensities_from_video_via_matlab
+from Code.video_intensity import get_intensities_from_video_via_matlab  # noqa: E402
 
 
 def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
@@ -196,10 +196,43 @@ def test_matlab_batch_command_uses_brackets(monkeypatch):
     monkeypatch.setattr(subprocess, "run", fake_run)
 
     with pytest.raises(RuntimeError):
-        get_intensities_from_video_via_matlab('disp("fail")', 'matlab')
+        get_intensities_from_video_via_matlab('disp("fail")', "matlab")
 
     batch_idx = captured["cmd"].index("-batch") + 1
     batch_arg = captured["cmd"][batch_idx]
     assert "disp(['MATLAB Error: ' getReport(ME, 'extended')])" in batch_arg
     assert "+ getReport" not in batch_arg
 
+
+def test_reads_v7_3_mat_file(monkeypatch, tmp_path):
+    matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
+    script_content = 'disp("hi")'
+
+    mat_file = tmp_path / "out.mat"
+    import h5py
+
+    np = pytest.importorskip("numpy")
+    with h5py.File(mat_file, "w") as f:
+        f.create_dataset("all_intensities", data=np.array([9, 8, 7], dtype=np.float32))
+
+    stdout = f"ok\nTEMP_MAT_FILE_SUCCESS:{mat_file}\n"
+
+    captured = {}
+    orig_ntf = tempfile.NamedTemporaryFile
+
+    def fake_ntf(*args, **kwargs):
+        kwargs.setdefault("delete", False)
+        tmp = orig_ntf(*args, **kwargs)
+        captured["script_path"] = tmp.name
+        return tmp
+
+    def fake_run(cmd, capture_output, text, timeout, cwd):
+        return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(tempfile, "NamedTemporaryFile", fake_ntf)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    arr = get_intensities_from_video_via_matlab(script_content, matlab_exec)
+    assert np.array_equal(arr, np.array([9, 8, 7], dtype=np.float32))
+    assert not Path(captured["script_path"]).exists()
+    assert not mat_file.exists()
