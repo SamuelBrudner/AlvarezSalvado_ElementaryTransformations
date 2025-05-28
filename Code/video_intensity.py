@@ -161,7 +161,8 @@ def get_intensities_from_video_via_matlab(
                 ]
             )
         if work_dir is not None:
-            header_lines.append(f"cd('{work_dir}')")
+            safe_wd = work_dir.replace("'", "''")
+            header_lines.append(f"cd('{safe_wd}')")
         # Write the header lines and script contents
         header = "\n".join(header_lines) + "\n\n" if header_lines else ""
         script_file.write((header + script_contents).encode())
