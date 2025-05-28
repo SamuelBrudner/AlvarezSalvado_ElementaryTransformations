@@ -1,6 +1,5 @@
 # Configuration files with machine-specific paths
 .pre-commit-config.yaml
-configs/paths.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
