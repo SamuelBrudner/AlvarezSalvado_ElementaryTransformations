@@ -1,5 +1,9 @@
 % Get the directory where this script is located
-scriptDir = fileparts(mfilename('fullpath'));
+if exist('orig_script_dir', 'var')
+    scriptDir = orig_script_dir;
+else
+    scriptDir = fileparts(mfilename('fullpath'));
+end
 fprintf('Script directory: %s\n', scriptDir);
 
 % Add necessary directories to MATLAB path
