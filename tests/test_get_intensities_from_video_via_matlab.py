@@ -185,3 +185,21 @@ def test_logs_stdout_on_failure(monkeypatch, caplog):
 
     assert any("hello" in r.message for r in caplog.records)
 
+
+def test_matlab_batch_command_uses_brackets(monkeypatch):
+    captured = {}
+
+    def fake_run(cmd, capture_output, text, timeout, cwd):
+        captured["cmd"] = cmd
+        return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with pytest.raises(RuntimeError):
+        get_intensities_from_video_via_matlab('disp("fail")', 'matlab')
+
+    batch_idx = captured["cmd"].index("-batch") + 1
+    batch_arg = captured["cmd"][batch_idx]
+    assert "disp(['MATLAB Error: ' getReport(ME, 'extended')])" in batch_arg
+    assert "+ getReport" not in batch_arg
+
