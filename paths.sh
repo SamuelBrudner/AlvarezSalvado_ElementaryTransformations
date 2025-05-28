@@ -11,6 +11,9 @@ if [ "$SOURCED" -eq 0 ]; then
 else
     set -u  # Only fail on undefined variables when sourced
 fi
+MATLAB_VERSION=${MATLAB_VERSION:-2023b}
+MATLAB_MODULE=${MATLAB_MODULE:-MATLAB/$MATLAB_VERSION}
+
 
 # Function to safely exit or return
 safe_exit() {
@@ -48,7 +51,9 @@ find_matlab() {
     
     # Try module system if available
     if command -v module >/dev/null 2>&1; then
-        module load MATLAB 2>/dev/null || true
+        if ! module load "$MATLAB_MODULE" >/dev/null 2>&1; then
+            module load MATLAB >/dev/null 2>&1 || true
+        fi
         if command -v matlab >/dev/null 2>&1; then
             command -v matlab
             return 0

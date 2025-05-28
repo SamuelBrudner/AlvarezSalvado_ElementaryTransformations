@@ -41,6 +41,8 @@ output:
   matlab_temp: "${TMPDIR:-/tmp}"
 
 # MATLAB configuration
+# matlab:
+#   module: "MATLAB/2023b"
 matlab:
   # Path to MATLAB executable (auto-detected if not specified)
   # executable: "/Applications/MATLAB_R2023a.app/bin/matlab"
