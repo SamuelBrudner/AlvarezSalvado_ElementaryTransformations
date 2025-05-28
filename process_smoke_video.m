@@ -29,6 +29,13 @@ addpath(fullfile(projectRoot, 'scripts'));        % Add scripts directory
 fprintf('Project root: %s\n', projectRoot);
 fprintf('MATLAB path contains %d directories\n', length(strsplit(path, pathsep)));
 
+% Ensure project_paths.yaml exists before continuing
+projectPaths = fullfile(projectRoot, 'configs', 'project_paths.yaml');
+if ~exist(projectPaths, 'file')
+    error('process_smoke_video:PathsConfigMissing', ...
+        'Required file not found: %s', projectPaths);
+end
+
 % Load paths configuration
 try
     paths = load_paths_config();
@@ -44,11 +51,18 @@ cfg = load_config(paths.configs.plume);
 
 % Process the smoke video
 if ~exist(paths.data.video, 'file')
-    error('Video file not found: %s', paths.data.video);
+    error('process_smoke_video:VideoNotFound', ...
+        'Video file not found: %s', paths.data.video);
 end
 
 fprintf('Processing video: %s\n', paths.data.video);
 plume = load_plume_video(paths.data.video, cfg.px_per_mm, cfg.frame_rate);
+
+% Validate plume dimensions
+if isempty(plume.data) || ndims(plume.data) ~= 3
+    error('process_smoke_video:InvalidPlumeData', ...
+        'load_plume_video returned empty or invalid data');
+end
 
 % Flatten the data to a 1D array of intensities
 all_intensities = plume.data(:);
