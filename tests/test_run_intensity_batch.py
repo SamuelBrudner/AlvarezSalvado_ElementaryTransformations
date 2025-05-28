@@ -1,5 +1,7 @@
 import importlib.util
 import sys
+import subprocess
+import shutil
 from pathlib import Path
 import types
 import pytest
@@ -67,3 +69,38 @@ def test_command_line_overrides_yaml(tmp_path, monkeypatch, module):
     ])
 
     assert captured["exec"] == "/custom/matlab"
+
+
+def test_script_adds_repo_root(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "Code").mkdir()
+    (repo / "Code" / "__init__.py").write_text("")
+    (repo / "Code" / "compare_intensity_stats.py").write_text(
+        """
+def compare_intensity_stats(*args, **kwargs):
+    return [(\"A\", {\"mean\": 1.0})]
+
+def format_table(results, diff=None):
+    return \"stub table\"
+"""
+    )
+    (repo / "scripts").mkdir()
+    shutil.copy(
+        Path(__file__).resolve().parents[1]
+        / "scripts"
+        / "run_intensity_batch.py",
+        repo / "scripts" / "run_intensity_batch.py",
+    )
+    (repo / "a.h5").write_text("")
+    (repo / "b.m").write_text("")
+
+    result = subprocess.run(
+        [sys.executable, "scripts/run_intensity_batch.py", "a.h5", "b.m"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == "stub table"
