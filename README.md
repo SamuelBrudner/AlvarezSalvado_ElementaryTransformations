@@ -29,6 +29,9 @@ source ./paths.sh
 `paths.sh` attempts to locate MATLAB automatically and sets `MATLAB_EXEC`.
 Set this variable yourself or use the `--matlab_exec` option to override the
 auto-detected path.
+If MATLAB is not found, `paths.sh` tries to load a module named
+`MATLAB/$MATLAB_VERSION` (or `MATLAB_MODULE` if set). Set these variables
+before sourcing to override the default.
 
 With the environment active you can run MATLAB and Python scripts from the `Code` directory using the module syntax:
 
