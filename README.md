@@ -34,6 +34,8 @@ If MATLAB is not found, `paths.sh` tries to load a module named
 before sourcing to override the default.
 Python utilities such as `Code.video_intensity` also honour `MATLAB_EXEC` when
 it points to a valid executable.
+Use `--allow-mismatch` with `Code.compare_intensity_stats` if your datasets have
+different lengths.
 
 See [docs/intensity_comparison.md](docs/intensity_comparison.md#initial-setup)
 for a detailed explanation of the path setup process.
