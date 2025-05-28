@@ -10,10 +10,10 @@ def test_paths_sh_runs_without_syntaxerror(tmp_path):
     shutil.copy(repo_root / "paths.sh", tmp_path / "paths.sh")
     shutil.copy(repo_root / "setup_utils.sh", tmp_path / "setup_utils.sh")
 
-    configs_dir = _extracted_from_test_paths_sh_runs_without_syntaxerror_8(
+    configs_dir = _copy_required_files(
         tmp_path, "configs", repo_root, "project_paths.yaml.template"
     )
-    scripts_dir = _extracted_from_test_paths_sh_runs_without_syntaxerror_8(
+    _ = _copy_required_files(
         tmp_path, "scripts", repo_root, "make_paths_relative.py"
     )
     result = subprocess.run(
@@ -27,8 +27,8 @@ def test_paths_sh_runs_without_syntaxerror(tmp_path):
     assert (configs_dir / "project_paths.yaml").exists()
 
 
-# TODO Rename this here and in `test_paths_sh_runs_without_syntaxerror`
-def _extracted_from_test_paths_sh_runs_without_syntaxerror_8(tmp_path, arg1, repo_root, arg3):
+# Helper for copying files required by paths.sh
+def _copy_required_files(tmp_path, arg1, repo_root, arg3):
     result = tmp_path / arg1
     result.mkdir()
     shutil.copy(repo_root / arg1 / arg3, result / arg3)
