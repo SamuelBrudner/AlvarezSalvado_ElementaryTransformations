@@ -26,7 +26,13 @@ function testPathsLoadFailure(testCase)
     fclose(fid);
     orig_script_dir = tmpRoot; %#ok<NASGU>
     f = @() run(fullfile(tmpRoot, 'process_smoke_video.m'));
-    verifyError(testCase, f, 'process_smoke_video:LoadPathsFailed');
+    try
+        f();
+        verifyFail(testCase, 'Expected error');
+    catch ME
+        verifyEqual(testCase, ME.identifier, 'process_smoke_video:LoadPathsFailed');
+        verifyEqual(testCase, ME.cause{1}.identifier, 'stub:fail');
+    end
 end
 
 function testConfigLoadFailure(testCase)
@@ -43,7 +49,13 @@ function testConfigLoadFailure(testCase)
     fclose(fid);
     orig_script_dir = tmpRoot; %#ok<NASGU>
     f = @() run(fullfile(tmpRoot, 'process_smoke_video.m'));
-    verifyError(testCase, f, 'process_smoke_video:LoadConfigFailed');
+    try
+        f();
+        verifyFail(testCase, 'Expected error');
+    catch ME
+        verifyEqual(testCase, ME.identifier, 'process_smoke_video:LoadConfigFailed');
+        verifyEqual(testCase, ME.cause{1}.identifier, 'stub:fail');
+    end
 end
 
 function testPlumeLoadFailure(testCase)
@@ -63,5 +75,11 @@ function testPlumeLoadFailure(testCase)
     fclose(fid);
     orig_script_dir = tmpRoot; %#ok<NASGU>
     f = @() run(fullfile(tmpRoot, 'process_smoke_video.m'));
-    verifyError(testCase, f, 'process_smoke_video:LoadPlumeFailed');
+    try
+        f();
+        verifyFail(testCase, 'Expected error');
+    catch ME
+        verifyEqual(testCase, ME.identifier, 'process_smoke_video:LoadPlumeFailed');
+        verifyEqual(testCase, ME.cause{1}.identifier, 'stub:fail');
+    end
 end

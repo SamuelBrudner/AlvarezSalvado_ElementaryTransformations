@@ -18,6 +18,7 @@
 %   process_smoke_video:LoadPathsFailed   - load_paths_config raised an error
 %   process_smoke_video:LoadConfigFailed  - load_config raised an error
 %   process_smoke_video:LoadPlumeFailed   - load_plume_video raised an error
+%   Errors from these helpers are rethrown with the identifiers above.
 
 % Add project directories to MATLAB path
 if exist('orig_script_dir', 'var')
@@ -47,8 +48,10 @@ end
 try
     paths = load_paths_config();
 catch ME
-    error('process_smoke_video:LoadPathsFailed', ...
+    newME = MException('process_smoke_video:LoadPathsFailed', ...
         'Failed to load paths configuration: %s', ME.message);
+    newME = addCause(newME, ME);
+    throw(newME);
 end
 
 % Load plume configuration
@@ -58,8 +61,10 @@ end
 try
     cfg = load_config(paths.configs.plume);
 catch ME
-    error('process_smoke_video:LoadConfigFailed', ...
+    newME = MException('process_smoke_video:LoadConfigFailed', ...
         'Failed to load plume configuration: %s', ME.message);
+    newME = addCause(newME, ME);
+    throw(newME);
 end
 
 % Process the smoke video
@@ -72,8 +77,10 @@ fprintf('Processing video: %s\n', paths.data.video);
 try
     plume = load_plume_video(paths.data.video, cfg.px_per_mm, cfg.frame_rate);
 catch ME
-    error('process_smoke_video:LoadPlumeFailed', ...
+    newME = MException('process_smoke_video:LoadPlumeFailed', ...
         'Failed to load plume video: %s', ME.message);
+    newME = addCause(newME, ME);
+    throw(newME);
 end
 
 % Validate plume dimensions

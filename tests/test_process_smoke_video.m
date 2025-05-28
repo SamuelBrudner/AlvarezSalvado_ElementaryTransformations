@@ -13,4 +13,6 @@ function testHelpContainsExample(~)
         'Help text missing Python example call');
     assert(contains(txt, 'process_smoke_video:LoadPathsFailed'), ...
         'Help text missing error identifier');
+    assert(contains(txt, 'rethrow'), ...
+        'Help text missing rethrow note');
 end
