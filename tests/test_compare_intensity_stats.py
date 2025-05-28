@@ -180,3 +180,17 @@ def test_json_output_and_directory_creation(monkeypatch, tmp_path):
     assert data[0]['statistics']['mean'] == pytest.approx(stats_vid['mean'])
     assert data[1]['statistics']['mean'] == pytest.approx(stats_crim['mean'])
 
+
+
+def test_video_script_does_not_prepend_video_file(monkeypatch, tmp_path):
+    script = tmp_path / 'vid.m'
+    script.write_text("disp('x')")
+    captured = {}
+
+    def fake_get(script_contents, m='matlab', orig_script_path=None, **kwargs):
+        captured['script'] = script_contents
+        return np.array([1.0], dtype=float)
+
+    monkeypatch.setattr(cis, 'get_intensities_from_video_via_matlab', fake_get)
+    cis.load_video_script_intensities(str(script), 'matlab')
+    assert not captured['script'].startswith('video_file =')
