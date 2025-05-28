@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import logging
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
@@ -13,6 +14,8 @@ import numpy as np
 from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
 from Code.intensity_stats import calculate_intensity_stats_dict
 from Code.video_intensity import get_intensities_from_video_via_matlab
+
+logger = logging.getLogger(__name__)
 
 Stats = dict[str, float]
 
@@ -31,6 +34,7 @@ def load_intensities(
 
     if plume_type is None:
         plume_type = "crimaldi" if path.lower().endswith((".h5", ".hdf5")) else "video"
+    logger.info("Loading intensities from %s (plume type: %s)", path, plume_type)
     if plume_type == "crimaldi":
         return get_intensities_from_crimaldi(path)
     if plume_type == "video":
@@ -40,7 +44,7 @@ def load_intensities(
 
 def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarray:
     """Return intensities from a MATLAB video script."""
-
+    logger.info("Processing video script %s (plume type: video)", path)
     script_path = Path(path).resolve()
     script_dir = script_path.parent
 
@@ -78,9 +82,16 @@ def compare_intensity_stats(
 
     for identifier, path, plume_type in sources:
         intensities = load_intensities(path, plume_type, matlab_exec_path)
+        logger.info("Dataset %s has length %d", identifier, len(intensities))
         if expected_len is None:
             expected_len = len(intensities)
         elif len(intensities) != expected_len:
+            logger.error(
+                "Length mismatch for %s: expected %d but got %d",
+                identifier,
+                expected_len,
+                len(intensities),
+            )
             raise ValueError(
                 f"Expected intensities of length {expected_len}, got {len(intensities)}"
             )
@@ -166,6 +177,7 @@ def write_json(
 
 
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(description="Compare intensity statistics")
     parser.add_argument(
         "items",

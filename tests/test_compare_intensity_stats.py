@@ -194,3 +194,21 @@ def test_video_script_does_not_prepend_video_file(monkeypatch, tmp_path):
     monkeypatch.setattr(cis, 'get_intensities_from_video_via_matlab', fake_get)
     cis.load_video_script_intensities(str(script), 'matlab')
     assert not captured['script'].startswith('video_file =')
+
+import logging
+
+
+def test_logging_messages(monkeypatch, tmp_path, caplog):
+    hfile = tmp_path / 'log.h5'
+    arr = np.array([1.0, 2.0], dtype=float)
+    create_hdf5(hfile, arr)
+
+    # avoid actual file reading
+    monkeypatch.setattr(cis, 'get_intensities_from_crimaldi', lambda p: arr)
+
+    with caplog.at_level(logging.INFO):
+        cis.main(['LOG', str(hfile)])
+
+    messages = [rec.getMessage() for rec in caplog.records]
+    assert any('Loading intensities from' in m for m in messages)
+    assert any('Dataset LOG has length' in m for m in messages)
