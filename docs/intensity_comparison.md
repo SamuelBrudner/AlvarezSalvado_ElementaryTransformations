@@ -118,6 +118,35 @@ Difference (mean): 0.4
 Figure saved to figures/intensity_comparison.png
 ```
 
+### Quick Start Example
+
+Follow these steps to run a simple comparison using the bundled datasets.
+
+1. **Create the development environment**
+
+   ```bash
+   ./setup_env.sh --dev
+   ```
+
+2. **Generate local paths and detect MATLAB**
+
+   ```bash
+   source ./paths.sh
+   ```
+
+   This command writes `configs/project_paths.yaml` if it does not yet exist and sets the `$MATLAB_EXEC` variable.
+
+3. **Run the comparison**
+
+   ```bash
+   conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+       CRIM data/10302017_10cms_bounded_2.h5 \
+       SMOKE process_smoke_video.m
+   ```
+
+   The smoke video is located at `data/smoke_1a_bgsub_raw.avi` and the Crimaldi HDF5 file at `data/10302017_10cms_bounded_2.h5`.
+
+
 ### Comparing a Video Plume to Crimaldi
 
 To compare a video plume with Crimaldi data, you'll need to extract intensity values using MATLAB. The repository includes a pre-configured script `process_smoke_video.m` that handles this process with robust error checking and path handling.
