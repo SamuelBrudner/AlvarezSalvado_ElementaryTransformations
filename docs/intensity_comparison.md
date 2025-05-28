@@ -2,6 +2,15 @@
 
 This page describes how to characterise the intensity of individual odour plumes and how to compare multiple intensity datasets.
 
+## Table of Contents
+
+- [Initial Setup](#initial-setup)
+- [Path Management](#path-management)
+- [Characterising a Single Plume](#characterising-a-single-plume)
+- [Comparing Multiple Datasets](#comparing-multiple-datasets)
+- [Configuration](#configuration)
+- [Notes](#notes)
+
 ## Initial Setup
 
 1. **Set up the development environment**:
