@@ -29,6 +29,11 @@ This page describes how to characterise the intensity of individual odour plumes
    HPC clusters. You can run this anytime to update paths without rebuilding the
    conda environment.
 
+   When MATLAB still cannot be found, the script runs `module load
+   MATLAB/$MATLAB_VERSION` automatically. The `MATLAB_VERSION` variable defaults
+   to `2023b` but can be set to any available module version before sourcing
+   `paths.sh`.
+
 3. **Running scripts**:
    Use the module form when executing Python scripts to ensure the repository root is on `sys.path`:
    ```bash

@@ -35,6 +35,9 @@ before sourcing to override the default.
 Python utilities such as `Code.video_intensity` also honour `MATLAB_EXEC` when
 it points to a valid executable.
 
+See [docs/intensity_comparison.md](docs/intensity_comparison.md#initial-setup)
+for a detailed explanation of the path setup process.
+
 With the environment active you can run MATLAB and Python scripts from the `Code` directory using the module syntax:
 
 ```bash
