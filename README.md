@@ -33,6 +33,9 @@ If MATLAB is not found, `paths.sh` tries to load a module named
 `MATLAB/$MATLAB_VERSION` (or `MATLAB_MODULE` if set). Set these variables
 before sourcing to override the default.
 
+See [docs/intensity_comparison.md](docs/intensity_comparison.md#initial-setup)
+for a detailed explanation of the path setup process.
+
 With the environment active you can run MATLAB and Python scripts from the `Code` directory using the module syntax:
 
 ```bash
