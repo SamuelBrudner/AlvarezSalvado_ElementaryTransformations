@@ -206,6 +206,8 @@ def get_intensities_from_video_via_matlab(
                 logger.error("MATLAB stderr:\n%s", proc.stderr)
 
             if proc.returncode != 0:
+                if proc.stdout:
+                    logger.warning("MATLAB stdout:\n%s", proc.stdout)
                 hint = (
                     "" if orig_script_path is None else f" (script: {orig_script_path})"
                 )
