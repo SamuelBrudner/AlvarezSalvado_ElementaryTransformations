@@ -4,6 +4,21 @@ This repository hosts MATLAB and Python code for the navigation model from Álva
 
 For detailed instructions on environment setup and intensity comparison workflows, see [docs/intensity_comparison.md](docs/intensity_comparison.md).
 
+- [Quick Start](#quick-start)
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [Development Environment Setup](#development-environment-setup)
+- [Configuration](#configuration)
+- [Data Organization](#data-organization)
+- [Data Dictionary](#data-dictionary)
+- [Exporting Results to Open Formats](#exporting-results-to-open-formats)
+- [Running Simulations](#running-simulations)
+- [Analysis Configuration](#analysis-configuration)
+- [Plume Intensity Utilities](#plume-intensity-utilities)
+- [Repository Layout](#repository-layout)
+- [Citation](#citation)
+- [Roadmap](#roadmap)
+
 ## Quick Start
 
 ```bash
