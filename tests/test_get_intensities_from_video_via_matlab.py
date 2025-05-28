@@ -165,7 +165,8 @@ def test_workdir_with_single_quote(monkeypatch, tmp_path):
     )
     assert np.array_equal(arr, np.array([7], dtype=np.float32))
 
-    expected_cd = f"cd('{work_dir.replace("'", "''")}')"
+    escaped = work_dir.replace("'", "''")
+    expected_cd = f"cd('{escaped}')"
     assert expected_cd in captured["script_contents"]
     assert not Path(captured["script_path"]).exists()
     assert not mat_file.exists()
