@@ -4,12 +4,19 @@ This page describes how to characterise the intensity of individual odour plumes
 
 ## Table of Contents
 
+- [Step-by-Step](#step-by-step)
 - [Initial Setup](#initial-setup)
 - [Path Management](#path-management)
 - [Characterising a Single Plume](#characterising-a-single-plume)
 - [Comparing Multiple Datasets](#comparing-multiple-datasets)
 - [Configuration](#configuration)
 - [Notes](#notes)
+
+## Step-by-Step
+
+1. Run `./setup_env.sh --dev` to create `./dev-env`.
+2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. The script uses this file and falls back to default paths when `yq` is missing.
+3. Execute `conda run --prefix ./dev-env python -m Code.compare_intensity_stats`.
 
 ## Initial Setup
 
