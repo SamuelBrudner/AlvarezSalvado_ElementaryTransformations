@@ -32,6 +32,8 @@ auto-detected path.
 If MATLAB is not found, `paths.sh` tries to load a module named
 `MATLAB/$MATLAB_VERSION` (or `MATLAB_MODULE` if set). Set these variables
 before sourcing to override the default.
+Python utilities such as `Code.video_intensity` also honour `MATLAB_EXEC` when
+it points to a valid executable.
 
 With the environment active you can run MATLAB and Python scripts from the `Code` directory using the module syntax:
 

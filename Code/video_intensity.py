@@ -51,10 +51,22 @@ def find_matlab_executable(user_path: Optional[str] = None) -> str:
 
     Raises:
         FileNotFoundError: If MATLAB executable cannot be found.
+
+    Notes
+    -----
+    If the environment variable ``MATLAB_EXEC`` points to an executable
+    file, it is used ahead of any auto-detection logic.
     """
     # Check user-provided path first
     if user_path and os.path.isfile(user_path) and os.access(user_path, os.X_OK):
         return user_path
+
+    # Environment variable override
+    env_exec = os.environ.get("MATLAB_EXEC")
+    if env_exec:
+        if os.path.isfile(env_exec) and os.access(env_exec, os.X_OK):
+            return env_exec
+        logger.debug("MATLAB_EXEC set but is not executable: %s", env_exec)
 
     # Look for configs/project_paths.yaml relative to repo root
     project_yaml = Path(__file__).resolve().parents[1] / "configs" / "project_paths.yaml"
