@@ -70,7 +70,8 @@ Options:
   --no-tests           Skip running tests after setup
   --skip-conda-lock    Skip conda-lock installation and lock file generation
   --help               Show this help message
-  --debug              Enable debug output
+
+Set DEBUG=1 to enable verbose logging.
 
 When sourced, the script will set up the environment but not run any installation steps.
 When executed directly, it will perform the full setup process.

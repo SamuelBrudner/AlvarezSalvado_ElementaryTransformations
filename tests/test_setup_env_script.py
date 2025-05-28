@@ -17,6 +17,8 @@ def test_setup_env_script_contains_expected_commands():
     assert 'setup_utils.sh' in content
     assert 'conda-lock' in content
     assert 'log ' in content
+    assert '--debug' not in content
+    assert 'DEBUG=1' in content
 
 
 def test_setup_env_script_runs_idempotently():
