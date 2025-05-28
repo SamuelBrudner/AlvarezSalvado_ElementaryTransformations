@@ -47,10 +47,10 @@ echo -e "${GREEN}Testing paths configuration generation...${NC}"
 ./setup_env.sh --no-tests
 
 # Check if paths configuration was created
-if [ -f "paths.yaml" ]; then
+if [ -f "project_paths.yaml" ]; then
     echo -e "${GREEN}✓ Paths configuration generated successfully${NC}"
-    echo "Contents of paths.yaml:"
-    cat "paths.yaml"
+    echo "Contents of project_paths.yaml:"
+    cat "project_paths.yaml"
 else
     echo -e "${RED}✗ Failed to generate paths configuration${NC}"
     exit 1

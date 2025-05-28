@@ -36,8 +36,8 @@ NC='\033[0m'
 
 # Create a temporary directory for testing
 TEST_DIR=$(mktemp -d)
-TEMPLATE_FILE="${TEST_DIR}/paths.yaml.template"
-OUTPUT_FILE="${TEST_DIR}/paths.yaml"
+TEMPLATE_FILE="${TEST_DIR}/project_paths.yaml.template"
+OUTPUT_FILE="${TEST_DIR}/project_paths.yaml"
 
 # Create a test template
 cat > "${TEMPLATE_FILE}" << 'EOL'

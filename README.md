@@ -26,6 +26,9 @@ For detailed instructions on environment setup and intensity comparison workflow
 source ./paths.sh
 ```
 
+Sourcing ``paths.sh`` creates ``configs/project_paths.yaml`` from the template
+if it does not already exist.
+
 `paths.sh` attempts to locate MATLAB automatically and sets `MATLAB_EXEC`.
 Set this variable yourself or use the `--matlab_exec` option to override the
 auto-detected path.

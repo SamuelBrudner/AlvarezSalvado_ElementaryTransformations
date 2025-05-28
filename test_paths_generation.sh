@@ -15,8 +15,8 @@ TEST_DIR=$(mktemp -d)
 echo -e "${GREEN}Created test directory: ${TEST_DIR}${NC}"
 
 # Create a test template
-TEMPLATE_FILE="${TEST_DIR}/paths.yaml.template"
-OUTPUT_FILE="${TEST_DIR}/paths.yaml"
+TEMPLATE_FILE="${TEST_DIR}/project_paths.yaml.template"
+OUTPUT_FILE="${TEST_DIR}/project_paths.yaml"
 
 cat > "${TEMPLATE_FILE}" << 'EOL'
 # Paths configuration
