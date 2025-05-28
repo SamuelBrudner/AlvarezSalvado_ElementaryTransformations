@@ -44,6 +44,8 @@ while hasFrame(v)
     frameCount = frameCount + 1;
 end
 
+fprintf('%d x %d, %d frames\n', height, width, frameCount);
+
 % Reset the video reader to the beginning
 v = VideoReader(filename);
 
