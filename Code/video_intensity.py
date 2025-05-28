@@ -29,7 +29,10 @@ import os
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import List, Optional
+
+import yaml
 
 import numpy as np
 from scipy.io import loadmat
@@ -52,6 +55,21 @@ def find_matlab_executable(user_path: Optional[str] = None) -> str:
     # Check user-provided path first
     if user_path and os.path.isfile(user_path) and os.access(user_path, os.X_OK):
         return user_path
+
+    # Look for configs/project_paths.yaml relative to repo root
+    project_yaml = Path(__file__).resolve().parents[1] / "configs" / "project_paths.yaml"
+    if project_yaml.exists():
+        try:
+            with project_yaml.open("r") as fh:
+                config = yaml.safe_load(fh) or {}
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Failed to read project_paths.yaml: %s", exc)
+        else:
+            exec_path = (
+                config.get("matlab", {}).get("executable") if isinstance(config, dict) else None
+            )
+            if exec_path and os.path.isfile(exec_path) and os.access(exec_path, os.X_OK):
+                return exec_path
 
     # Check common MATLAB locations
     common_paths: List[str] = [

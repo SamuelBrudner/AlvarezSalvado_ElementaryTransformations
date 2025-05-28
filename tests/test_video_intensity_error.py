@@ -89,3 +89,4 @@ def test_matlab_exec_from_project_paths(tmp_path, monkeypatch):
     vi = importlib.reload(importlib.import_module("Code.video_intensity"))
     assert vi.find_matlab_executable() == "/tmp/fake_matlab"
 
+

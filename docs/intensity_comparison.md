@@ -181,6 +181,16 @@ conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
     ${MATLAB_EXEC:+--matlab_exec "$MATLAB_EXEC"}
 ```
 
+If MATLAB is not auto-detected or you want to use a specific version, supply the
+path explicitly:
+
+```bash
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+    CRIM data/10302017_10cms_bounded_2.h5 \
+    SMOKE video_script.m \
+    --matlab_exec /path/to/matlab
+```
+
 #### MATLAB Configuration
 
 The MATLAB configuration is stored in `configs/project_paths.yaml` under the `matlab` section. You can edit this file directly or let the system auto-detect MATLAB.

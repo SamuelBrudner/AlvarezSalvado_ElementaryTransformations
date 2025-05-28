@@ -26,6 +26,10 @@ For detailed instructions on environment setup and intensity comparison workflow
 source ./paths.sh
 ```
 
+`paths.sh` attempts to locate MATLAB automatically and sets `MATLAB_EXEC`.
+Set this variable yourself or use the `--matlab_exec` option to override the
+auto-detected path.
+
 With the environment active you can run MATLAB and Python scripts from the `Code` directory using the module syntax:
 
 ```bash
