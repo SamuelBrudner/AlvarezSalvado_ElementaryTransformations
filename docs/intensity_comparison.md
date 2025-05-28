@@ -314,6 +314,12 @@ To set up your local configuration:
    - `crimaldi_hdf5`: Path to your Crimaldi HDF5 file
    - `output` directories: Where to store processed files and figures
 
+### Example Configuration
+
+For a fully annotated sample configuration, see
+`configs/examples/smoke_plume.yaml`. This file mirrors the default settings
+but includes comments describing each option.
+
 ### MATLAB Configuration
 
 For MATLAB integration, ensure you have these MATLAB toolboxes installed:
