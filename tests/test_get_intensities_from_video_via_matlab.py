@@ -170,3 +170,18 @@ def test_workdir_with_single_quote(monkeypatch, tmp_path):
     assert not Path(captured["script_path"]).exists()
     assert not mat_file.exists()
 
+
+def test_logs_stdout_on_failure(monkeypatch, caplog):
+    matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
+    script_content = "disp('fail')"
+
+    def fake_run(cmd, *args, **kwargs):
+        return subprocess.CompletedProcess(cmd, 1, stdout="hello", stderr="bad")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with caplog.at_level(logging.WARNING), pytest.raises(RuntimeError):
+        get_intensities_from_video_via_matlab(script_content, matlab_exec)
+
+    assert any("hello" in r.message for r in caplog.records)
+
