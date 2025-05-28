@@ -1,0 +1,25 @@
+# Example configuration for processing a smoke plume video
+
+# Use a video-based environment
+environment: video
+
+# Path to the plume video file
+plume_video: data/smoke_1a_bgsub_raw.avi
+
+# Conversion factor from pixels to millimeters
+px_per_mm: 6.536
+
+# Frame rate of the video in Hz
+frame_rate: 60
+
+# Disable plotting (1 enables)
+plotting: 0
+
+# Number of trials to run
+ntrials: 1
+
+# Loop the video so it repeats when the end is reached
+loop: true
+
+# Duration of each trial in frames (2 min × 60 fps)
+triallength: 7200
