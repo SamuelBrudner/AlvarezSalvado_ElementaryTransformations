@@ -212,3 +212,20 @@ def test_logging_messages(monkeypatch, tmp_path, caplog):
     messages = [rec.getMessage() for rec in caplog.records]
     assert any('Loading intensities from' in m for m in messages)
     assert any('Dataset LOG has length' in m for m in messages)
+
+def test_debug_log_level_shows_matlab_stdout(monkeypatch, tmp_path, caplog):
+    script = tmp_path / 'vid.m'
+    script.write_text("disp('x')")
+
+    def fake_get(script_contents, m='matlab', orig_script_path=None, **kwargs):
+        logging.getLogger('Code.video_intensity').debug('MATLAB stdout:\nhello')
+        return np.array([1.0], dtype=float)
+
+    monkeypatch.setattr(cis, 'get_intensities_from_video_via_matlab', fake_get)
+
+    with caplog.at_level(logging.DEBUG):
+        cis.main(['VID', 'video', str(script), '--log-level', 'DEBUG'])
+
+    messages = [rec.getMessage() for rec in caplog.records]
+    assert any('MATLAB stdout:' in m for m in messages)
+
