@@ -64,6 +64,7 @@ def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarra
 def compare_intensity_stats(
     sources: Iterable[Tuple[str, str, str | None]],
     matlab_exec_path: str = "matlab",
+    allow_mismatch: bool = False,
 ) -> List[Tuple[str, Stats]]:
     """Return statistics for each identifier/path/type triple.
 
@@ -86,15 +87,23 @@ def compare_intensity_stats(
         if expected_len is None:
             expected_len = len(intensities)
         elif len(intensities) != expected_len:
-            logger.error(
-                "Length mismatch for %s: expected %d but got %d",
-                identifier,
-                expected_len,
-                len(intensities),
-            )
-            raise ValueError(
-                f"Expected intensities of length {expected_len}, got {len(intensities)}"
-            )
+            if allow_mismatch:
+                logger.warning(
+                    "Length mismatch for %s: expected %d but got %d",
+                    identifier,
+                    expected_len,
+                    len(intensities),
+                )
+            else:
+                logger.error(
+                    "Length mismatch for %s: expected %d but got %d",
+                    identifier,
+                    expected_len,
+                    len(intensities),
+                )
+                raise ValueError(
+                    f"Expected intensities of length {expected_len}, got {len(intensities)}"
+                )
 
         stats = calculate_intensity_stats_dict(intensities)
         results.append((identifier, stats))
@@ -192,6 +201,11 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         "--diff", action="store_true", help="Show differences for two datasets"
     )
     parser.add_argument(
+        "--allow-mismatch",
+        action="store_true",
+        help="Allow intensity vectors of different lengths",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         help="Logging level (DEBUG, INFO, WARNING, etc.)",
@@ -213,7 +227,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
             "Expected pairs (identifier path) or triples (identifier plume_type path)"
         )
 
-    results = compare_intensity_stats(entries, ns.matlab_exec)
+    results = compare_intensity_stats(entries, ns.matlab_exec, ns.allow_mismatch)
     if ns.diff:
         try:
             diff = compute_differences(results)

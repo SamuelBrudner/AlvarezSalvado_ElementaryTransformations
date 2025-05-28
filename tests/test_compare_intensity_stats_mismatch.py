@@ -44,3 +44,27 @@ def test_matching_lengths_work(monkeypatch):
     assert len(results) == 2
     assert results[0][0] == "A"
     assert results[1][0] == "B"
+
+
+def test_cli_allow_mismatch(monkeypatch, capsys):
+    """CLI should succeed when --allow-mismatch is used."""
+    arr_a = np.array([1.0, 2.0, 3.0])
+    arr_b = np.array([4.0, 5.0])
+
+    def fake_load(path, *_, **__):
+        return arr_a if path == "path_a" else arr_b
+
+    monkeypatch.setattr(cis, "load_intensities", fake_load)
+
+    cis.main([
+        "A",
+        "path_a",
+        "B",
+        "path_b",
+        "--allow-mismatch",
+    ])
+
+    out_lines = capsys.readouterr().out.strip().splitlines()
+    assert out_lines[0].startswith("identifier")
+    assert out_lines[1].split("\t")[0] == "A"
+    assert out_lines[2].split("\t")[0] == "B"
