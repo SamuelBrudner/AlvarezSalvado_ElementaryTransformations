@@ -11,4 +11,6 @@ function testHelpContainsExample(~)
     assert(~isempty(txt), 'Help text is empty');
     assert(contains(lower(txt), 'get_intensities_from_video_via_matlab'), ...
         'Help text missing Python example call');
+    assert(contains(txt, 'process_smoke_video:LoadPathsFailed'), ...
+        'Help text missing error identifier');
 end
