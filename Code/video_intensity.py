@@ -32,9 +32,9 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional
 
-import yaml
-
+import h5py
 import numpy as np
+import yaml
 from scipy.io import loadmat
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,9 @@ def find_matlab_executable(user_path: Optional[str] = None) -> str:
         logger.debug("MATLAB_EXEC set but is not executable: %s", env_exec)
 
     # Look for configs/project_paths.yaml relative to repo root
-    project_yaml = Path(__file__).resolve().parents[1] / "configs" / "project_paths.yaml"
+    project_yaml = (
+        Path(__file__).resolve().parents[1] / "configs" / "project_paths.yaml"
+    )
     if project_yaml.exists():
         try:
             with project_yaml.open("r") as fh:
@@ -78,9 +80,15 @@ def find_matlab_executable(user_path: Optional[str] = None) -> str:
             logger.debug("Failed to read project_paths.yaml: %s", exc)
         else:
             exec_path = (
-                config.get("matlab", {}).get("executable") if isinstance(config, dict) else None
+                config.get("matlab", {}).get("executable")
+                if isinstance(config, dict)
+                else None
             )
-            if exec_path and os.path.isfile(exec_path) and os.access(exec_path, os.X_OK):
+            if (
+                exec_path
+                and os.path.isfile(exec_path)
+                and os.access(exec_path, os.X_OK)
+            ):
                 return exec_path
 
     # Check common MATLAB locations
@@ -150,6 +158,8 @@ def get_intensities_from_video_via_matlab(
     -------
     numpy.ndarray
         Flattened array of the intensity values extracted from the MAT-file.
+        The file must contain a variable named ``all_intensities``. Files saved
+        with MATLAB ``-v7.3`` (HDF5) are also supported.
 
     Examples
     --------
@@ -258,10 +268,15 @@ def get_intensities_from_video_via_matlab(
         if not mat_path or not os.path.exists(mat_path):
             raise RuntimeError("MATLAB did not report output MAT-file")
 
-        data = loadmat(mat_path)
-        if "all_intensities" not in data:
-            raise KeyError("all_intensities not found in MAT-file")
-        return np.asarray(data["all_intensities"]).flatten()
+        try:
+            data = loadmat(mat_path)
+            arr = np.asarray(data["all_intensities"])  # type: ignore[index]
+        except NotImplementedError:
+            with h5py.File(mat_path, "r") as f:
+                if "all_intensities" not in f:
+                    raise KeyError("all_intensities not found in MAT-file")
+                arr = np.asarray(f["all_intensities"][()])
+        return arr.flatten()
     finally:
         if script_file is not None:
             with contextlib.suppress(FileNotFoundError):
