@@ -129,9 +129,11 @@ Run the comparison using the development environment:
 ```bash
 conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
     CRIM data/10302017_10cms_bounded_2.h5 \
-    SMOKE process_smoke_video.m \
-    --matlab_exec /path/to/matlab/executable
+    SMOKE process_smoke_video.m
 ```
+
+The MATLAB executable is auto-detected when you source `paths.sh`. Pass
+`--matlab_exec` only if you need to override the detected path.
 
 ### MATLAB Script Execution
 
@@ -192,13 +194,13 @@ matlab:
 
 #### Custom MATLAB Path
 
-If you need to specify a custom MATLAB path, you can either:
+`paths.sh` normally detects MATLAB automatically and exposes the path via
+`$MATLAB_EXEC`. If detection fails, you can set `MATLAB_EXEC` before sourcing the
+script or edit `configs/project_paths.yaml`:
 
-1. Edit `configs/project_paths.yaml` and set the `matlab.executable` path
-2. Or set it via environment variable before sourcing `paths.sh`:
-   ```bash
-   MATLAB_EXEC="/path/to/matlab" source ./paths.sh
-   ```
+```bash
+MATLAB_EXEC=/usr/local/MATLAB/bin/matlab source ./paths.sh
+```
 
 #### Key Paths in `project_paths.yaml`
 
@@ -304,11 +306,8 @@ For MATLAB integration, ensure you have these MATLAB toolboxes installed:
 - Image Processing Toolbox
 - Statistics and Machine Learning Toolbox
 
-Set the path to your MATLAB executable in your shell configuration (e.g., `~/.bashrc` or `~/.zshrc`):
-
-```bash
-export PATH="/path/to/matlab/bin:$PATH"
-```
+`paths.sh` adds MATLAB's `bin` directory to your `PATH` when it locates the
+executable, so no manual export is required.
 
 ## Notes
 
