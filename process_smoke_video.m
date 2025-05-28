@@ -3,20 +3,14 @@
 % This script processes smoke video data to extract intensity measurements
 % and save the results to a MAT file for further analysis.
 % 
-% The script uses the project's paths configuration (configs/paths.yaml) to manage
-% file locations. The 'orig_script_dir' variable is automatically set by the
-% Python wrapper to the MATLAB scripts directory defined in the paths
-% configuration.
-% 
-% The script expects the following variables to be defined in the workspace:
-%   - video_path: Path to the input video file
-%   - output_path: Path where to save the output MAT file
-%   - px_per_mm: Pixels per millimeter conversion factor (optional)
-%   - frame_rate: Video frame rate in Hz (optional)
-%   - start_frame: First frame to process (optional, default=1)
-%   - end_frame: Last frame to process (optional, default=end of video)
-%   - orig_script_dir: Automatically set by the Python wrapper to the
-%                     MATLAB scripts directory from paths.yaml configuration
+% Paths are resolved via ``load_paths_config``, which reads the project's
+% ``configs/paths.yaml``. When invoked from Python, the wrapper sets
+% ``orig_script_dir`` to the MATLAB scripts directory specified in that
+% configuration. No ``video_path`` or ``output_path`` variables are required.
+%
+% Example (Python)
+%   >>> from Code.video_intensity import get_intensities_from_video_via_matlab
+%   >>> arr = get_intensities_from_video_via_matlab('process_smoke_video.m', 'matlab')
 
 % Add project directories to MATLAB path
 if exist('orig_script_dir', 'var')
