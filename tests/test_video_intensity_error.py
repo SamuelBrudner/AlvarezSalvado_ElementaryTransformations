@@ -52,3 +52,24 @@ def test_error_message_contains_hint(monkeypatch, tmp_path):
 
     assert "orig_script_path = '/path/to/script.m';" in captured['contents']
     assert 'orig_script_dir = fileparts(orig_script_path);' in captured['contents']
+
+
+def test_missing_matlab_exec_raises(monkeypatch):
+    monkeypatch.setitem(sys.modules, 'numpy', types.SimpleNamespace(asarray=lambda x: x))
+    fake_scipy_io = types.SimpleNamespace(loadmat=lambda p: {'all_intensities': []})
+    monkeypatch.setitem(sys.modules, 'scipy', types.SimpleNamespace(io=fake_scipy_io))
+    monkeypatch.setitem(sys.modules, 'scipy.io', fake_scipy_io)
+
+    vi = importlib.reload(importlib.import_module('Code.video_intensity'))
+
+    monkeypatch.setattr(vi.glob, 'glob', lambda pattern: [])
+    monkeypatch.setattr(vi.os.path, 'isfile', lambda p: False)
+    monkeypatch.setattr(vi.os, 'access', lambda p, x: False)
+    monkeypatch.setattr(vi.shutil, 'which', lambda name: None)
+
+    with pytest.raises(FileNotFoundError) as exc:
+        vi.find_matlab_executable()
+
+    msg = str(exc.value)
+    assert 'MATLAB_EXEC' in msg
+    assert '--matlab_exec' in msg
