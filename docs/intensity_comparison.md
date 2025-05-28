@@ -215,9 +215,9 @@ MATLAB_EXEC=/usr/local/MATLAB/bin/matlab source ./paths.sh
 
 ```yaml
 scripts:
-  matlab: "${PROJECT_DIR}/scripts"  # Original script directory (orig_script_dir)
+  matlab: "${PROJECT_DIR}"  # Project root for MATLAB scripts (orig_script_dir)
   python: "${PROJECT_DIR}/Code"     # Python modules
-  temp: "${TMPDIR}/matlab_scripts"   # Temporary execution directory
+  temp: "${TMPDIR:-/tmp}/matlab_scripts"   # Temporary execution directory
 ```
 
 #### Custom MATLAB Scripts
