@@ -12,6 +12,11 @@
 % Example (Python)
 %   >>> from Code.video_intensity import get_intensities_from_video_via_matlab
 %   >>> arr = get_intensities_from_video_via_matlab('process_smoke_video.m', 'matlab')
+%
+% Errors
+%   process_smoke_video:LoadPathsFailed   - load_paths_config raised an error
+%   process_smoke_video:LoadConfigFailed  - load_config raised an error
+%   process_smoke_video:LoadPlumeFailed   - load_plume_video raised an error
 
 % Add project directories to MATLAB path
 if exist('orig_script_dir', 'var')
@@ -41,14 +46,20 @@ end
 try
     paths = load_paths_config();
 catch ME
-    error('Failed to load paths configuration: %s', ME.message);
+    error('process_smoke_video:LoadPathsFailed', ...
+        'Failed to load paths configuration: %s', ME.message);
 end
 
 % Load plume configuration
 if ~exist(paths.configs.plume, 'file')
     error('Plume config file not found: %s', paths.configs.plume);
 end
-cfg = load_config(paths.configs.plume);
+try
+    cfg = load_config(paths.configs.plume);
+catch ME
+    error('process_smoke_video:LoadConfigFailed', ...
+        'Failed to load plume configuration: %s', ME.message);
+end
 
 % Process the smoke video
 if ~exist(paths.data.video, 'file')
@@ -57,7 +68,12 @@ if ~exist(paths.data.video, 'file')
 end
 
 fprintf('Processing video: %s\n', paths.data.video);
-plume = load_plume_video(paths.data.video, cfg.px_per_mm, cfg.frame_rate);
+try
+    plume = load_plume_video(paths.data.video, cfg.px_per_mm, cfg.frame_rate);
+catch ME
+    error('process_smoke_video:LoadPlumeFailed', ...
+        'Failed to load plume video: %s', ME.message);
+end
 
 % Validate plume dimensions
 if isempty(plume.data) || ndims(plume.data) ~= 3
