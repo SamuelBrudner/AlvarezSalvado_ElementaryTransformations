@@ -5,6 +5,7 @@ This repository hosts MATLAB and Python code for the navigation model from Álva
 For detailed instructions on environment setup and intensity comparison workflows, see [docs/intensity_comparison.md](docs/intensity_comparison.md).
 
 - [Quick Start](#quick-start)
+- [Step-by-Step](#step-by-step)
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Development Environment Setup](#development-environment-setup)
@@ -48,6 +49,12 @@ With the environment active you can run MATLAB and Python scripts from the `Code
 ```bash
 conda run --prefix ./dev-env python -m Code.some_script
 ```
+
+## Step-by-Step
+
+1. Run `./setup_env.sh --dev` to create `./dev-env`.
+2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing.
+3. Execute `conda run --prefix ./dev-env python -m Code.compare_intensity_stats`.
 
 ## Directory Overview
 
