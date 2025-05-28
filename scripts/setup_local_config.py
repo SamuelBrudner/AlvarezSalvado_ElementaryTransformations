@@ -2,8 +2,9 @@
 """
 Set up local configuration files for the project.
 
-This script creates a local project_paths.yaml configuration file based on the
-template, with paths adjusted for the current environment.
+This utility writes ``configs/project_paths.yaml`` from the provided template,
+performing simple variable substitution. Normally ``paths.sh`` generates this
+file automatically; run this script only if you need to recreate it manually.
 """
 
 import os

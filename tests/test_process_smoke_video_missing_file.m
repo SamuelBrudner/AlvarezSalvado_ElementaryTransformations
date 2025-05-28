@@ -11,7 +11,7 @@ function setupOnce(testCase)
     mkdir(fullfile(tmpRoot, 'configs'));
 
     % create required configs
-    pathsFile = fullfile(tmpRoot, 'configs', 'paths.yaml');
+    pathsFile = fullfile(tmpRoot, 'configs', 'project_paths.yaml');
     fid = fopen(pathsFile, 'w');
     fprintf(fid, 'data:\n  video: %s\n', fullfile(tmpRoot, 'missing.avi'));
     fprintf(fid, 'configs:\n  plume: %s\n', fullfile(tmpRoot, 'configs', 'plume.yaml'));
@@ -22,9 +22,6 @@ function setupOnce(testCase)
     fid = fopen(plumeFile, 'w');
     fprintf(fid, 'px_per_mm: 1\nframe_rate: 1\n');
     fclose(fid);
-
-    projPaths = fullfile(tmpRoot, 'configs', 'project_paths.yaml');
-    fid = fopen(projPaths, 'w'); fclose(fid);
 
     copyfile('process_smoke_video.m', tmpRoot);
 

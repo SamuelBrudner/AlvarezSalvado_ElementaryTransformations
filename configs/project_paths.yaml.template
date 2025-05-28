@@ -1,6 +1,6 @@
 # Paths configuration
 # This file is auto-generated during setup - do not edit directly
-# Copy to paths.yaml and customize as needed
+# Generated as project_paths.yaml via paths.sh. Customize as needed
 
 # Project root directory (auto-populated)
 project_root: "${PROJECT_DIR}"
@@ -26,7 +26,7 @@ configs:
   # Main plume configuration
   plume: "${PROJECT_DIR}/configs/my_complex_plume_config.yaml"
   # Path to this file (auto-populated)
-  paths: "${PROJECT_DIR}/configs/paths.yaml"
+  paths: "${PROJECT_DIR}/configs/project_paths.yaml"
 
 # Temporary directory for processing
 # Uses system TMPDIR if available, falls back to /tmp
