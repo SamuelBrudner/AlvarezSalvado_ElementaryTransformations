@@ -177,7 +177,6 @@ def write_json(
 
 
 def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapper
-    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(description="Compare intensity statistics")
     parser.add_argument(
         "items",
@@ -192,7 +191,13 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
     parser.add_argument(
         "--diff", action="store_true", help="Show differences for two datasets"
     )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        help="Logging level (DEBUG, INFO, WARNING, etc.)",
+    )
     ns = parser.parse_args(argv)
+    logging.basicConfig(level=getattr(logging, ns.log_level))
 
     if len(ns.items) % 3 == 0:
         entries = [
