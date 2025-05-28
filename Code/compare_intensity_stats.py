@@ -48,9 +48,6 @@ def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarra
     with open(script_path, "r") as f:
         script_contents = f.read()
 
-    # Add the video file path to the MATLAB workspace
-    video_file = str(script_dir / "data" / "10302017_10cms_bounded_2.h5")
-    script_contents = f"video_file = '{video_file}';\n\n{script_contents}"
 
     return get_intensities_from_video_via_matlab(
         script_contents,
