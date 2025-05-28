@@ -124,3 +124,49 @@ def test_error_message_includes_path_and_workdir(monkeypatch, tmp_path, caplog):
     assert "orig_script_dir" in msg
     assert any("MATLAB failed while running" in r.message for r in caplog.records)
 
+
+def test_workdir_with_single_quote(monkeypatch, tmp_path):
+    matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
+    script_content = 'disp("hi")'
+
+    mat_file = tmp_path / "out.mat"
+    from scipy.io import savemat
+
+    savemat(mat_file, {"all_intensities": np.array([7], dtype=np.float32)})
+
+    stdout = f"ok\nTEMP_MAT_FILE_SUCCESS:{mat_file}\n"
+
+    captured = {}
+    orig_ntf = tempfile.NamedTemporaryFile
+
+    def fake_ntf(*args, **kwargs):
+        kwargs.setdefault("delete", False)
+        tmp = orig_ntf(*args, **kwargs)
+        captured["script_path"] = tmp.name
+        return tmp
+
+    def fake_run(cmd, capture_output, text, timeout, cwd):
+        assert cwd == work_dir
+        expected = captured["script_path"].replace("'", "''")
+        assert cmd[0] == matlab_exec
+        assert cmd[2] == f"run('{expected}')"
+        with open(captured["script_path"]) as fh:
+            captured["script_contents"] = fh.read()
+        return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(tempfile, "NamedTemporaryFile", fake_ntf)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    work_dir = str(tmp_path / "with'quote")
+    Path(work_dir).mkdir()
+
+    arr = get_intensities_from_video_via_matlab(
+        script_content, matlab_exec, work_dir=work_dir
+    )
+    assert np.array_equal(arr, np.array([7], dtype=np.float32))
+
+    expected_cd = f"cd('{work_dir.replace("'", "''")}')"
+    assert expected_cd in captured["script_contents"]
+    assert not Path(captured["script_path"]).exists()
+    assert not mat_file.exists()
+
