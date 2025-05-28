@@ -15,39 +15,48 @@ function plume = load_plume_video(filename, px_per_mm, frame_rate)
 %       plume = load_plume_video('plume.avi', 20, 50);
 %
 %   The movie is converted to grayscale and normalised in the range [0,1].
+%   An error with identifier 'load_plume_video:FrameSizeMismatch' is thrown if
+%   a frame differs in size from the first frame.
 
 v = VideoReader(filename);
 
-% Initialize variables
-frames = [];
+% Determine frame count and check frame sizes
 frameCount = 0;
+height = [];
+width = [];
 
-% First, count the actual number of frames
 while hasFrame(v)
     frame = readFrame(v);
+    if size(frame,3) == 3
+        frame = rgb2gray(frame);
+    end
+    [h, w] = size(frame);
+    if frameCount == 0
+        height = h;
+        width = w;
+    else
+        if h ~= height || w ~= width
+            error('load_plume_video:FrameSizeMismatch', ...
+                'Frame %d is %dx%d, expected %dx%d', ...
+                frameCount + 1, h, w, height, width);
+        end
+    end
     frameCount = frameCount + 1;
 end
 
 % Reset the video reader to the beginning
 v = VideoReader(filename);
 
-% Pre-allocate array with the actual frame count
-frames = zeros(v.Height, v.Width, frameCount, 'double');
+% Pre-allocate using the first frame's dimensions
+frames = zeros(height, width, frameCount, 'double');
 
 % Read frames
-count = 1;
-while hasFrame(v)
+for idx = 1:frameCount
     frame = readFrame(v);
     if size(frame,3) == 3
         frame = rgb2gray(frame);
     end
-    frames(:,:,count) = im2double(frame);
-    count = count + 1;
-end
-
-% In case frame count was misreported, trim any extra pre-allocated space
-if count <= size(frames,3)
-    frames = frames(:,:,1:count-1);
+    frames(:,:,idx) = im2double(frame);
 end
 
 plume.data = frames;
