@@ -250,8 +250,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         write_csv(results, ns.csv_path, diff)
     if ns.json_path:
         write_json(results, ns.json_path, diff)
-    if not ns.csv_path and not ns.json_path:
-        print(format_table(results, diff))
+    print(format_table(results, diff))
 
 
 if __name__ == "__main__":  # pragma: no cover

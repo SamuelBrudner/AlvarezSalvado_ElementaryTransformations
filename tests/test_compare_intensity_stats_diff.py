@@ -1,10 +1,10 @@
+import csv
 import importlib
 import os
 import sys
 import types
 
 import pytest
-import csv
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -129,27 +129,29 @@ def test_diff_option_prints_table(cis, monkeypatch, capsys):
     monkeypatch.setattr(cis, "calculate_intensity_stats_dict", simple_stats)
     cis.main(["A", "path1", "B", "path2", "--diff"])
     out_lines = capsys.readouterr().out.strip().splitlines()
-    assert out_lines[-1].startswith('DIFF')
+    assert out_lines[-1].startswith("DIFF")
+
 
 def test_diff_option_writes_csv(cis, monkeypatch, tmp_path, capsys):
     arr_a = [1.0, 2.0]
     arr_b = [3.0, 5.0]
 
     def fake_load(path, *_, **__):
-        return arr_a if path == 'path1' else arr_b
+        return arr_a if path == "path1" else arr_b
 
-    monkeypatch.setattr(cis, 'load_intensities', fake_load)
-    monkeypatch.setattr(cis, 'calculate_intensity_stats_dict', simple_stats)
+    monkeypatch.setattr(cis, "load_intensities", fake_load)
+    monkeypatch.setattr(cis, "calculate_intensity_stats_dict", simple_stats)
 
-    csv_path = tmp_path / 'stats.csv'
-    cis.main(['A', 'path1', 'B', 'path2', '--diff', '--csv', str(csv_path)])
+    csv_path = tmp_path / "stats.csv"
+    cis.main(["A", "path1", "B", "path2", "--diff", "--csv", str(csv_path)])
 
     out_lines = capsys.readouterr().out.strip().splitlines()
+    assert out_lines[0].startswith("identifier")
 
-    with csv_path.open(newline='') as f:
+    with csv_path.open(newline="") as f:
         rows = list(csv.reader(f))
 
-    assert rows[-1][0] == 'DIFF'
+    assert rows[-1][0] == "DIFF"
     assert float(rows[-1][1]) == pytest.approx(-2.5)
     assert float(rows[-1][2]) == pytest.approx(-2.5)
     diff_row = out_lines[-1].split("\t")
