@@ -324,8 +324,11 @@ setup_pre_commit() {
   if ! conda run --prefix "./${LOCAL_ENV_DIR}" pre-commit --version >/dev/null 2>&1; then
     log INFO "Installing pre-commit into ${LOCAL_ENV_DIR}..."
     if ! conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge pre-commit; then
-      log ERROR "Failed to install pre-commit. Add it to '${BASE_ENV_FILE}' or '${DEV_ENV_FILE}'."
-      return 1
+      log WARNING "conda install failed, attempting pip fallback"
+      if ! conda run --prefix "./${LOCAL_ENV_DIR}" pip install pre-commit; then
+        log WARNING "Failed to install pre-commit with both conda and pip"
+        return 1
+      fi
     fi
   fi
 
