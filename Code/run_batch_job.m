@@ -5,6 +5,9 @@ function run_batch_job(config_file, job_id, start_agent, end_agent, use_parallel
 %   batch job identified by JOB_ID, using the configuration from CONFIG_FILE.
 %   If USE_PARALLEL is true, simulations are executed with PARFOR. The
 %   parameter defaults to false if omitted.
+%
+% Example:
+%   run_batch_job('configs/batch_job.yaml', 0, 1, 50, true);
 
 % Add Code directory to path if not already there
 if isempty(which('run_agent_simulation'))
