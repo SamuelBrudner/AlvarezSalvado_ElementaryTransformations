@@ -186,6 +186,10 @@ ensure_conda_lock() {
         fi
     fi
 }
+cleanup_nfs_temp_files() {
+    find "./${LOCAL_ENV_DIR}" -name '.nfs*' -type f -exec rm -f {} +
+}
+
 
 check_not_in_active_env() {
     local env_path="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
@@ -284,6 +288,7 @@ setup_environment() {
     else
       log INFO "Old conda detected - removing existing environment"
       run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
+  cleanup_nfs_temp_files || true
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
     fi
   else
@@ -293,6 +298,7 @@ setup_environment() {
     else
       log INFO "Old conda detected - removing existing environment"
       run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
+  cleanup_nfs_temp_files || true
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
     fi
   fi

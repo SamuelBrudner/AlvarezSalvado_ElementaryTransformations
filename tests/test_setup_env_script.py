@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import shutil
 import pytest
@@ -215,6 +216,27 @@ exit 0
     executed = log_file.read_text()
     assert "pip install pre-commit" in executed
 
+
+def test_cleanup_nfs_temp_files_function_exists():
+    """Ensure cleanup_nfs_temp_files function is defined with correct command."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'cleanup_nfs_temp_files()' in content
+    assert "find \"./${LOCAL_ENV_DIR}\" -name '.nfs*' -type f -exec rm -f {} +" in content
+
+
+def test_cleanup_nfs_called_after_remove():
+    """cleanup_nfs_temp_files should run after environment removal and before creation."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    remove_line = 'conda env remove --prefix "./${LOCAL_ENV_DIR}" -y'
+    occurrences = [m.start() for m in re.finditer(re.escape(remove_line), content)]
+    assert occurrences, "remove command not found"
+    for start in occurrences:
+        after = content[start:]
+        cleanup_idx = after.index('cleanup_nfs_temp_files')
+        create_idx = after.index('conda env create')
+        assert cleanup_idx < create_idx
 
 def test_check_not_in_active_env_function_present():
     with open('setup_env.sh') as f:
