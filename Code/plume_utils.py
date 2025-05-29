@@ -21,8 +21,10 @@ from typing import Any, Dict
 from pathlib import Path
 
 import numpy as np
+import h5py
+import imageio.v2 as imageio
 
-__all__ = ["get_intensity_stats", "rescale_to_crim_range"]
+__all__ = ["get_intensity_stats", "rescale_to_crim_range", "get_plume_frame"]
 
 try:  # pragma: no cover - fall back if PyYAML is unavailable
     import yaml  # type: ignore
@@ -84,4 +86,64 @@ def rescale_to_crim_range(arr: np.ndarray) -> np.ndarray:
     """Linearly rescale ``arr`` to match the Crimaldi min and max."""
     stats = get_intensity_stats()
     return _rescale(arr, stats["CRIM"]["min"], stats["CRIM"]["max"])
+
+
+def get_plume_frame(
+    plume: str,
+    frame: int = 0,
+    *,
+    config_path: str | Path = "configs/project_paths.yaml",
+) -> np.ndarray:
+    """Return a single frame from a configured plume video or HDF5 file.
+
+    Parameters
+    ----------
+    plume:
+        ``"crimaldi"`` to load from the HDF5 plume or ``"video"`` for the smoke
+        video.
+    frame:
+        Index of the frame to load.
+    config_path:
+        Optional path to ``project_paths.yaml`` specifying ``data.crimaldi`` and
+        ``data.video``. When absent, defaults to canonical filenames under
+        ``data/``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of the requested frame.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from Code import plume_utils
+    >>> frame0 = plume_utils.get_plume_frame("crimaldi", 0)
+    >>> isinstance(frame0, np.ndarray)
+    True
+    """
+
+    config_file = Path(config_path)
+    default_h5 = Path("data/10302017_10cms_bounded_2.h5")
+    default_vid = Path("data/smoke_video.avi")
+
+    if config_file.exists():
+        with config_file.open("r", encoding="utf-8") as fh:
+            cfg = yaml.safe_load(fh) or {}
+        data_cfg = cfg.get("data", {}) if isinstance(cfg, dict) else {}
+        h5_path = Path(data_cfg.get("crimaldi", default_h5))
+        vid_path = Path(data_cfg.get("video", default_vid))
+    else:
+        h5_path = default_h5
+        vid_path = default_vid
+
+    if plume == "crimaldi":
+        with h5py.File(h5_path, "r") as f:
+            return np.asarray(f["intensity"][frame])
+    elif plume == "video":
+        reader = imageio.get_reader(vid_path)
+        try:
+            return np.asarray(reader.get_data(frame))
+        finally:
+            reader.close()
+    raise ValueError(f"unknown plume '{plume}'")
 
