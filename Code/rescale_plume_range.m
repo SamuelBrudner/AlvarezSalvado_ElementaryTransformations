@@ -3,6 +3,15 @@ function data = rescale_plume_range(data, target_min, target_max)
 %   DATA = RESCALE_PLUME_RANGE(DATA, TARGET_MIN, TARGET_MAX) rescales the
 %   numeric array DATA so that its minimum value becomes TARGET_MIN and its
 %   maximum value becomes TARGET_MAX. Empty inputs are returned unchanged.
+%
+%   Example:
+%       scaled = rescale_plume_range(plume.data, 0, 1);
+
+arguments
+    data {mustBeNumeric}
+    target_min (1,1) {mustBeNumeric}
+    target_max (1,1) {mustBeNumeric}
+end
 
 if isempty(data)
     return;

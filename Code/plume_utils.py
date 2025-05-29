@@ -16,6 +16,8 @@ array([...])
 
 from __future__ import annotations
 
+
+from typing import Any, Dict
 from pathlib import Path
 from typing import Any, Dict
 
@@ -23,13 +25,13 @@ import numpy as np
 
 __all__ = ["get_intensity_stats", "rescale_to_crim_range"]
 
-try:  # pragma: no cover - fallback if PyYAML is unavailable
+try:  # pragma: no cover - fall back if PyYAML is unavailable
     import yaml  # type: ignore
-except ModuleNotFoundError:  # pragma: no cover - use a minimal parser
+except ModuleNotFoundError:  # pragma: no cover - lightweight YAML parser
     import types
 
     def _minimal_load(path: Path) -> Dict[str, Dict[str, float]]:
-        """Very small YAML subset parser used when PyYAML is unavailable."""
+        """Very small YAML subset parser."""
         data: Dict[str, Dict[str, float]] = {}
         current: str | None = None
         for raw_line in path.read_text().splitlines():
@@ -47,7 +49,12 @@ except ModuleNotFoundError:  # pragma: no cover - use a minimal parser
     yaml = types.SimpleNamespace(safe_load=lambda f: _minimal_load(Path(f.name)))
 
 
-def get_intensity_stats(path: str | Path | None = None) -> Dict[str, Dict[str, Any]]:
+_YAML_PATH = Path(__file__).resolve().parent.parent / "configs" / "plume_intensity_stats.yaml"
+with _YAML_PATH.open("r", encoding="utf-8") as fh:
+    _INTENSITY_STATS: Dict[str, Dict[str, Any]] = yaml.safe_load(fh)
+
+
+def get_intensity_stats() -> Dict[str, Dict[str, Any]]:
     """Return stored intensity statistics for the default plumes."""
     if path is None:
         path = (
@@ -58,6 +65,7 @@ def get_intensity_stats(path: str | Path | None = None) -> Dict[str, Dict[str, A
     path = Path(path)
     with open(path, "r", encoding="utf-8") as fh:
         return yaml.safe_load(fh)
+    return _INTENSITY_STATS
 
 
 def _rescale(arr: np.ndarray, target_min: float, target_max: float) -> np.ndarray:

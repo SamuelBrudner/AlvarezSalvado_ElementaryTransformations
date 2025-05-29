@@ -8,7 +8,12 @@ function plume = load_custom_plume(metadata_path)
 %       vid_mm_per_px    - millimeters per pixel for the video
 %       fps              - frame rate of the processed video
 %
-%   The returned structure is the same as produced by LOAD_PLUME_VIDEO.
+%   The returned structure is the same as produced by LOAD_PLUME_VIDEO. The
+%   plume data is rescaled to the CRIM intensity range using
+%   RESCALE_PLUME_RANGE.
+%
+%   Example:
+%       plume = load_custom_plume('meta.yaml');
 
 info = load_config(metadata_path);
 
