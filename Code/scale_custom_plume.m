@@ -26,6 +26,9 @@ px_per_mm = 1 / info.vid_mm_per_px;
 frame_rate = info.fps;
 
 plume = load_plume_video(video_path, px_per_mm, frame_rate);
+% Store the original intensity range before any rescaling
+origMin = min(plume.data(:));
+origMax = max(plume.data(:));
 
 stats = plume_intensity_stats();
 scaled = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
@@ -38,7 +41,7 @@ else
     registry = struct();
 end
 if ~isfield(registry, info.output_filename)
-    update_plume_registry(info.output_filename, min(scaled(:)), max(scaled(:)), registry_path);
+    update_plume_registry(info.output_filename, origMin, origMax, registry_path);
 end
 
 % store movie in 0..1 so load_custom_plume rescales correctly
