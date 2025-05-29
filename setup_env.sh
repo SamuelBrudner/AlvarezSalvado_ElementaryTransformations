@@ -274,6 +274,19 @@ setup_environment() {
   
   log SUCCESS "Base environment './${LOCAL_ENV_DIR}' created/updated successfully."
 
+  # Verify NumPy is available in the environment
+  if ! conda run --prefix "./${LOCAL_ENV_DIR}" python -c "import numpy" >/dev/null 2>&1; then
+    log INFO "NumPy not found, installing into ${LOCAL_ENV_DIR}..."
+    if ! conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y numpy; then
+      log WARNING "conda install numpy failed, attempting pip fallback"
+      if ! conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install numpy; then
+        log ERROR "Failed to install NumPy via conda or pip"
+        return 1
+      fi
+    fi
+    log SUCCESS "NumPy installed successfully"
+  fi
+
   # Install development dependencies and set up pre-commit if --dev flag is present
   if [ "$INSTALL_DEV_EXTRAS" -eq 1 ]; then
     setup_development_environment
