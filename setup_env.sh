@@ -69,6 +69,7 @@ Options:
   --dev                Install development dependencies and set up pre-commit hooks
   --no-tests           Skip running tests after setup
   --skip-conda-lock    Skip conda-lock installation and lock file generation
+  --clean-install      Remove existing dev_env before creating a fresh one
   --help               Show this help message
 
 Set DEBUG=1 to enable verbose logging.
@@ -93,6 +94,7 @@ EOF
 INSTALL_DEV_EXTRAS=0
 RUN_TESTS=1
 SKIP_CONDA_LOCK=0
+CLEAN_INSTALL=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -107,6 +109,10 @@ while [[ $# -gt 0 ]]; do
     --skip-conda-lock)
       SKIP_CONDA_LOCK=1
       log INFO "Skipping conda-lock installation and lock file generation."
+      ;;
+    --clean-install)
+      CLEAN_INSTALL=1
+      log INFO "Clean install requested: existing environment will be removed."
       ;;
     -h|--help)
       usage
@@ -143,6 +149,7 @@ try_load_conda_module() {
 
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
+    # command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1
     if command -v conda-lock >/dev/null 2>&1 && conda-lock --version >/dev/null 2>&1; then
         return 0
     fi
@@ -150,9 +157,8 @@ ensure_conda_lock() {
     # Try using the local environment's pip first if it exists
     if [ -d "./${LOCAL_ENV_DIR}" ]; then
         log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
-        if run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install conda-lock; then
+        if run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock; then
             export PATH="./${LOCAL_ENV_DIR}/bin:${PATH}"
-            hash -r
             return 0
         fi
     fi
@@ -163,16 +169,20 @@ ensure_conda_lock() {
     
     if ! python3 -m venv "${temp_venv}"; then
         log WARNING "Failed to create virtual environment, falling back to --user install"
-        if ! python3 -m pip install --user conda-lock; then
+        if ! python -m pip install --user conda-lock; then
             error "Failed to install conda-lock with --user flag"
         fi
+        USER_BIN="$(python -m site --user-base)/bin"
+        export PATH="${USER_BIN}:${PATH}"
     else
         # Install conda-lock in the virtual environment
         if ! "${temp_venv}/bin/pip" install --no-input conda-lock; then
             log WARNING "Failed to install in virtual environment, falling back to --user install"
-            if ! python3 -m pip install --user conda-lock; then
+            if ! python -m pip install --user conda-lock; then
                 error "Failed to install conda-lock with --user flag"
             fi
+            USER_BIN="$(python -m site --user-base)/bin"
+            export PATH="${USER_BIN}:${PATH}"
         else
             # Add the virtual environment's bin to PATH
             export PATH="${temp_venv}/bin:${PATH}"
@@ -181,7 +191,7 @@ ensure_conda_lock() {
 
     # Verify installation
     if ! command -v conda-lock >/dev/null 2>&1; then
-        error "conda-lock installation failed. Please install it manually with: python3 -m pip install --user conda-lock"
+        error "conda-lock installation failed. Please install it manually with: python -m pip install --user conda-lock"
     fi
 
     hash -r
@@ -297,30 +307,35 @@ setup_environment() {
   section "Setting up Conda environment"
   log INFO "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
   
+  local env_file
+  local create_args
   if [ -f "conda-lock.yml" ]; then
-    if conda_env_exists; then
-      log INFO "Updating existing environment from lock file"
-      run_command_verbose conda env update --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
-    elif conda_supports_force; then
-      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
-    else
-      log INFO "Old conda detected - removing existing environment"
-      run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
-      cleanup_nfs_temp_files || true
-      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
-    fi
+    env_file="conda-lock.yml"
+    create_args=(--prefix "./${LOCAL_ENV_DIR}" --file "$env_file")
   else
     log WARNING "conda-lock.yml not found, falling back to direct environment creation"
+    env_file="$BASE_ENV_FILE"
+    create_args=(--prefix "./${LOCAL_ENV_DIR}" -f "$env_file")
+  fi
+
+  if [ "$CLEAN_INSTALL" -eq 1 ]; then
     if conda_env_exists; then
-      log INFO "Updating existing environment using $BASE_ENV_FILE"
-      run_command_verbose conda env update --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
-    elif conda_supports_force; then
-      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
-    else
-      log INFO "Old conda detected - removing existing environment"
       run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
       cleanup_nfs_temp_files || true
-      run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
+    fi
+    if conda_supports_force; then
+      run_command_verbose conda env create "${create_args[@]}" --force
+    else
+      run_command_verbose conda env create "${create_args[@]}"
+    fi
+  else
+    if conda_env_exists; then
+      log INFO "Updating existing environment from $env_file"
+      run_command_verbose conda env update "${create_args[@]}" --prune
+    elif conda_supports_force; then
+      run_command_verbose conda env create "${create_args[@]}" --force
+    else
+      run_command_verbose conda env create "${create_args[@]}"
     fi
   fi
   

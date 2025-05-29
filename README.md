@@ -26,6 +26,7 @@ Check if the conda environment exists, if not, create it.
 
  - Check: `./dev_env` exists
  - If not, run: `./setup_env.sh --dev`
+   - Use `--clean-install` for a fresh reinstall if needed
 
 Check if pre commit hooks are installed, if not, install them.
 
@@ -60,6 +61,7 @@ conda run --prefix ./dev_env python -m Code.some_script
 1 and 2 are only *as required* -- check if there's evidence they've already run
 
 1. Run `./setup_env.sh --dev` to create `./dev_env`.
+   - Add `--clean-install` to force removal of the existing environment.
 2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing.
 3. Execute `conda run --prefix ./dev_env python -m Code.compare_intensity_stats`.
 
