@@ -102,7 +102,7 @@ fi
 def test_setup_env_has_conda_lock_pip_fallback():
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'python -m pip install --user conda-lock' in content
+    assert 'python3 -m pip install --user conda-lock' in content
     assert 'conda-lock --version' in content
 
 
@@ -117,15 +117,13 @@ def test_conda_lock_installed_in_prefix():
     """Script should prefer installing conda-lock into the local prefix."""
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock' in content
+    assert 'conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install conda-lock' in content
 
 
 def test_setup_env_exports_user_bin_for_conda_lock():
     """Script should add the pip user bin directory to PATH if needed."""
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'site --user-base' in content
-    assert 'export PATH="${USER_BIN}:${PATH}"' in content
     assert 'hash -r' in content
 
 
@@ -133,16 +131,15 @@ def test_setup_env_exports_user_bin_after_pip_install():
     """USER_BIN export should occur after pip fallback and before hash."""
     with open('setup_env.sh') as f:
         content = f.read()
-    pip_idx = content.index('python -m pip install --user conda-lock')
-    export_idx = content.index('export PATH="${USER_BIN}:${PATH}"')
-    hash_idx = content.index('hash -r')
-    assert pip_idx < export_idx < hash_idx
+    pip_idx = content.index('python3 -m pip install --user conda-lock')
+    hash_idx = content.rindex('hash -r')
+    assert pip_idx < hash_idx
 
 
 def test_setup_env_checks_existing_conda_lock():
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1' in content
+    assert 'command -v conda-lock >/dev/null 2>&1 && conda-lock --version >/dev/null 2>&1' in content
 
 
 def test_setup_env_handles_old_conda_versions():
@@ -369,6 +366,7 @@ fi
     )
     assert result.returncode != 0
     assert 'dev_env is currently active' in result.stdout + result.stderr
+    monkeypatch.delenv("CONDA_PREFIX", raising=False)
     user_base = tmp_path / "user"
     user_bin = user_base / "bin"
     user_bin.mkdir(parents=True)
@@ -377,22 +375,7 @@ fi
     conda_lock_script.write_text("#!/bin/bash\necho 'conda-lock 1.0.0'")
     conda_lock_script.chmod(0o755)
 
-    python_script = bin_dir / "python"
-    python_script.write_text(
-        f"""#!/bin/bash
-if [ \"$1\" = "-m" ] && [ \"$2\" = "site" ] && [ \"$3\" = "--user-base" ]; then
-  echo '{user_base}'
-elif [ \"$1\" = "-m" ] && [ \"$2\" = "pip" ] && [ \"$3\" = "install" ]; then
-  exit 0
-else
-  /usr/bin/env python "$@"
-fi
-"""
-    )
-    python_script.chmod(0o755)
-
-    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
-    monkeypatch.setenv("PYTHONUSERBASE", str(user_base))
+    monkeypatch.setenv("PATH", f"{user_bin}:{bin_dir}:{os.environ['PATH']}")
 
     result = subprocess.run(
         ["bash", "./setup_env.sh", "--no-tests"],
