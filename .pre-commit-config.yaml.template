@@ -12,7 +12,7 @@ repos:
         entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" black "$@" --line-length=88 --target-version=py311' --
         language: system
         types: [python]
-        exclude: '^tests/|^setup\.py$|^docs/|/migrations/'
+        exclude: '^setup\.py$|^docs/|/migrations/'
         
       # isort - import sorter
       - id: isort
@@ -20,7 +20,7 @@ repos:
         entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" isort --profile=black --line-length=88 "$@"' --
         language: system
         types: [python]
-        exclude: '^tests/|^setup\.py$|^docs/|/migrations/'
+        exclude: '^setup\.py$|^docs/|/migrations/'
         
       # ruff - linter and formatter
       - id: ruff
@@ -28,7 +28,7 @@ repos:
         entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" ruff check --fix --exit-non-zero-on-fix "$@"' --
         language: system
         types: [python]
-        exclude: '^tests/|^setup\.py$|^docs/|/migrations/'
+        exclude: '^setup\.py$|^docs/|/migrations/'
 
   # 2. Type checking and testing (manual, run before pushing)
   - repo: local
@@ -39,7 +39,7 @@ repos:
         entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" mypy --config-file=mypy.ini "$@"' --
         language: system
         types: [python]
-        exclude: '^tests/|^setup\.py$|^docs/|/migrations/'
+        exclude: '^setup\.py$|^docs/|/migrations/'
         stages: [manual]
         
       # Pytest - run tests with coverage
@@ -57,5 +57,5 @@ repos:
         entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" interrogate -v --fail-under=80 --ignore-init-method --ignore-nested-functions --ignore-private --ignore-semiprivate --ignore-magic --ignore-property-decorators --ignore-module --ignore-regex "^test_.*"' --
         language: system
         types: [python]
-        exclude: '^tests/|^setup\.py$|^docs/|/migrations/'
+        exclude: '^setup\.py$|^docs/|/migrations/'
         stages: [manual]
