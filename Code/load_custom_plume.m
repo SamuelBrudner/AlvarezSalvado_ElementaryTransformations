@@ -17,4 +17,7 @@ px_per_mm = 1 / info.vid_mm_per_px;
 frame_rate = info.fps;
 
 plume = load_plume_video(video_path, px_per_mm, frame_rate);
+
+stats = plume_intensity_stats();
+plume.data = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
 end
