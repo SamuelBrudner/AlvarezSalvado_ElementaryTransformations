@@ -128,10 +128,13 @@ else
     CONDITION_NAME="unilateral"
 fi
 
+# Preserve starting index for logging
+ORIGINAL_START_AGENT=$START_AGENT
+
 # Set random seeds for each agent in this job
 RANDOM_SEEDS=()
-for s in $(seq $START_AGENT $END_AGENT); do
-    RANDOM_SEEDS+=($s)
+for s in $(seq "$ORIGINAL_START_AGENT" "$END_AGENT"); do
+    RANDOM_SEEDS+=("$s")
 done
 
 # ============================================
@@ -142,7 +145,7 @@ echo "=== Simulation Parameters ===" | tee -a "$JOB_LOG"
 echo "Job ID: $SLURM_ARRAY_TASK_ID" | tee -a "$JOB_LOG"
 echo "Plume: $PLUME_NAME" | tee -a "$JOB_LOG"
 echo "Condition: $CONDITION_NAME ($CONDITION)" | tee -a "$JOB_LOG"
-echo "Agents: $START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
+echo "Agents: $ORIGINAL_START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
 echo "Random seeds: ${RANDOM_SEEDS[*]}" | tee -a "$JOB_LOG"
 echo "Total agents per condition: $AGENTS_PER_CONDITION" | tee -a "$JOB_LOG"
 echo "Agents per job: $AGENTS_PER_JOB" | tee -a "$JOB_LOG"
@@ -151,9 +154,10 @@ echo "============================" | tee -a "$JOB_LOG"
 # Create a temporary MATLAB script to run all agents for this job
 MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 
-for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
-    AGENT_INDEX=$((START_AGENT+i))
-    SEED=${RANDOM_SEEDS[$i]}
+# Reset starting agent for loop iteration
+START_AGENT=$ORIGINAL_START_AGENT
+for SEED in "${RANDOM_SEEDS[@]}"; do
+    AGENT_INDEX=$((START_AGENT++))
     AGENT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
 
     mkdir -p "$AGENT_DIR"
