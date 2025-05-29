@@ -5,6 +5,14 @@
 # Handle both sourced and direct execution
 (return 0 2>/dev/null) && SOURCED=1 || SOURCED=0
 
+# Determine if the script is sourced in a non-interactive context
+NONINTERACTIVE=0
+if [ "$SOURCED" -eq 1 ]; then
+    if [ -n "${PS4:-}" ] || [ -z "${PS1:-}" ]; then
+        NONINTERACTIVE=1
+    fi
+fi
+
 # Only set these options when not sourced to prevent exiting the parent shell
 if [ "$SOURCED" -eq 0 ]; then
     set -euo pipefail
@@ -67,7 +75,7 @@ find_matlab() {
 setup_matlab() {
     # If MATLAB_EXEC is already set, use it
     if [ -n "${MATLAB_EXEC:-}" ] && [ -x "$MATLAB_EXEC" ]; then
-        echo "Using MATLAB from MATLAB_EXEC: $MATLAB_EXEC"
+        log INFO "Using MATLAB from MATLAB_EXEC: $MATLAB_EXEC"
         return 0
     fi
     
@@ -79,13 +87,13 @@ setup_matlab() {
         local matlab_bin="$(dirname "$matlab_path")"
         if [[ ":$PATH:" != *":$matlab_bin:"* ]]; then
             export PATH="$matlab_bin:$PATH"
-            echo "Added MATLAB to PATH: $matlab_bin"
+            log INFO "Added MATLAB to PATH: $matlab_bin"
         fi
-        echo "Found MATLAB at: $matlab_path"
+        log INFO "Found MATLAB at: $matlab_path"
         return 0
     else
-        echo "WARNING: MATLAB not found. Some functionality may be limited."
-        echo "         You can set MATLAB_EXEC environment variable to the MATLAB executable path."
+        log WARNING "MATLAB not found. Some functionality may be limited."
+        log WARNING "You can set MATLAB_EXEC environment variable to the MATLAB executable path."
         return 1
     fi
 }
@@ -133,6 +141,11 @@ fi
 if ! source "${SCRIPT_DIR}/setup_utils.sh"; then
     echo "Error: Failed to source setup_utils.sh" >&2
     safe_exit 1
+fi
+
+# Silence log output if sourced non-interactively unless DEBUG is enabled
+if [ "$NONINTERACTIVE" -eq 1 ] && [ "${DEBUG:-0}" -ne 1 ]; then
+    log() { :; }
 fi
 
 # Configuration

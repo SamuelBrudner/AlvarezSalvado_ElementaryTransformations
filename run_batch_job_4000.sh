@@ -51,7 +51,8 @@ JOBS_PER_COND=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB -1)/AGENTS_PER_JOB ))
 TOTAL_JOBS=$(( NUM_CONDITIONS * JOBS_PER_COND ))
 
 ########################  disk space check  ########################
-BYTES_PER_AGENT=50000000
+: ${BYTES_PER_AGENT:=50000000} # BYTES_PER_AGENT=50000000
+
 REQUIRED=$(( AGENTS_PER_CONDITION * NUM_CONDITIONS * BYTES_PER_AGENT * 12 / 10 / 1024 ))
 FREE=$(df -k --output=avail "$OUTPUT_BASE" | tail -1)
 (( FREE >= REQUIRED )) || { echo "ERR not enough space"; exit 1; }

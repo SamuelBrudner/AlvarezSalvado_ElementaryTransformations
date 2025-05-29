@@ -11,6 +11,9 @@ cleanup() {
 # Trap common termination signals
 trap cleanup EXIT INT TERM
 
+# Log file for this job
+JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
+
 # Default SLURM settings if not provided as environment variables
 : ${SLURM_PARTITION:="day"}
 : ${SLURM_TIME:="6:00:00"}
@@ -45,11 +48,12 @@ trap cleanup EXIT INT TERM
 # Derive plume name from configuration file path (without extension)
 PLUME_NAME="$(basename "${PLUME_CONFIG%.*}")"
 
+# Ensure log directory exists early
+mkdir -p logs
+
 # Create output directories if they don't exist
 mkdir -p slurm_out slurm_err data/raw data/processed logs
 
-# Log file for this job
-JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
 echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
 
 
@@ -125,10 +129,13 @@ else
     CONDITION_NAME="unilateral"
 fi
 
+# Preserve starting index for logging
+ORIGINAL_START_AGENT=$START_AGENT
+
 # Set random seeds for each agent in this job
 RANDOM_SEEDS=()
-for s in $(seq $START_AGENT $END_AGENT); do
-    RANDOM_SEEDS+=($s)
+for s in $(seq "$ORIGINAL_START_AGENT" "$END_AGENT"); do
+    RANDOM_SEEDS+=("$s")
 done
 
 # ============================================
@@ -139,7 +146,7 @@ echo "=== Simulation Parameters ===" | tee -a "$JOB_LOG"
 echo "Job ID: $SLURM_ARRAY_TASK_ID" | tee -a "$JOB_LOG"
 echo "Plume: $PLUME_NAME" | tee -a "$JOB_LOG"
 echo "Condition: $CONDITION_NAME ($CONDITION)" | tee -a "$JOB_LOG"
-echo "Agents: $START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
+echo "Agents: $ORIGINAL_START_AGENT to $END_AGENT" | tee -a "$JOB_LOG"
 echo "Random seeds: ${RANDOM_SEEDS[*]}" | tee -a "$JOB_LOG"
 echo "Total agents per condition: $AGENTS_PER_CONDITION" | tee -a "$JOB_LOG"
 echo "Agents per job: $AGENTS_PER_JOB" | tee -a "$JOB_LOG"
@@ -148,9 +155,10 @@ echo "============================" | tee -a "$JOB_LOG"
 # Create a temporary MATLAB script to run all agents for this job
 MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 
-for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
-    AGENT_INDEX=$((START_AGENT+i))
-    SEED=${RANDOM_SEEDS[$i]}
+# Reset starting agent for loop iteration
+START_AGENT=$ORIGINAL_START_AGENT
+for SEED in "${RANDOM_SEEDS[@]}"; do
+    AGENT_INDEX=$((START_AGENT++))
     AGENT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
 
     mkdir -p "$AGENT_DIR"

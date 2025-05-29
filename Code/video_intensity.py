@@ -123,6 +123,7 @@ def get_intensities_from_video_via_matlab(
     px_per_mm: Optional[float] = None,
     frame_rate: Optional[float] = None,
     work_dir: Optional[str] = None,
+    timeout: Optional[float] = None,
     orig_script_path: Optional[str] = None,
 ) -> np.ndarray:
     """Run a MATLAB script and return the extracted intensity vector.
@@ -142,6 +143,9 @@ def get_intensities_from_video_via_matlab(
         embedded in the temporary MATLAB script for use by helper routines.
     work_dir : str, optional
         Directory MATLAB should change into before running the temporary script.
+    timeout : float, optional
+        Maximum time in seconds to allow MATLAB to run. If ``None``, no timeout
+        is enforced.
     orig_script_path : str, optional
         Original path of the MATLAB script. When provided, the generated
         temporary script defines ``orig_script_path`` and ``orig_script_dir`` so
@@ -216,7 +220,7 @@ def get_intensities_from_video_via_matlab(
             "-nodesktop",
             "-noFigureWindows",
             "-batch",
-            f"try, run('{safe_path}'), catch ME, disp('MATLAB Error: ' + getReport(ME, 'extended')); exit(1); end",
+            f"try, run('{safe_path}'), catch ME, disp(['MATLAB Error: ' getReport(ME, 'extended')]); exit(1); end",
         ]
 
         logger.info(
@@ -229,14 +233,19 @@ def get_intensities_from_video_via_matlab(
             " ".join(f'"{x}"' if " " in x else x for x in matlab_cmd),
         )
 
-        # Run MATLAB with timeout (30 minutes)
+        # Run MATLAB
         try:
+            kwargs = {}
+            if timeout is not None:
+                kwargs["timeout"] = timeout
+            if work_dir is not None:
+                kwargs["cwd"] = work_dir
+
             proc = subprocess.run(
                 matlab_cmd,
                 capture_output=True,
                 text=True,
-                timeout=1800,  # 30 minute timeout
-                cwd=work_dir or os.getcwd(),
+                **kwargs,
             )
 
             # Log MATLAB output for debugging
@@ -257,9 +266,12 @@ def get_intensities_from_video_via_matlab(
                 )
 
         except subprocess.TimeoutExpired as exc:
-            raise RuntimeError(
-                "MATLAB script execution timed out after 30 minutes"
-            ) from exc
+            msg = (
+                f"MATLAB script execution timed out after {timeout} seconds"
+                if timeout is not None
+                else "MATLAB script execution timed out"
+            )
+            raise RuntimeError(msg) from exc
 
         for line in proc.stdout.splitlines():
             if line.startswith("TEMP_MAT_FILE_SUCCESS:"):
@@ -271,7 +283,7 @@ def get_intensities_from_video_via_matlab(
         try:
             data = loadmat(mat_path)
             arr = np.asarray(data["all_intensities"])  # type: ignore[index]
-        except NotImplementedError:
+        except (NotImplementedError, ValueError):
             with h5py.File(mat_path, "r") as f:
                 if "all_intensities" not in f:
                     raise KeyError("all_intensities not found in MAT-file")

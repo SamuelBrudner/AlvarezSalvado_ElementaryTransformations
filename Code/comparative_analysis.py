@@ -103,6 +103,8 @@ def run_statistical_tests(
     -------
     list of dict
         Each entry contains ``metric``, ``groups``, ``t_stat`` and ``p_value``.
+        Returns a list of result dictionaries containing metrics, groups,
+        t-statistics and p-values.
 
     Examples
     --------

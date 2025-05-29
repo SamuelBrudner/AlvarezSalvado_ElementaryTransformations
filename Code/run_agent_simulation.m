@@ -68,9 +68,8 @@ try
     % Run the simulation
     result = run_navigation_cfg(sim_cfg);
     
-    % Save the results under a top-level ''out'' field for downstream tools
-    out = result;
-    save(fullfile(output_dir, 'result.mat'), 'out', '-v7');
+    % Save the results structure directly
+    save(fullfile(output_dir, 'result.mat'), '-struct', 'result');
     fprintf('Successfully completed simulation for agent %d (seed %d)\n', agent_id, seed);
     
     % Clear large variables to save memory
