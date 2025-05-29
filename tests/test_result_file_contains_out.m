@@ -33,7 +33,7 @@ function teardownOnce(testCase)
     rmdir(testCase.TestData.stubDir, 's');
 end
 
-function testResultFileHasOut(testCase)
+function testResultFileHasNoOut(testCase)
     cfg = testCase.TestData.cfg;
     outDirBase = cfg.experiment.output_base;
     if exist(outDirBase, 'dir')
@@ -42,5 +42,6 @@ function testResultFileHasOut(testCase)
     run_agent_simulation(1, 1, 'dummy.yaml');
     resultFile = fullfile(outDirBase, 'gaussian_bilateral', '1_1', 'result.mat');
     info = whos('-file', resultFile);
-    verifyTrue(testCase, any(strcmp({info.name}, 'out')), 'Variable ''out'' missing from result.mat');
+    verifyFalse(testCase, any(strcmp({info.name}, 'out')), 'Variable ''out'' should not be saved');
+    verifyGreaterThan(testCase, numel(info), 0, 'Result file should contain variables');
 end

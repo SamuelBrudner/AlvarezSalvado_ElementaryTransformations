@@ -54,7 +54,8 @@ def test_video_requires_px_per_mm_and_frame_rate(monkeypatch, tmp_path):
     out_json = tmp_path / "out.json"
     fake_crim = types.SimpleNamespace(get_intensities_from_crimaldi=lambda p: [1])
     fake_vid = types.SimpleNamespace(
-        get_intensities_from_video_via_matlab=lambda s, m, px_per_mm, frame_rate, orig_script_path=None: [
+
+        get_intensities_from_video_via_matlab=lambda s, m, px_per_mm, frame_rate, orig_script_path=None, **kwargs: [
             1
         ]
     )
@@ -82,7 +83,7 @@ def test_video_valid_arguments(monkeypatch, tmp_path):
     fake_crim = types.SimpleNamespace(get_intensities_from_crimaldi=lambda p: [1])
     captured = {}
 
-    def fake_vid_func(s, m, px_per_mm, frame_rate, orig_script_path=None):
+    def fake_vid_func(s, m, px_per_mm, frame_rate, orig_script_path=None, **kwargs):
         captured["px_per_mm"] = px_per_mm
         captured["frame_rate"] = frame_rate
         captured["matlab_exec"] = m
@@ -128,7 +129,8 @@ def test_crimaldi_valid_arguments(monkeypatch, tmp_path):
         get_intensities_from_crimaldi=lambda path: [4.0, 5.0]
     )
     fake_vid = types.SimpleNamespace(
-        get_intensities_from_video_via_matlab=lambda s, m, px_per_mm, frame_rate, orig_script_path=None: [
+
+        get_intensities_from_video_via_matlab=lambda s, m, px_per_mm, frame_rate, orig_script_path=None, **kwargs: [
             1
         ]
     )
@@ -161,7 +163,8 @@ def test_matlab_exec_option(monkeypatch, tmp_path):
     fake_crim = types.SimpleNamespace(get_intensities_from_crimaldi=lambda p: [1])
     captured = {}
 
-    def fake_vid_func(s, m, px_per_mm, frame_rate, orig_script_path=None):
+
+    def fake_vid_func(s, m, px_per_mm, frame_rate, orig_script_path=None, **kwargs):
         captured["matlab_exec"] = m
         return [1]
 
@@ -170,6 +173,7 @@ def test_matlab_exec_option(monkeypatch, tmp_path):
     )
     monkeypatch.setitem(sys.modules, "Code.analyze_crimaldi_data", fake_crim)
     monkeypatch.setitem(sys.modules, "Code.video_intensity", fake_vid)
+
     cpi.main(
         [
             "--plume_type",

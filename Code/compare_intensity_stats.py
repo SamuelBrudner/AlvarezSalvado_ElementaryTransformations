@@ -60,11 +60,14 @@ def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarra
     with open(script_path, "r") as f:
         script_contents = f.read()
 
+    kwargs = {
+        "work_dir": str(script_dir),
+        "orig_script_path": str(script_path),
+    }
     return get_intensities_from_video_via_matlab(
         script_contents,
         matlab_exec_path,
-        work_dir=str(script_dir),
-        orig_script_path=str(script_path),
+        **kwargs,
     )
 
 
