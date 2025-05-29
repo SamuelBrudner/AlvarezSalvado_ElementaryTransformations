@@ -69,6 +69,10 @@ def video_to_hdf5(input_path: str | Path, output_path: str | Path) -> None:
     ----------
     input_path, output_path : str or Path
         Paths to the input video and output HDF5 file.
+
+    Examples
+    --------
+    >>> video_to_hdf5('input.avi', 'output.h5')
     """
 
     if imageio is None:  # pragma: no cover - runtime environment may lack imageio

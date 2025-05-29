@@ -53,6 +53,10 @@ def estimate_video_memory(video_path: str) -> float | None:
     The estimate is derived from the frame count and frame dimensions reported
     by :func:`imageio.get_reader`.  If metadata is unavailable, ``None`` is
     returned.
+
+    Examples
+    --------
+    >>> estimate_video_memory('movie.avi')
     """
     if imageio is None:  # pragma: no cover - imageio may be missing
         return None
@@ -92,6 +96,10 @@ def extract_intensities_from_video(
         Path to the video file.
     px_per_mm, frame_rate : float, optional
         Present for API compatibility; values are ignored.
+
+    Examples
+    --------
+    >>> extract_intensities_from_video('movie.avi').shape
     """
 
     if imageio is None:  # pragma: no cover - environment may lack imageio
@@ -139,6 +147,10 @@ def find_matlab_executable(user_path: Optional[str] = None) -> str:
     -----
     If the environment variable ``MATLAB_EXEC`` points to an executable
     file, it is used ahead of any auto-detection logic.
+
+    Examples
+    --------
+    >>> find_matlab_executable()  # doctest: +SKIP
     """
     # Check user-provided path first. If supplied, validate that it points to an
     # executable. Previously the path was returned even when invalid, which made
