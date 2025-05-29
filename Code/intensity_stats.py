@@ -6,12 +6,22 @@ Run the CLI inside the project environment::
 
     ./setup_env.sh --dev
     conda run --prefix ./dev_env python -m Code.intensity_stats plumeA intensities.txt
+
+The :func:`main` entry point returns the computed statistics so it can be
+invoked programmatically:
+
+>>> from Code.intensity_stats import main
+>>> stats = main(["plumeX", "intensities.txt"])
+>>> stats["count"]
+3
 """
 
 from __future__ import annotations
 
 import argparse
 from typing import Sequence, Dict
+
+__all__ = ["calculate_intensity_stats_dict", "main"]
 
 try:
     import numpy as np
@@ -57,7 +67,7 @@ def _print_stats(identifier: str, file_path: str, stats: Dict[str, float]) -> No
         print(f"{key}: {stats[key]}")
 
 
-def main(args: Sequence[str] | None = None) -> None:  # pragma: no cover - CLI
+def main(args: Sequence[str] | None = None) -> Dict[str, float]:  # pragma: no cover - CLI
     parser = argparse.ArgumentParser(description="Calculate intensity statistics")
     parser.add_argument("identifier", help="Plume identifier")
     parser.add_argument("file", help="Path to text file containing intensities")
@@ -78,6 +88,8 @@ def main(args: Sequence[str] | None = None) -> None:  # pragma: no cover - CLI
         plt.xlabel("Intensity")
         plt.ylabel("Frequency")
         plt.show()
+
+    return stats
 
 
 if __name__ == "__main__":  # pragma: no cover
