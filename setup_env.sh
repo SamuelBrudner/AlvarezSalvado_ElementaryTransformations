@@ -197,12 +197,8 @@ cleanup_nfs_temp_files() {
 }
 
 conda_env_exists() {
-    if [ -d "./${LOCAL_ENV_DIR}" ]; then
-        local abs_env
-        abs_env="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
-        if conda env list | awk '{print $NF}' | grep -Fq "$abs_env"; then
-            return 0
-        fi
+    if [ -d "./${LOCAL_ENV_DIR}/conda-meta" ]; then
+        return 0
     fi
     return 1
 }
