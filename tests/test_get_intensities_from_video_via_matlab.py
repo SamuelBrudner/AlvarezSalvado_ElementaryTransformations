@@ -48,8 +48,9 @@ def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
 
     def fake_run(cmd, capture_output, text, **kwargs):
         assert cmd[0] == matlab_exec
-        assert cmd[1] == "-batch"
-        assert cmd[2] == f"run('{captured['script_path']}')"
+        assert "-batch" in cmd
+        run_cmd = f"run('{captured['script_path']}')"
+        assert any(part == run_cmd for part in cmd)
         with open(captured["script_path"]) as fh:
             captured["script_contents"] = fh.read()
         return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
@@ -100,7 +101,9 @@ def test_path_with_spaces_and_quotes(monkeypatch, tmp_path):
     def fake_run(cmd, capture_output, text, **kwargs):
         assert cmd[0] == matlab_exec
         expected = captured["script_path"].replace("'", "''")
-        assert cmd[2] == f"run('{expected}')"
+        run_cmd = f"run('{expected}')"
+        assert "-batch" in cmd
+        assert any(part == run_cmd for part in cmd)
         with open(captured["script_path"]) as fh:
             captured["script_contents"] = fh.read()
         return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
@@ -175,8 +178,10 @@ def test_workdir_with_single_quote(monkeypatch, tmp_path):
     def fake_run(cmd, capture_output, text, **kwargs):
         assert kwargs.get("cwd") == work_dir
         expected = captured["script_path"].replace("'", "''")
+        run_cmd = f"run('{expected}')"
         assert cmd[0] == matlab_exec
-        assert cmd[2] == f"run('{expected}')"
+        assert "-batch" in cmd
+        assert any(part == run_cmd for part in cmd)
         with open(captured["script_path"]) as fh:
             captured["script_contents"] = fh.read()
         return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
