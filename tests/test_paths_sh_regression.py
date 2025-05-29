@@ -1,5 +1,7 @@
 import shutil
 import subprocess
+
+BASH = shutil.which("bash") or "/bin/bash"
 from pathlib import Path
 
 BASH = shutil.which("bash") or "/bin/bash"

@@ -1,5 +1,7 @@
 import subprocess
 import shutil
+
+BASH = shutil.which("bash") or "/bin/bash"
 import pytest
 
 BASH = shutil.which("bash") or "/bin/bash"
