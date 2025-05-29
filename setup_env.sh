@@ -143,54 +143,48 @@ try_load_conda_module() {
 
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
-    if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-        if [ -x "./${LOCAL_ENV_DIR}/bin/conda-lock" ]; then
-            log INFO "Using conda-lock from ${LOCAL_ENV_DIR}"
+    if command -v conda-lock >/dev/null 2>&1 && conda-lock --version >/dev/null 2>&1; then
+        return 0
+    fi
+
+    # Try using the local environment's pip first if it exists
+    if [ -d "./${LOCAL_ENV_DIR}" ]; then
+        log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
+        if run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install conda-lock; then
             export PATH="./${LOCAL_ENV_DIR}/bin:${PATH}"
             hash -r
             return 0
         fi
-        if [ -d "./${LOCAL_ENV_DIR}" ]; then
-            log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
-            if ! run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock; then
-                log WARNING "conda install failed, attempting pip fallback"
-                if ! run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install conda-lock; then
-                    log WARNING "Failed to install conda-lock in prefix, falling back to user"
-                    if ! run_command_verbose python -m pip install --user conda-lock; then
-                        error "Failed to install conda-lock"
-                    fi
-                fi
+    fi
+
+    # Create a temporary virtual environment for conda-lock
+    local temp_venv="${TMPDIR:-/tmp}/conda-lock-venv-$$"
+    log INFO "Creating temporary virtual environment for conda-lock at ${temp_venv}"
+    
+    if ! python3 -m venv "${temp_venv}"; then
+        log WARNING "Failed to create virtual environment, falling back to --user install"
+        if ! python3 -m pip install --user conda-lock; then
+            error "Failed to install conda-lock with --user flag"
+        fi
+    else
+        # Install conda-lock in the virtual environment
+        if ! "${temp_venv}/bin/pip" install --no-input conda-lock; then
+            log WARNING "Failed to install in virtual environment, falling back to --user install"
+            if ! python3 -m pip install --user conda-lock; then
+                error "Failed to install conda-lock with --user flag"
             fi
         else
-            log INFO "Installing conda-lock via pip"
-            if ! run_command_verbose python -m pip install --user conda-lock; then
-                error "Failed to install conda-lock with pip"
-            fi
-        fi
-
-        # Refresh the shell to update PATH
-        if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
-        fi
-
-        # Add conda to PATH
-        export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
-
-        # Always include user's pip bin directory
-        USER_BIN="$(python -m site --user-base)/bin"
-        export PATH="${USER_BIN}:${PATH}"
-        [ -x "${USER_BIN}/conda-lock" ] && "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
-        hash -r
-
-        # Verify installation
-        if ! command -v conda-lock >/dev/null 2>&1; then
-            if [ -x "${USER_BIN}/conda-lock" ]; then
-                "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
-            else
-                error "conda-lock installed but not on PATH. Add ${USER_BIN}/conda-lock to PATH."
-            fi
+            # Add the virtual environment's bin to PATH
+            export PATH="${temp_venv}/bin:${PATH}"
         fi
     fi
+
+    # Verify installation
+    if ! command -v conda-lock >/dev/null 2>&1; then
+        error "conda-lock installation failed. Please install it manually with: python3 -m pip install --user conda-lock"
+    fi
+
+    hash -r
 }
 cleanup_nfs_temp_files() {
     find "./${LOCAL_ENV_DIR}" -name '.nfs*' -type f -exec rm -f {} +
