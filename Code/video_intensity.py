@@ -346,13 +346,18 @@ def get_intensities_from_video_via_matlab(
             if proc.returncode != 0:
                 if proc.stdout:
                     logger.warning("MATLAB stdout:\n%s", proc.stdout)
+                hint_parts: list[str] = []
                 if orig_script_path is not None:
                     orig_script_dir = os.path.dirname(orig_script_path)
-                    hint = (
-                        f" (orig_script_path: {orig_script_path}, orig_script_dir: {orig_script_dir})"
+                    hint_parts.append(
+                        f"orig_script_path: {orig_script_path}"
                     )
-                else:
-                    hint = ""
+                    hint_parts.append(
+                        f"orig_script_dir: {orig_script_dir}"
+                    )
+                if work_dir is not None:
+                    hint_parts.append(f"work_dir: {work_dir}")
+                hint = f" ({', '.join(hint_parts)})" if hint_parts else ""
                 error_msg = proc.stderr.strip() or "No error message from MATLAB"
                 raise RuntimeError(
                     f"MATLAB failed with exit code {proc.returncode}{hint}: {error_msg}"
@@ -381,7 +386,7 @@ def get_intensities_from_video_via_matlab(
                 if "all_intensities" not in f:
                     raise KeyError("all_intensities not found in MAT-file")
                 arr = np.asarray(f["all_intensities"][()])
-        return arr.flatten()
+        return np.asarray(arr).flatten()
     finally:
         if script_file is not None:
             with contextlib.suppress(FileNotFoundError):
