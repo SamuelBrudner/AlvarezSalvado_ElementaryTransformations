@@ -5,7 +5,7 @@ Examples
 Run discovery using the project environment::
 
     ./setup_env.sh --dev
-    conda run --prefix ./dev-env python - <<'PY'
+    conda run --prefix ./dev_env python - <<'PY'
     from Code.data_discovery import discover_processed_data
     cfg = {'data_paths': {'processed_base_dirs': ['data/processed']}}
     list(discover_processed_data(cfg))

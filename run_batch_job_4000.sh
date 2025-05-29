@@ -109,7 +109,7 @@ matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT');" || { echo "MATLAB failed"; ex
 
 ########################  export CSV/JSON  #########################
 # Use conda run -p for any Python commands
-# Example: conda run -p ./dev-env python script.py
+# Example: conda run -p ./dev_env python script.py
 
 # MATLAB-based export (kept as is since it's MATLAB-specific)
 EXPORT_SCRIPT=$(mktemp -p "$TMPDIR" export_job_XXXX.m)
@@ -123,6 +123,6 @@ echo "exit" >>"$EXPORT_SCRIPT"
 echo "Job finished successfully."
 
 # Example of how to run Python scripts with the conda environment:
-# if [ -d "./dev-env" ]; then
-#     conda run -p ./dev-env python your_script.py --input input_file --output output_dir
+# if [ -d "./dev_env" ]; then
+#     conda run -p ./dev_env python your_script.py --input input_file --output output_dir
 # fi

@@ -21,6 +21,13 @@ def test_setup_env_script_contains_expected_commands():
     assert 'DEBUG=1' in content
 
 
+def test_setup_env_uses_dev_env_directory():
+    """Ensure the script references the dev_env directory."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'dev_env' in content
+
+
 def test_setup_env_script_runs_idempotently():
     if shutil.which('conda') is None:
         pytest.skip('conda not available')

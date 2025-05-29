@@ -52,16 +52,16 @@ for a detailed explanation of the path setup process.
 With the environment active you can run MATLAB and Python scripts from the `Code` directory using the module syntax:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.some_script
+conda run --prefix ./dev_env python -m Code.some_script
 ```
 
 ## Step-by-Step
 
 1 and 2 are only *as required* -- check if there's evidence they've already run
 
-1. Run `./setup_env.sh --dev` to create `./dev-env`.
+1. Run `./setup_env.sh --dev` to create `./dev_env`.
 2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing.
-3. Execute `conda run --prefix ./dev-env python -m Code.compare_intensity_stats`.
+3. Execute `conda run --prefix ./dev_env python -m Code.compare_intensity_stats`.
 
 ## Directory Overview
 

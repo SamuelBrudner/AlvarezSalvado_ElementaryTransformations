@@ -13,7 +13,7 @@ Examples
 Create the development environment and run a short Python snippet inside it::
 
     ./setup_env.sh --dev
-    conda run --prefix ./dev-env python - <<'PY'
+    conda run --prefix ./dev_env python - <<'PY'
     from Code.video_intensity import get_intensities_from_video_via_matlab
     arr = get_intensities_from_video_via_matlab('myscript.m', 'matlab')
     print(arr.shape)

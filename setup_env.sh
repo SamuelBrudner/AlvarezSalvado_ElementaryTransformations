@@ -52,7 +52,7 @@ fi
 
 # --- Configuration ---
 # Readonly constants for better maintainability
-readonly LOCAL_ENV_DIR="dev-env"
+readonly LOCAL_ENV_DIR="dev_env"
 readonly BASE_ENV_FILE="environment.yml"
 readonly DEV_ENV_FILE="dev-environment.yml"
 readonly PRE_COMMIT_TEMPLATE=".pre-commit-config.yaml.template"
