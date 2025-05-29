@@ -216,7 +216,7 @@ def get_intensities_from_video_via_matlab(
             "-nodesktop",
             "-noFigureWindows",
             "-batch",
-            f"try, run('{safe_path}'), catch ME, disp('MATLAB Error: ' + getReport(ME, 'extended')); exit(1); end",
+            f"try, run('{safe_path}'), catch ME, disp(['MATLAB Error: ' getReport(ME, 'extended')]); exit(1); end",
         ]
 
         logger.info(
