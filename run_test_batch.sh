@@ -43,6 +43,10 @@ MATLAB_OPTIONS="-nodisplay -nosplash"
 EOV
 )
 
+# expand any environment variables in EXPORT_VARS (e.g., from the user's
+# shell) before passing to sbatch
+EXPORT_VARS=$(envsubst <<<"$EXPORT_VARS")
+
 JOB_ID=$(sbatch \
   --job-name="$TEST_NAME" \
   --output="$TEST_OUTPUT/slurm_%A_%a.out" \
