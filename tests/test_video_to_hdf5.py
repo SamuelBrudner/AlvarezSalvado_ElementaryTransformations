@@ -1,11 +1,28 @@
 import numpy as np
 import pytest
+from pathlib import Path
 
 imageio = pytest.importorskip("imageio.v3")
 h5py = pytest.importorskip("h5py")
 
 from Code import rotate_video
 
+
+def _simple_yaml(path: Path) -> dict:
+    data: dict[str, dict[str, float]] = {}
+    current = None
+    with open(path, "r") as f:
+        for raw in f:
+            stripped = raw.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            if not raw.startswith("  "):
+                current = stripped.rstrip(":")
+                data[current] = {}
+            else:
+                k, v = stripped.split(":", 1)
+                data[current][k.strip()] = float(v)
+    return data
 
 def test_video_to_hdf5(tmp_path):
     frames = np.stack([
@@ -23,4 +40,8 @@ def test_video_to_hdf5(tmp_path):
 
     expected = frames.reshape(-1)
     assert np.array_equal(data, expected)
+
+    registry_path = Path("configs") / "plume_registry.yaml"
+    registry = _simple_yaml(registry_path)
+    assert output_path.name in registry
 
