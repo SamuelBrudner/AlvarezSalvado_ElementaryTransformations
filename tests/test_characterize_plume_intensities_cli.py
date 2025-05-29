@@ -36,9 +36,13 @@ def simple_stats(values):
     }
 
 
-sys.modules["Code.intensity_stats"] = types.SimpleNamespace(
-    calculate_intensity_stats_dict=simple_stats
-)
+@pytest.fixture(autouse=True)
+def _stub_intensity_stats(monkeypatch):
+    monkeypatch.setitem(
+        sys.modules,
+        "Code.intensity_stats",
+        types.SimpleNamespace(calculate_intensity_stats_dict=simple_stats),
+    )
 
 from Code import characterize_plume_intensities as cpi
 

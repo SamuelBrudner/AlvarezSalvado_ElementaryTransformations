@@ -26,7 +26,8 @@ def test_main_prints_stats(tmp_path, capsys):
     data = np.arange(10)
     f = tmp_path / "data.txt"
     np.savetxt(f, data)
-    main(["plumeA", str(f)])
+    stats = main(["plumeA", str(f)])
+    assert stats["count"] == 10
     out = capsys.readouterr().out
     assert "Plume: plumeA" in out
     assert f"File: {f}" in out
@@ -43,7 +44,8 @@ def test_main_plot_histogram(monkeypatch, tmp_path):
                                   ylabel=lambda *a, **k: None,
                                   show=lambda *a, **k: None)
     monkeypatch.setitem(sys.modules, 'matplotlib.pyplot', dummy)
-    main(["plumeB", str(f), "--plot_histogram"])
+    stats = main(["plumeB", str(f), "--plot_histogram"])
+    assert stats["count"] == 5
 
 
 def test_empty_intensity_stats_returns_nans():
