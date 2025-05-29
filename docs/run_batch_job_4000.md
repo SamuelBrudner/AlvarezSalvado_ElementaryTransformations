@@ -26,6 +26,8 @@ The script accepts configuration via environment variables. Important ones inclu
 - `AGENTS_PER_JOB` – number of agents each array task runs.
 - `PLUME_CONFIG` – path to the YAML configuration file.
 - `PLUME_VIDEO` – movie used by the simulator.
+- `PLUME_METADATA` – YAML file describing the HDF5 movie when `PLUME_VIDEO`
+  points to an `.h5` file.
 - `OUTPUT_BASE` – parent directory for raw outputs (`data/raw`).
 - `MATLAB_VERSION` – module name used if MATLAB is not on `PATH` (`2023b`).
 - `BYTES_PER_AGENT` – estimated disk usage per agent (defaults to `50000000`).
@@ -35,7 +37,8 @@ The script accepts configuration via environment variables. Important ones inclu
 `run_batch_job_4000.sh` is designed to be submitted as a SLURM array. A minimal submission might look like:
 
 ```bash
-sbatch --array=0-399 --export=ALL,EXPERIMENT_NAME=myrun \
+sbatch --array=0-399 --export=ALL,EXPERIMENT_NAME=myrun,\\
+PLUME_VIDEO=data/smoke_plume.h5,PLUME_METADATA=data/smoke_plume_meta.yaml \
        run_batch_job_4000.sh
 ```
 

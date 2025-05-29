@@ -35,6 +35,10 @@ function testPathsExpandedCorrectly(testCase)
         'data', 'smoke_1a_orig_backgroundsubtracted.avi');
     verifyEqual(testCase, cfg.data.video, expVideo);
 
+    expVideoH5 = fullfile(testCase.TestData.tmpRoot, ...
+        'data', 'smoke_1a_orig_backgroundsubtracted.h5');
+    verifyEqual(testCase, cfg.data.video_h5, expVideoH5);
+
     expPlume = fullfile(testCase.TestData.tmpRoot, ...
         'configs', 'my_complex_plume_config.yaml');
     verifyEqual(testCase, cfg.configs.plume, expPlume);
