@@ -87,6 +87,7 @@ video_to_hdf5(
    - Add `--clean-install` to force removal of the existing environment.
 2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing.
 3. Execute `conda run --prefix ./dev_env python -m Code.compare_intensity_stats`.
+4. Run `pre-commit` and verify all checks succeed before committing changes.
 
 ## Directory Overview
 
@@ -139,7 +140,37 @@ Both MATLAB and Python utilities automatically locate this file if no path is
 provided:
 
 - `plume_intensity_stats.m` determines the repository root at runtime and loads
-the YAML via `load_yaml`.
+  the YAML via `load_yaml`.
 - `Code.plume_utils.get_intensity_stats()` resolves the path relative to the
   `Code` directory and parses the YAML using PyYAML (or a minimal fallback
   parser when PyYAML is absent).
+- `scale_custom_plume.m` rescales a custom plume movie once so its values match
+  the CRIM range specified in `configs/plume_intensity_stats.yaml`.
+- The optional `scaled_to_crim` flag prevents `load_custom_plume` from applying
+  this scaling twice when the plume has already been normalised.
+
+Example workflow:
+
+```matlab
+meta = 'my_plume_meta.yaml';
+scale_custom_plume(meta);       % writes <output_filename>_scaled.avi
+plume = load_custom_plume(meta); % scaled_to_crim skips another scaling step
+```
+
+### Converting AVI to HDF5
+
+Use `video_to_hdf5` when you need an HDF5 version of the smoke video for
+Python-only pipelines:
+
+```bash
+conda run --prefix ./dev_env python - <<'PY'
+from Code.rotate_video import video_to_hdf5
+video_to_hdf5(
+    "data/smoke_1a_orig_backgroundsubtracted.avi",
+    "data/smoke_1a_orig_backgroundsubtracted.h5",
+)
+PY
+```
+
+Add the resulting path under `data.video_h5` in `configs/project_paths.yaml` so
+all scripts can locate it automatically.
