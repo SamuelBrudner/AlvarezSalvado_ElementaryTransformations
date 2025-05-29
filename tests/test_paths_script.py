@@ -7,6 +7,7 @@ import pytest
 BASH = shutil.which("bash") or "/bin/bash"
 
 
+@pytest.mark.slow
 @pytest.mark.usefixtures("tmp_path")
 def test_paths_script(tmp_path):
     if shutil.which("conda") is None:

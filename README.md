@@ -77,3 +77,12 @@ conda run --prefix ./dev_env python -m Code.some_script
 - `docs/` – project documentation
 
 For citations and metadata, see `CITATION.cff` and `codemeta.json`.
+
+## Running Tests
+
+Invoke `pytest` from the repository root. Slow tests that set up a full
+environment are skipped unless the `--runslow` flag is supplied:
+
+```bash
+conda run --prefix ./dev_env pytest --runslow
+```
