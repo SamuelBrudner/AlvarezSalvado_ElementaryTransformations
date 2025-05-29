@@ -147,11 +147,11 @@ Follow these steps to run a simple comparison using the bundled datasets.
 
    ```bash
    conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-       CRIM data/10302017_10cms_bounded_2.h5 \
+      CRIM data/10302017_10cms_bounded.hdf5 \
        SMOKE process_smoke_video.m
    ```
 
-   The smoke video is located at `data/smoke_1a_bgsub_raw.avi` and the Crimaldi HDF5 file at `data/10302017_10cms_bounded_2.h5`.
+   The smoke video is located at `data/smoke_1a_bgsub_raw.avi` and the Crimaldi HDF5 file at `data/10302017_10cms_bounded.hdf5`.
 
 
 ### Comparing a Video Plume to Crimaldi
@@ -182,7 +182,7 @@ Run the comparison using the development environment:
 
 ```bash
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-    CRIM data/10302017_10cms_bounded_2.h5 \
+    CRIM data/10302017_10cms_bounded.hdf5 \
     SMOKE process_smoke_video.m
 ```
 
@@ -217,7 +217,7 @@ Example:
 ```bash
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
     SMOKE data/smoke_1a_bgsub_raw.avi \
-    CRIM data/10302017_10cms_bounded_2.h5 \
+    CRIM data/10302017_10cms_bounded.hdf5 \
     --pure-python
 ```
 
@@ -233,7 +233,7 @@ For example, running the command without a detected MATLAB might look like:
 
 ```bash
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-    CRIM data/10302017_10cms_bounded_2.h5 \
+    CRIM data/10302017_10cms_bounded.hdf5 \
     SMOKE process_smoke_video.m
 ```
 
@@ -247,7 +247,7 @@ or pass it explicitly:
 
 ```bash
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-    CRIM data/10302017_10cms_bounded_2.h5 \
+    CRIM data/10302017_10cms_bounded.hdf5 \
     SMOKE process_smoke_video.m \
     --matlab_exec /path/to/matlab
 ```
@@ -259,7 +259,7 @@ from `configs/project_paths.yaml` if available.
 
 ```bash
 conda run --prefix ./dev_env python scripts/run_intensity_batch.py \
-    data/10302017_10cms_bounded_2.h5 process_smoke_video.m
+    data/10302017_10cms_bounded.hdf5 process_smoke_video.m
 ```
 
 
@@ -299,7 +299,7 @@ source ./paths.sh
 
 # Then run the comparison
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-    CRIM data/10302017_10cms_bounded_2.h5 \
+    CRIM data/10302017_10cms_bounded.hdf5 \
     SMOKE video_script.m \
     ${MATLAB_EXEC:+--matlab_exec "$MATLAB_EXEC"}
 ```
@@ -309,7 +309,7 @@ path explicitly:
 
 ```bash
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-    CRIM data/10302017_10cms_bounded_2.h5 \
+    CRIM data/10302017_10cms_bounded.hdf5 \
     SMOKE video_script.m \
     --matlab_exec /path/to/matlab
 ```
