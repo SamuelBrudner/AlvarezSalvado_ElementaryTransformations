@@ -91,6 +91,7 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
  for f = fields'
      eval([f{1} ' = params.(f{1});']);
  end
+ dt = 1/50; % default sample period for 50 Hz
   switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
      
     case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
@@ -107,9 +108,11 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
         turnbase = turnbase/tscale;
         tmodON = tmodON/tscale;
         tmodOFF = tmodOFF/tscale;
+        dt = 1/15;
         
       case {'gaussian', 'Gaussian'}
         kbil = kbil/50;       % convert to 50 frames/sec for Gaussian
+        dt = 1/50;
   end
 
 %allocate space for results
@@ -282,12 +285,7 @@ for i = 1:triallength
     v(i,:) = max(0, vbase*(1+vmodON*odorON(i,:)-vmodOFF*odorOFF(i,:)));
 
     % Calculate X and Y positions
-    switch environment
-        case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
-            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/150);  % convert mm/s to cm/samp
-        otherwise
-           [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/500); % convert mm/s to cm/samp (for 50Hz)
-    end
+    [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi, v(i,:) * dt / 10);
     x(i+1,:) = x(i,:) + dx;
     y(i+1,:) = y(i,:) + dy;
 end
