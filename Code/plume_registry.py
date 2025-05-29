@@ -72,12 +72,3 @@ def update_plume_registry(
         yaml.safe_dump(registry, fh)
 
 
-def load_registry(yaml_path: Path = Path("configs/plume_registry.yaml")) -> dict:
-    """Return the contents of ``yaml_path`` or an empty dict if missing."""
-
-    if not yaml_path.exists():
-        return {}
-
-    with yaml_path.open("r", encoding="utf-8") as fh:
-        loaded = yaml.safe_load(fh) or {}
-        return loaded if isinstance(loaded, dict) else {}
