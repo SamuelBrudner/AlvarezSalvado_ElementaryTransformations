@@ -10,6 +10,7 @@ dependencies = [
   "pyyaml",
   "matplotlib",
   "loguru",
+  "opencv-python",
 ]
 
 [build-system]

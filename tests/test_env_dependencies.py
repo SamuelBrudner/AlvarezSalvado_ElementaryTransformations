@@ -30,8 +30,24 @@ def test_envs_require_imageio_ffmpeg() -> None:
     assert "imageio-ffmpeg" in base_env_text
 
 
+def test_envs_require_opencv() -> None:
+    dev_env_text = _read_env("dev-environment.yml")
+    base_env_text = _read_env("environment.yml")
+    assert "opencv-python" in dev_env_text
+    assert "opencv-python" in base_env_text
+
+
+def test_pyproject_requires_opencv() -> None:
+    import tomllib
+
+    with open("pyproject.toml", "rb") as f:
+        project = tomllib.load(f)
+
+    deps: list[str] = project.get("project", {}).get("dependencies", [])
+    assert any(dep.split("==")[0] == "opencv-python" for dep in deps)
 def test_envs_require_ipykernel() -> None:
     dev_env_text = _read_env("dev-environment.yml")
     base_env_text = _read_env("environment.yml")
     assert "ipykernel" in dev_env_text
     assert "ipykernel" in base_env_text
+    
