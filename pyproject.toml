@@ -6,6 +6,7 @@ dependencies = [
   "scipy",
   "pandas",
   "h5py",
+  "ipykernel",
   "pyyaml",
   "matplotlib",
   "loguru",

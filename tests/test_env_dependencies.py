@@ -28,3 +28,10 @@ def test_envs_require_imageio_ffmpeg() -> None:
     base_env_text = _read_env("environment.yml")
     assert "imageio-ffmpeg" in dev_env_text
     assert "imageio-ffmpeg" in base_env_text
+
+
+def test_envs_require_ipykernel() -> None:
+    dev_env_text = _read_env("dev-environment.yml")
+    base_env_text = _read_env("environment.yml")
+    assert "ipykernel" in dev_env_text
+    assert "ipykernel" in base_env_text

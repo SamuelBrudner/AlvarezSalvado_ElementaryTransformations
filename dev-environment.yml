@@ -5,6 +5,8 @@ channels:
 dependencies:
   # Base environment dependencies
   - python=3.11
+  - ipykernel
+  - notebook
   - pandas
   - numpy
   - h5py
