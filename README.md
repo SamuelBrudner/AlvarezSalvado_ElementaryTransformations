@@ -78,6 +78,20 @@ conda run --prefix ./dev_env python -m Code.some_script
 
 For citations and metadata, see `CITATION.cff` and `codemeta.json`.
 
+## Frame Rate and Spatial Scale
+
+Video-based simulations rely on two parameters defined in your plume configuration: `px_per_mm` sets the conversion from pixels to millimetres and `frame_rate` specifies the number of frames per second. The navigation model automatically scales velocities using these values so that fly speeds remain in millimetres per second regardless of the video's native frame rate or scale.
+
+Example snippet from `configs/my_complex_plume_config.yaml`:
+
+```yaml
+# Pixels per millimeter conversion factor
+px_per_mm: 6.536
+# Frame rate of the video in Hz
+frame_rate: 60
+```
+
+
 ## Running Tests
 
 Invoke `pytest` from the repository root. Slow tests that set up a full

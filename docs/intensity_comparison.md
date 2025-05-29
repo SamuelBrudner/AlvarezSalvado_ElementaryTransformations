@@ -190,6 +190,20 @@ The MATLAB executable is auto-detected when you source `paths.sh`. Pass
 `--matlab_exec` only if you need to override the detected path. When datasets
 have different lengths the tool logs a warning but still computes statistics.
 
+#### Frame Rate and Spatial Scale
+
+`px_per_mm` sets how many pixels correspond to one millimetre and `frame_rate` defines the video sampling rate. Velocities are now scaled using these values so movement speeds remain in millimetres per second regardless of the original frame rate or resolution.
+
+Example excerpt from `configs/my_complex_plume_config.yaml`:
+
+```yaml
+# Pixels per millimeter conversion factor
+px_per_mm: 6.536
+# Frame rate of the video in Hz
+frame_rate: 60
+```
+
+
 ### Pure Python Workflow
 
 Video files can be processed without MATLAB using the `--pure-python` flag. The
