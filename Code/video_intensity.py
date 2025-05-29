@@ -57,8 +57,11 @@ def find_matlab_executable(user_path: Optional[str] = None) -> str:
     If the environment variable ``MATLAB_EXEC`` points to an executable
     file, it is used ahead of any auto-detection logic.
     """
-    # Check user-provided path first
-    if user_path and os.path.isfile(user_path) and os.access(user_path, os.X_OK):
+    # Check user-provided path first. If supplied, prefer it even when not
+    # executable so callers can handle the failure themselves.
+    if user_path:
+        if not (os.path.isfile(user_path) and os.access(user_path, os.X_OK)):
+            logger.debug("User provided MATLAB path is not executable: %s", user_path)
         return user_path
 
     # Environment variable override
