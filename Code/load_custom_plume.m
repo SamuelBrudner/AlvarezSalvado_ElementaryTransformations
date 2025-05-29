@@ -17,11 +17,25 @@ function plume = load_custom_plume(metadata_path)
 
 info = load_config(metadata_path);
 
-video_path = fullfile(info.output_directory, info.output_filename);
 px_per_mm = 1 / info.vid_mm_per_px;
 frame_rate = info.fps;
 
-plume = load_plume_video(video_path, px_per_mm, frame_rate);
+use_h5 = false;
+if isfield(info, 'output_h5')
+    h5_path = fullfile(info.output_directory, info.output_h5);
+    use_h5 = true;
+elseif endsWith(info.output_filename, {'.h5', '.hdf5'}, 'IgnoreCase', true)
+    h5_path = fullfile(info.output_directory, info.output_filename);
+    use_h5 = true;
+else
+    video_path = fullfile(info.output_directory, info.output_filename);
+end
+
+if use_h5
+    plume = load_plume_hdf5(h5_path, px_per_mm, frame_rate);
+else
+    plume = load_plume_video(video_path, px_per_mm, frame_rate);
+end
 
 stats = plume_intensity_stats();
 plume.data = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
