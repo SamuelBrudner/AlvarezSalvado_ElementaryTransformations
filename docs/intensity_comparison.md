@@ -467,6 +467,11 @@ executable, so no manual export is required.
 - All commands assume the development environment created via `./setup_env.sh --dev`
 - Output paths are controlled by `configs/project_paths.yaml`
 - The MATLAB script `process_smoke_video.m` is pre-configured to work with the default paths
+- See the [README](../README.md#converting-avi-to-hdf5) for instructions on
+  creating an HDF5 movie with `video_to_hdf5`.
+- For batch jobs on HPC systems consult
+  [run_batch_job_4000.md](run_batch_job_4000.md#key-variables) for using
+  `PLUME_METADATA` with HDF5 movies.
 - To preview example frames from both datasets, run `notebooks/orient_plumes.ipynb`:
   ```bash
   conda run --prefix ./dev_env jupyter notebook notebooks/orient_plumes.ipynb
