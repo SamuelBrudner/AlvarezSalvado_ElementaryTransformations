@@ -37,7 +37,7 @@ def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
         captured["script_path"] = tmp.name
         return tmp
 
-    def fake_run(cmd, capture_output, text):
+    def fake_run(cmd, capture_output, text, **kwargs):
         assert cmd[0] == matlab_exec
         assert cmd[1] == "-batch"
         assert cmd[2] == f"run('{captured['script_path']}')"
@@ -82,7 +82,7 @@ def test_path_with_spaces_and_quotes(monkeypatch, tmp_path):
         captured["script_path"] = str(file_path)
         return fh
 
-    def fake_run(cmd, capture_output, text):
+    def fake_run(cmd, capture_output, text, **kwargs):
         assert cmd[0] == matlab_exec
         expected = captured["script_path"].replace("'", "''")
         assert cmd[2] == f"run('{expected}')"
@@ -105,7 +105,7 @@ def test_error_message_includes_path_and_workdir(monkeypatch, tmp_path, caplog):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = "disp('fail')"
 
-    def fake_run(cmd, capture_output, text):
+    def fake_run(cmd, capture_output, text, **kwargs):
         return subprocess.CompletedProcess(cmd, 1, stdout="oops", stderr="bad")
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -145,8 +145,8 @@ def test_workdir_with_single_quote(monkeypatch, tmp_path):
         captured["script_path"] = tmp.name
         return tmp
 
-    def fake_run(cmd, capture_output, text, timeout, cwd):
-        assert cwd == work_dir
+    def fake_run(cmd, capture_output, text, **kwargs):
+        assert kwargs.get("cwd") == work_dir
         expected = captured["script_path"].replace("'", "''")
         assert cmd[0] == matlab_exec
         assert cmd[2] == f"run('{expected}')"
@@ -190,7 +190,7 @@ def test_logs_stdout_on_failure(monkeypatch, caplog):
 def test_matlab_batch_command_uses_brackets(monkeypatch):
     captured = {}
 
-    def fake_run(cmd, capture_output, text, timeout, cwd):
+    def fake_run(cmd, capture_output, text, **kwargs):
         captured["cmd"] = cmd
         return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="")
 
@@ -227,7 +227,7 @@ def test_reads_v7_3_mat_file(monkeypatch, tmp_path):
         captured["script_path"] = tmp.name
         return tmp
 
-    def fake_run(cmd, capture_output, text, timeout, cwd):
+    def fake_run(cmd, capture_output, text, **kwargs):
         return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
 
     monkeypatch.setattr(tempfile, "NamedTemporaryFile", fake_ntf)
