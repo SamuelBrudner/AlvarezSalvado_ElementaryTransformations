@@ -1,8 +1,23 @@
-"""Utilities for plume intensity scaling."""
+"""Utilities for plume intensity scaling.
+
+This module provides helpers to rescale plume intensity arrays so that they
+match reference ranges derived from experimental data. Statistics for the
+reference plumes are stored in ``configs/plume_intensity_stats.yaml`` relative
+to the repository root.
+
+Example
+-------
+>>> import numpy as np
+>>> from Code import plume_utils
+>>> arr = np.linspace(0, 1, num=5)
+>>> plume_utils.rescale_to_crim_range(arr)
+array([...])
+"""
+
 from __future__ import annotations
 
-from typing import Dict, Any
 from pathlib import Path
+from typing import Any, Dict
 
 import numpy as np
 
@@ -35,7 +50,11 @@ except ModuleNotFoundError:  # pragma: no cover - use a minimal parser
 def get_intensity_stats(path: str | Path | None = None) -> Dict[str, Dict[str, Any]]:
     """Return stored intensity statistics for the default plumes."""
     if path is None:
-        path = Path(__file__).resolve().parent.parent / "configs" / "plume_intensity_stats.yaml"
+        path = (
+            Path(__file__).resolve().parent.parent
+            / "configs"
+            / "plume_intensity_stats.yaml"
+        )
     path = Path(path)
     with open(path, "r", encoding="utf-8") as fh:
         return yaml.safe_load(fh)
