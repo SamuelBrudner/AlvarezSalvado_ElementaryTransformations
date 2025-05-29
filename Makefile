@@ -60,12 +60,12 @@ setup:
 # Test target
 test:
 	@echo "Running tests..."
-	$(PYTHON) -m pytest $(PYTEST_OPTS)
+	"$(PYTHON)" -m pytest $(PYTEST_OPTS)
 
 # Test with coverage
 test-cov:
 	@echo "Running tests with coverage..."
-	$(PYTHON) -m pytest --cov=. --cov-report=term-missing $(PYTEST_OPTS)
+	"$(PYTHON)" -m pytest --cov=. --cov-report=term-missing $(PYTEST_OPTS)
 
 # Clean up generated files and caches
 clean:
