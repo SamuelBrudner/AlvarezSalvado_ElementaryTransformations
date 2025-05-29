@@ -13,3 +13,9 @@ def test_notebook_imports():
     src = ''.join(''.join(cell.get('source', [])) for cell in data.get('cells', []))
     assert 'h5py' in src, 'Notebook must import h5py'
     assert 'imageio' in src, 'Notebook must import imageio'
+    assert 'yaml' in src, 'Notebook must import yaml'
+
+
+def test_yaml_cell_exists():
+    data = json.loads(NOTEBOOK_PATH.read_text())
+    assert len(data.get('cells', [])) >= 4, 'Expected at least four cells'
