@@ -211,7 +211,7 @@ def get_intensities_from_video_via_matlab(
         # Create a safe path for MATLAB
         safe_path = script_file.name.replace("'", "''")
         matlab_cmd = [
-            matlab_exec_path,
+            matlab_path,
             "-nosplash",
             "-nodesktop",
             "-noFigureWindows",

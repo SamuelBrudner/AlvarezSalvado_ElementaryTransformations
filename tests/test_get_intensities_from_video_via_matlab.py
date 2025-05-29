@@ -237,3 +237,26 @@ def test_reads_v7_3_mat_file(monkeypatch, tmp_path):
     assert np.array_equal(arr, np.array([9, 8, 7], dtype=np.float32))
     assert not Path(captured["script_path"]).exists()
     assert not mat_file.exists()
+
+
+def test_command_uses_found_matlab_executable(monkeypatch):
+    found = "/opt/matlab/bin/matlab"
+    passed = "/usr/bin/ignored"
+
+    captured = {}
+
+    def fake_run(cmd, *args, **kwargs):
+        captured["cmd"] = cmd
+        return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(
+        sys.modules["Code.video_intensity"],
+        "find_matlab_executable",
+        lambda p=None: found,
+    )
+
+    with pytest.raises(RuntimeError):
+        get_intensities_from_video_via_matlab("disp('fail')", passed)
+
+    assert captured["cmd"][0] == found
