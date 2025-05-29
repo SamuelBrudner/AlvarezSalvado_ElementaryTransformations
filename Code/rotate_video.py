@@ -99,9 +99,15 @@ def video_to_hdf5(input_path: str | Path, output_path: str | Path) -> None:
     frames = []
     min_val = None
     max_val = None
+    height = None
+    width = None
+    frame_count = 0
     for frame in imageio.imiter(input_path):
         arr = frame if frame.ndim == 2 else frame[..., 0]
+        if height is None:
+            height, width = arr.shape
         frames.append(arr.reshape(-1))
+        frame_count += 1
         if entry is None:
             vmin = float(arr.min())
             vmax = float(arr.max())
@@ -122,5 +128,7 @@ def video_to_hdf5(input_path: str | Path, output_path: str | Path) -> None:
 
     data = np.concatenate(frames)
     with h5py.File(output_path, "w") as f:
-        f.create_dataset("dataset1", data=data)
+        dset = f.create_dataset("dataset1", data=data)
+        if height is not None and width is not None:
+            dset.attrs.update(height=int(height), width=int(width), frames=int(frame_count))
     update_plume_registry(str(output_path), float(min_val), float(max_val))
