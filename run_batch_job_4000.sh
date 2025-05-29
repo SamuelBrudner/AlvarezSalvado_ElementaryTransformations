@@ -92,7 +92,7 @@ MAT
 for AG in $(seq $START $END); do
   AGENT_ID=$AG
   SEED=$AG
-  OUT_DIR="\\${OUTPUT_BASE}/\\${EXPERIMENT_NAME}/\\${PLUME_NAME}_\\${SENSING_NAME}/\\${AGENT_ID}_\\${SEED}"
+  OUT_DIR="${OUTPUT_BASE}/${EXPERIMENT_NAME}/${PLUME_NAME}_${SENSING_NAME}/${AGENT_ID}_${SEED}"
   cat >>"$MATLAB_SCRIPT"<<MAT
 try
   cfg = load_config('$PLUME_CONFIG');
