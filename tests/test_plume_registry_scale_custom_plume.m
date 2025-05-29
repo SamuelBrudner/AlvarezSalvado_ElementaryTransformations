@@ -35,6 +35,15 @@ function testPlumeRegistryUpdated(testCase)
     registry = load_yaml(fullfile('configs', 'plume_registry.yaml'));
     verifyTrue(testCase, isfield(registry, 'scaled.avi'));
     entry = registry.("scaled.avi");
-    verifyTrue(testCase, isfield(entry, 'min'));
-    verifyTrue(testCase, isfield(entry, 'max'));
+    stats = plume_intensity_stats();
+    verifyEqual(testCase, entry.min, stats.CRIM.min, 'AbsTol', 1e-12);
+    verifyEqual(testCase, entry.max, stats.CRIM.max, 'AbsTol', 1e-12);
+    verifyTrue(testCase, isfield(registry, 'orig.avi'));
+    plume = load_plume_video(fullfile(testCase.TestData.tmpDir, 'orig.avi'), 1, 1);
+    scaled = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
+    expMin = min(scaled(:));
+    expMax = max(scaled(:));
+    origEntry = registry.("orig.avi");
+    verifyEqual(testCase, origEntry.min, expMin, 'AbsTol', 1e-12);
+    verifyEqual(testCase, origEntry.max, expMax, 'AbsTol', 1e-12);
 end

@@ -44,4 +44,11 @@ function testScalingAndMetadata(testCase)
     stats = plume_intensity_stats();
     verifyEqual(testCase, min(plume.data(:)), stats.CRIM.min, 'AbsTol', 1e-12);
     verifyEqual(testCase, max(plume.data(:)), stats.CRIM.max, 'AbsTol', 1e-12);
+
+    registry = load_yaml(fullfile('configs', 'plume_registry.yaml'));
+    verifyEqual(testCase, registry.("scaled.avi").min, stats.CRIM.min, 'AbsTol', 1e-12);
+    verifyEqual(testCase, registry.("scaled.avi").max, stats.CRIM.max, 'AbsTol', 1e-12);
+    verifyTrue(testCase, isfield(registry, 'orig.avi'));
+    verifyEqual(testCase, registry.("orig.avi").min, stats.CRIM.min, 'AbsTol', 1e-12);
+    verifyEqual(testCase, registry.("orig.avi").max, stats.CRIM.max, 'AbsTol', 1e-12);
 end

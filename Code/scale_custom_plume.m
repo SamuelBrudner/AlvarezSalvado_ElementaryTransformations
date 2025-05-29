@@ -30,6 +30,17 @@ plume = load_plume_video(video_path, px_per_mm, frame_rate);
 stats = plume_intensity_stats();
 scaled = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
 
+% Register intensity range for the input video if not present
+registry_path = fullfile('configs', 'plume_registry.yaml');
+if exist(registry_path, 'file')
+    registry = load_yaml(registry_path);
+else
+    registry = struct();
+end
+if ~isfield(registry, info.output_filename)
+    update_plume_registry(info.output_filename, min(scaled(:)), max(scaled(:)), registry_path);
+end
+
 % store movie in 0..1 so load_custom_plume rescales correctly
 scaled01 = rescale_plume_range(scaled, 0, 1);
 
@@ -45,6 +56,8 @@ newInfo = info;
 if isempty(out_dir)
     out_dir = '.';
 end
+% Register the output video with CRIM range
+update_plume_registry([out_name out_ext], stats.CRIM.min, stats.CRIM.max, registry_path);
 newInfo.output_directory = out_dir;
 newInfo.output_filename = [out_name out_ext];
 newInfo.scaled_to_crim = true;
