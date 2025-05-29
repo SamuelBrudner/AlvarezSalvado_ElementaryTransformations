@@ -3,6 +3,10 @@ import stat
 from pathlib import Path
 
 import importlib
+import sys
+import types
+
+import pytest
 
 
 
@@ -38,4 +42,37 @@ def test_find_matlab_executable_from_env(tmp_path, monkeypatch):
     video_intensity = importlib.reload(importlib.import_module("Code.video_intensity"))
 
     assert video_intensity.find_matlab_executable() == str(fake_matlab)
+
+
+def test_find_matlab_executable_missing(tmp_path, monkeypatch):
+    """find_matlab_executable raises when no executable can be located."""
+    repo_root = Path(__file__).resolve().parents[1]
+    config_file = repo_root / "configs" / "project_paths.yaml"
+
+    # Ensure no leftover configuration or environment variables interfere
+    if config_file.exists():
+        config_file.unlink()
+    monkeypatch.delenv("MATLAB_EXEC", raising=False)
+
+    # Provide stub modules so Code.video_intensity imports without real deps
+    monkeypatch.setitem(
+        sys.modules,
+        "numpy",
+        types.SimpleNamespace(asarray=lambda x: x),
+    )
+    fake_scipy_io = types.SimpleNamespace(loadmat=lambda p: {"all_intensities": []})
+    monkeypatch.setitem(sys.modules, "scipy", types.SimpleNamespace(io=fake_scipy_io))
+    monkeypatch.setitem(sys.modules, "scipy.io", fake_scipy_io)
+    monkeypatch.setitem(sys.modules, "h5py", types.SimpleNamespace(File=lambda *a, **k: None))
+    monkeypatch.setitem(
+        sys.modules,
+        "yaml",
+        types.SimpleNamespace(safe_load=lambda *a, **k: {}, safe_dump=lambda *a, **k: None),
+    )
+
+    video_intensity = importlib.reload(importlib.import_module("Code.video_intensity"))
+
+    non_existent = tmp_path / "missing_matlab"
+    with pytest.raises(FileNotFoundError):
+        video_intensity.find_matlab_executable(str(non_existent))
 
