@@ -446,30 +446,12 @@ generate_pre_commit_config() {
 run_tests() {
   section "Running tests"
   
-  # Check if Makefile exists
-  if [ -f "Makefile" ]; then
-    log INFO "Running tests using Makefile..."
-    if make test; then
-      log SUCCESS "All tests passed!"
-    else
-      log WARNING "Some tests failed. Check the output for details."
-      return 1
-    fi
+  log INFO "Running tests using Makefile..."
+  if make test; then
+    log SUCCESS "All tests passed!"
   else
-    log WARNING "Makefile not found. Falling back to direct pytest execution..."
-    # Fallback to direct pytest if Makefile is not available
-    if conda run --prefix "./${LOCAL_ENV_DIR}" python -m pytest --version >/dev/null 2>&1; then
-      log INFO "Running tests with pytest..."
-      if conda run --prefix "./${LOCAL_ENV_DIR}" python -m pytest -v tests/; then
-        log SUCCESS "All tests passed!"
-      else
-        log WARNING "Some tests failed. Continuing with setup..."
-        return 1
-      fi
-    else
-      log WARNING "pytest not found in the environment. Skipping tests."
-      return 1
-    fi
+    log WARNING "Some tests failed. Check the output for details."
+    return 1
   fi
 }
 
