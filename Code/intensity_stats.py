@@ -5,7 +5,7 @@ Examples
 Run the CLI inside the project environment::
 
     ./setup_env.sh --dev
-    conda run --prefix ./dev-env python -m Code.intensity_stats plumeA intensities.txt
+    conda run --prefix ./dev_env python -m Code.intensity_stats plumeA intensities.txt
 """
 
 from __future__ import annotations

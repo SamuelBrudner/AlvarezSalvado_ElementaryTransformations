@@ -14,9 +14,9 @@ This page describes how to characterise the intensity of individual odour plumes
 
 ## Step-by-Step
 
-1. Run `./setup_env.sh --dev` to create `./dev-env`.
+1. Run `./setup_env.sh --dev` to create `./dev_env`.
 2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. The script uses this file and falls back to default paths when `yq` is missing.
-3. Execute `conda run --prefix ./dev-env python -m Code.compare_intensity_stats`.
+3. Execute `conda run --prefix ./dev_env python -m Code.compare_intensity_stats`.
 
 ## Initial Setup
 
@@ -70,7 +70,7 @@ Key paths are available as environment variables after sourcing `paths.sh`:
 To obtain intensity statistics for a single plume, use the `analyze_crimaldi_data.py` script. The command prints summary statistics such as the minimum, maximum and percentile values.
 
 ```bash
-conda run --prefix ./dev-env python -m Code.analyze_crimaldi_data data/raw/plume1.hdf5
+conda run --prefix ./dev_env python -m Code.analyze_crimaldi_data data/raw/plume1.hdf5
 ```
 
 Expected output:
@@ -91,19 +91,19 @@ Std: 0.8
 Use the `compare_intensity_stats.py` script with multiple input files. The script computes cross‑dataset statistics and produces a plot showing the distribution of intensities.
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats data/raw/plume1.hdf5 data/raw/plume2.hdf5
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats data/raw/plume1.hdf5 data/raw/plume2.hdf5
 ```
 
 To see the mean and median differences when exactly two datasets are provided, add the `--diff` option:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --diff
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --diff
 ```
 
 To save the computed statistics, provide a path via `--csv` or `--json`:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --json results/stats.json
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats A data/raw/plume1.hdf5 B data/raw/plume2.hdf5 --json results/stats.json
 ```
 The JSON file contains a list of objects with ``identifier`` and ``statistics`` keys for each plume.
 
@@ -146,7 +146,7 @@ Follow these steps to run a simple comparison using the bundled datasets.
 3. **Run the comparison**
 
    ```bash
-   conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+   conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
        CRIM data/10302017_10cms_bounded_2.h5 \
        SMOKE process_smoke_video.m
    ```
@@ -181,7 +181,7 @@ The `process_smoke_video.m` script is designed to work with the smoke video data
 Run the comparison using the development environment:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
     CRIM data/10302017_10cms_bounded_2.h5 \
     SMOKE process_smoke_video.m
 ```
@@ -201,7 +201,7 @@ ERROR: MATLAB executable not found. Set $MATLAB_EXEC or use --matlab_exec
 For example, running the command without a detected MATLAB might look like:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
     CRIM data/10302017_10cms_bounded_2.h5 \
     SMOKE process_smoke_video.m
 ```
@@ -215,7 +215,7 @@ export MATLAB_EXEC=/path/to/matlab
 or pass it explicitly:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
     CRIM data/10302017_10cms_bounded_2.h5 \
     SMOKE process_smoke_video.m \
     --matlab_exec /path/to/matlab
@@ -227,7 +227,7 @@ Crimaldi dataset with a smoke plume script. The helper reads the MATLAB path
 from `configs/project_paths.yaml` if available.
 
 ```bash
-conda run --prefix ./dev-env python scripts/run_intensity_batch.py \
+conda run --prefix ./dev_env python scripts/run_intensity_batch.py \
     data/10302017_10cms_bounded_2.h5 process_smoke_video.m
 ```
 
@@ -267,7 +267,7 @@ Use the `compare_intensity_stats.py` script to process video data. The MATLAB co
 source ./paths.sh
 
 # Then run the comparison
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
     CRIM data/10302017_10cms_bounded_2.h5 \
     SMOKE video_script.m \
     ${MATLAB_EXEC:+--matlab_exec "$MATLAB_EXEC"}
@@ -277,7 +277,7 @@ If MATLAB is not auto-detected or you want to use a specific version, supply the
 path explicitly:
 
 ```bash
-conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
     CRIM data/10302017_10cms_bounded_2.h5 \
     SMOKE video_script.m \
     --matlab_exec /path/to/matlab
