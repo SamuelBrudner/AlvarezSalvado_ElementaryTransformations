@@ -467,3 +467,7 @@ executable, so no manual export is required.
 - All commands assume the development environment created via `./setup_env.sh --dev`
 - Output paths are controlled by `configs/project_paths.yaml`
 - The MATLAB script `process_smoke_video.m` is pre-configured to work with the default paths
+- To preview example frames from both datasets, run `notebooks/orient_plumes.ipynb`:
+  ```bash
+  conda run --prefix ./dev_env jupyter notebook notebooks/orient_plumes.ipynb
+  ```
