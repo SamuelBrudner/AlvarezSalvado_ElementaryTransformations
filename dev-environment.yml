@@ -16,12 +16,12 @@ dependencies:
   - scipy
   - imageio
   - imageio-ffmpeg
-  - opencv-python
-  
   # Development tools
   - conda-lock>=2.0.0
   - pre-commit
   - pip
+  - pip:
+      - opencv-python
   - pytest
   - pytest-cov
   - black

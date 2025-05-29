@@ -51,6 +51,9 @@ vary.
 environment so the `--pure-python` option works without any extra
 installation when reading ``.avi`` files.
 
+`opencv-python` is installed via pip from PyPI rather than conda, ensuring the
+latest precompiled wheels are used.
+
 See [docs/intensity_comparison.md](docs/intensity_comparison.md#initial-setup)
 for a detailed explanation of the path setup process.
 
