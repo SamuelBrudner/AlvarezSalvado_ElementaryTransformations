@@ -123,3 +123,66 @@ fi
     assert "Unknown option" not in output
     assert "conda-lock lock" not in output
 
+
+def test_pre_commit_fallback_to_pip(tmp_path, monkeypatch):
+    """If conda install fails, the script should attempt pip install."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    log_file = tmp_path / "conda_log"
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+echo "$@" >> "{log_file}"
+if [ "$1" = "info" ] && [ "$2" = "--base" ]; then
+  echo "{conda_base}"
+elif [ "$1" = "info" ] && [ "$2" = "--json" ]; then
+  echo '{{"platform":"linux-64"}}'
+elif [ "$1" = "env" ] && [ "$2" = "create" ] && [ "$3" = "--help" ]; then
+  echo "--force"
+  exit 0
+elif [ "$1" = "env" ]; then
+  exit 0
+elif [ "$1" = "run" ]; then
+  shift
+  if [ "$1" = "--prefix" ]; then
+    shift 2
+  fi
+  if [ "$1" = "pre-commit" ] && [ "$2" = "--version" ]; then
+    exit 1
+  elif [ "$1" = "conda" ] && [ "$2" = "install" ]; then
+    exit 1
+  fi
+  exit 0
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    pip_script = bin_dir / "pip"
+    pip_script.write_text(
+        f"""#!/bin/bash
+echo "$@" >> "{log_file}"
+exit 0
+"""
+    )
+    pip_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+
+    result = subprocess.run(
+        ["bash", "./setup_env.sh", "--dev", "--skip-conda-lock", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    executed = log_file.read_text()
+    assert "pip install pre-commit" in executed
+
