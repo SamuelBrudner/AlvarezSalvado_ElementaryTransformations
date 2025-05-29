@@ -30,6 +30,7 @@ RAW_DIR="data/raw"; mkdir -p "$RAW_DIR"
 : ${AGENTS_PER_JOB:=100}
 : ${PLUME_CONFIG:=configs/my_complex_plume_config.yaml}
 : ${PLUME_VIDEO:=data/smoke_1a_orig_backgroundsubtracted.avi}
+: ${PLUME_METADATA:=}
 : ${OUTPUT_BASE:=data/raw}
 : ${MATLAB_VERSION:=2023b}
 : ${MATLAB_MODULE:=MATLAB/${MATLAB_VERSION}}
@@ -37,9 +38,12 @@ RAW_DIR="data/raw"; mkdir -p "$RAW_DIR"
 : ${MATLAB_OPTIONS:="-nodisplay -nosplash"}
 
 ########## strip stray quotes then absolutise YAML & movie #########
-for var in PLUME_CONFIG PLUME_VIDEO; do
-    val=${!var#\"}; val=${val%\"}
-    [[ "$val" != /* ]] && val="$SLURM_SUBMIT_DIR/$val"
+for var in PLUME_CONFIG PLUME_VIDEO PLUME_METADATA; do
+    val=${!var:-}
+    val=${val#\"}; val=${val%\"}
+    if [[ -n "$val" && "$val" != /* ]]; then
+        val="$SLURM_SUBMIT_DIR/$val"
+    fi
     declare "$var=$val"
 done
 
@@ -96,7 +100,13 @@ for AG in $(seq $START $END); do
   cat >>"$MATLAB_SCRIPT"<<MAT
 try
   cfg = load_config('$PLUME_CONFIG');
-  cfg.plume_video = '$PLUME_VIDEO';
+MAT
+  if [ -n "$PLUME_METADATA" ]; then
+    echo "  cfg.plume_metadata = '$PLUME_METADATA';" >>"$MATLAB_SCRIPT"
+  else
+    echo "  cfg.plume_video = '$PLUME_VIDEO';" >>"$MATLAB_SCRIPT"
+  fi
+cat >>"$MATLAB_SCRIPT"<<MAT
   cfg.bilateral   = $( [[ $SENSE == bilateral ]] && echo true || echo false );
   cfg.randomSeed  = $SEED;
   cfg.ntrials=1; cfg.plotting=0;
