@@ -28,3 +28,18 @@ def test_update_expands_range(tmp_path):
 def test_load_returns_empty_for_missing(tmp_path):
     reg_path = tmp_path / "missing.yaml"
     assert load_registry(reg_path) == {}
+
+
+def test_load_casts_values_to_float(tmp_path, monkeypatch):
+    reg_path = tmp_path / "registry.yaml"
+    reg_path.write_text("plume.h5:\n  min: 1\n  max: 2\n")
+
+    def fake_load(_fh):
+        return {"plume.h5": {"min": 1, "max": 2}}
+
+    monkeypatch.setattr("Code.plume_registry.yaml.safe_load", fake_load)
+    data = load_registry(reg_path)
+    assert data["plume.h5"]["min"] == 1.0
+    assert data["plume.h5"]["max"] == 2.0
+    assert isinstance(data["plume.h5"]["min"], float)
+    assert isinstance(data["plume.h5"]["max"], float)
