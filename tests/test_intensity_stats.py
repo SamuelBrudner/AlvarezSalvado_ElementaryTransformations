@@ -40,7 +40,8 @@ def test_main_plot_histogram(monkeypatch, tmp_path):
                                   xlabel=lambda *a, **k: None,
                                   ylabel=lambda *a, **k: None,
                                   show=lambda *a, **k: None)
-    monkeypatch.setitem(sys.modules, 'matplotlib.pyplot', dummy)
+    monkeypatch.setitem(sys.modules, "matplotlib.pyplot", dummy)
+    monkeypatch.setitem(sys.modules, "matplotlib", types.SimpleNamespace(pyplot=dummy))
     stats = main(["plumeB", str(f), "--plot_histogram"])
     assert stats["count"] == 5
 
