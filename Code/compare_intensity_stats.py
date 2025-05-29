@@ -223,6 +223,11 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
     ns = parser.parse_args(argv)
     logging.basicConfig(level=getattr(logging, ns.log_level))
 
+    if ns.diff:
+        dataset_count = max(len(ns.items) // 2, len(ns.items) // 3)
+        if dataset_count != 2:
+            parser.error("Exactly two datasets are required to compute differences")
+
     if len(ns.items) % 3 == 0:
         entries = [
             (ns.items[i], ns.items[i + 2], ns.items[i + 1])
