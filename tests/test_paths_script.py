@@ -2,6 +2,8 @@ import subprocess
 import shutil
 import pytest
 
+BASH = shutil.which("bash") or "/bin/bash"
+
 
 @pytest.mark.usefixtures("tmp_path")
 def test_paths_script(tmp_path):
@@ -10,7 +12,7 @@ def test_paths_script(tmp_path):
 
     env_result = subprocess.run(
         [
-            "bash",
+            BASH,
             "./setup_env.sh",
             "--skip-conda-lock",
             "--no-tests",
@@ -21,7 +23,7 @@ def test_paths_script(tmp_path):
     assert env_result.returncode == 0, env_result.stderr
 
     result = subprocess.run([
-        "bash",
+        BASH,
         "./paths.sh",
     ], cwd=tmp_path, capture_output=True, text=True)
     assert result.returncode == 0

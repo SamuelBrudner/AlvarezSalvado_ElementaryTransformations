@@ -2,6 +2,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+BASH = shutil.which("bash") or "/bin/bash"
+
 
 def test_paths_sh_runs_without_syntaxerror(tmp_path):
     repo_root = Path(__file__).resolve().parents[1]
@@ -17,7 +19,7 @@ def test_paths_sh_runs_without_syntaxerror(tmp_path):
         tmp_path, "scripts", repo_root, "make_paths_relative.py"
     )
     result = subprocess.run(
-        ["bash", str(tmp_path / "paths.sh")],
+        [BASH, str(tmp_path / "paths.sh")],
         capture_output=True,
         text=True,
         cwd=tmp_path,
