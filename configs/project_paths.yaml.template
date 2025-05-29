@@ -19,7 +19,7 @@ data:
   # Crimaldi HDF5 data file
   crimaldi: "${PROJECT_DIR}/data/10302017_10cms_bounded.hdf5"
   # Video file for analysis
-  video: "${PROJECT_DIR}/data/smoke_1a_bgsub_raw.avi"
+  video: "${PROJECT_DIR}/data/smoke_1a_orig_backgroundsubtracted.avi"
 
 # Configuration files
 configs:

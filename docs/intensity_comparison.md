@@ -151,7 +151,7 @@ Follow these steps to run a simple comparison using the bundled datasets.
        SMOKE process_smoke_video.m
    ```
 
-   The smoke video is located at `data/smoke_1a_bgsub_raw.avi` and the Crimaldi HDF5 file at `data/10302017_10cms_bounded.hdf5`.
+   The smoke video is located at `data/smoke_1a_orig_backgroundsubtracted.avi` and the Crimaldi HDF5 file at `data/10302017_10cms_bounded.hdf5`.
 
 
 ### Comparing a Video Plume to Crimaldi
@@ -174,7 +174,7 @@ The `process_smoke_video.m` script is designed to work with the smoke video data
    - Statistics and Machine Learning Toolbox
 3. The repository must contain:
    - `configs/my_complex_plume_config.yaml` with `px_per_mm` and `frame_rate`
-   - `data/smoke_1a_bgsub_raw.avi` (or update the path in the script)
+   - `data/smoke_1a_orig_backgroundsubtracted.avi` (or update the path in the script)
 
 #### Running the Comparison
 
@@ -216,7 +216,7 @@ Example:
 
 ```bash
 conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
-    SMOKE data/smoke_1a_bgsub_raw.avi \
+    SMOKE data/smoke_1a_orig_backgroundsubtracted.avi \
     CRIM data/10302017_10cms_bounded.hdf5 \
     --pure-python
 ```
@@ -276,7 +276,7 @@ This script processes smoke video data and extracts intensity values. It's desig
 ```matlab
 % video_script.m
 % Processes smoke video data and extracts intensity values
-plume = load_plume_video('data/smoke_1a_bgsub_raw.avi', 6.536, 60);
+plume = load_plume_video('data/smoke_1a_orig_backgroundsubtracted.avi', 6.536, 60);
 all_intensities = plume.data(:);
 save('temp_intensities.mat', 'all_intensities');
 fprintf('TEMP_MAT_FILE_SUCCESS:%s\n', which('temp_intensities.mat'));
@@ -374,7 +374,7 @@ end
 cfg = load_config(cfgPath);
 
 % Process the smoke video
-videoPath = fullfile(orig_script_dir, 'data', 'smoke_1a_bgsub_raw.avi');
+videoPath = fullfile(orig_script_dir, 'data', 'smoke_1a_orig_backgroundsubtracted.avi');
 if ~exist(videoPath, 'file')
     error('Video file not found: %s', videoPath);
 end

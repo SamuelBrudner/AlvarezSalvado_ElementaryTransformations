@@ -4,7 +4,7 @@
 environment: video
 
 # Path to the plume video file
-plume_video: data/smoke_1a_bgsub_raw.avi
+plume_video: data/smoke_1a_orig_backgroundsubtracted.avi
 
 # Conversion factor from pixels to millimeters
 px_per_mm: 6.536

@@ -12,7 +12,7 @@ TEST_PARTITION="day"
 
 # absolute paths to the YAML and the movie on the *login* node
 PLUME_CONFIG="$(pwd)/configs/my_complex_plume_config.yaml"
-PLUME_VIDEO="$(pwd)/data/smoke_1a_bgsub_raw.avi"
+PLUME_VIDEO="$(pwd)/data/smoke_1a_orig_backgroundsubtracted.avi"
 
 TEST_OUTPUT="test_output/$TEST_NAME"; mkdir -p "$TEST_OUTPUT"
 
