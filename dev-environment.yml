@@ -13,6 +13,7 @@ dependencies:
   - matplotlib
   - scipy
   - imageio
+  - imageio-ffmpeg
   
   # Development tools
   - conda-lock>=2.0.0

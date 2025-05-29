@@ -194,8 +194,9 @@ Use `--allow-mismatch` if the intensity vectors have different lengths.
 
 Video files can be processed without MATLAB using the `--pure-python` flag. The
 helper function reads frames via `imageio` and stores the resulting intensities
-in a NumPy ``.npy`` file. ``imageio`` is included in the default environment, so
-this workflow works out of the box.
+in a NumPy ``.npy`` file. ``imageio`` along with the ``imageio-ffmpeg`` plugin
+is included in the default environment so this workflow works out of the box
+for ``.avi`` files.
 
 Example:
 
