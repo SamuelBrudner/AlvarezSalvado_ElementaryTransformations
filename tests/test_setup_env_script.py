@@ -63,18 +63,18 @@ def test_setup_env_exports_user_bin_for_conda_lock():
     with open('setup_env.sh') as f:
         content = f.read()
     assert 'site --user-base' in content
-    assert 'append_path_if_missing "${USER_BIN}"' in content
+    assert 'export PATH="${USER_BIN}:${PATH}"' in content
     assert 'hash -r' in content
 
 
-def test_setup_env_invokes_append_path_helper_after_pip():
-    """append_path_if_missing should run after pip fallback and before hash."""
+def test_setup_env_exports_user_bin_after_pip_install():
+    """USER_BIN export should occur after pip fallback and before hash."""
     with open('setup_env.sh') as f:
         content = f.read()
     pip_idx = content.index('python -m pip install --user conda-lock')
-    append_idx = content.index('append_path_if_missing "${USER_BIN}"')
+    export_idx = content.index('export PATH="${USER_BIN}:${PATH}"')
     hash_idx = content.index('hash -r')
-    assert pip_idx < append_idx < hash_idx
+    assert pip_idx < export_idx < hash_idx
 
 
 def test_setup_env_checks_existing_conda_lock():
@@ -213,4 +213,65 @@ exit 0
     assert result.returncode == 0
     executed = log_file.read_text()
     assert "pip install pre-commit" in executed
+
+
+def test_setup_env_uses_user_bin_conda_lock_when_not_in_path(tmp_path, monkeypatch):
+    """Ensure setup succeeds when conda-lock exists only in the user bin."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
+  echo \"{conda_base}\"
+elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
+  echo '{{"platform":"linux-64"}}'
+elif [ \"$1\" = \"env\" ]; then
+  exit 0
+elif [ \"$1\" = \"run\" ]; then
+  exit 0
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    user_base = tmp_path / "user"
+    user_bin = user_base / "bin"
+    user_bin.mkdir(parents=True)
+
+    conda_lock_script = user_bin / "conda-lock"
+    conda_lock_script.write_text("#!/bin/bash\necho 'conda-lock 1.0.0'")
+    conda_lock_script.chmod(0o755)
+
+    python_script = bin_dir / "python"
+    python_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = "-m" ] && [ \"$2\" = "site" ] && [ \"$3\" = "--user-base" ]; then
+  echo '{user_base}'
+elif [ \"$1\" = "-m" ] && [ \"$2\" = "pip" ] && [ \"$3\" = "install" ]; then
+  exit 0
+else
+  /usr/bin/env python "$@"
+fi
+"""
+    )
+    python_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    monkeypatch.setenv("PYTHONUSERBASE", str(user_base))
+
+    result = subprocess.run(
+        ["bash", "./setup_env.sh", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
 
