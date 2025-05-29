@@ -229,9 +229,21 @@ substitute_vars('$PATHS_TEMPLATE', '$temp_template')
         rm -f "$temp_template" 2>/dev/null || true
         return 1
     fi
-    
+
     log SUCCESS "Created/updated paths configuration at $PATHS_CONFIG"
-    
+
+    # Ensure project_root remains an absolute path
+    if command -v yq >/dev/null 2>&1; then
+        if ! yq eval ".project_root = \"$PROJECT_DIR\"" -i "$PATHS_CONFIG" 2>/dev/null; then
+            log WARNING "Failed to enforce absolute project_root via yq"
+        fi
+    else
+        if ! sed -i.bak "s|^project_root:.*|project_root: \"$PROJECT_DIR\"|" "$PATHS_CONFIG"; then
+            log WARNING "Failed to enforce absolute project_root via sed"
+        fi
+        rm -f "$PATHS_CONFIG.bak" 2>/dev/null || true
+    fi
+
     # Set up additional environment paths
     export PYTHONPATH="${PYTHONPATH:-}${PYTHONPATH:+:}${SCRIPT_DIR}/Code"
 
