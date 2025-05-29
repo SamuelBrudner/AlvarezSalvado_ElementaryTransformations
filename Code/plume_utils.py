@@ -14,18 +14,19 @@ except ModuleNotFoundError:  # pragma: no cover - use a minimal parser
     import types
 
     def _minimal_load(path: Path) -> Dict[str, Dict[str, float]]:
+        """Very small YAML subset parser used when PyYAML is unavailable."""
         data: Dict[str, Dict[str, float]] = {}
         current: str | None = None
-        for line in path.read_text().splitlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
+        for raw_line in path.read_text().splitlines():
+            stripped = raw_line.strip()
+            if not stripped or stripped.startswith("#"):
                 continue
-            if not line.startswith("  "):
-                current = line.rstrip(":")
+            if not raw_line.startswith("  "):
+                current = stripped.rstrip(":")
                 data[current] = {}
             else:
-                key, value = line.split(":", 1)
-                data[current][key.strip()] = float(value)
+                key, value = stripped.split(":", 1)
+                data[current][key] = float(value)
         return data
 
     yaml = types.SimpleNamespace(safe_load=lambda f: _minimal_load(Path(f.name)))
