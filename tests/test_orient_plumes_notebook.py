@@ -1,4 +1,7 @@
 import json
+import sys
+import types
+import io
 from pathlib import Path
 
 NOTEBOOK_PATH = Path('notebooks/orient_plumes.ipynb')
