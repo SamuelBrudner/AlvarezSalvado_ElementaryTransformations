@@ -46,6 +46,9 @@ it points to a valid executable.
 Use `--allow-mismatch` with `Code.compare_intensity_stats` if your datasets have
 different lengths.
 
+`imageio` is included in the default environment so the `--pure-python` option
+works without any extra installation.
+
 See [docs/intensity_comparison.md](docs/intensity_comparison.md#initial-setup)
 for a detailed explanation of the path setup process.
 
