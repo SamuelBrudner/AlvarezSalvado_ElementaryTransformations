@@ -32,7 +32,7 @@ function testPathsExpandedCorrectly(testCase)
     cfg = load_paths_config();
 
     expVideo = fullfile(testCase.TestData.tmpRoot, ...
-        'data', 'smoke_1a_bgsub_raw.avi');
+        'data', 'smoke_1a_orig_backgroundsubtracted.avi');
     verifyEqual(testCase, cfg.data.video, expVideo);
 
     expPlume = fullfile(testCase.TestData.tmpRoot, ...

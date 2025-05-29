@@ -1,6 +1,6 @@
 %% quick_stream_test.m  ── run this from the repo root
 % 1. Point a VideoReader at the plume movie
-vr = VideoReader(fullfile('data','smoke_1a_bgsub_raw.avi'));
+vr = VideoReader(fullfile('data','smoke_1a_orig_backgroundsubtracted.avi'));
 
 % 2. Tell the model how to interpret that video
 params = struct( ...

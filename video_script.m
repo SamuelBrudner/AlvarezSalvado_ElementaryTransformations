@@ -20,7 +20,7 @@ if exist('video_file', 'var') && ~isempty(video_file)
     fprintf('Using provided video file: %s\n', videoPath);
 else
     % Fall back to default path if no parameter provided
-    videoRelativePath = 'data/smoke_1a_bgsub_raw.avi';
+    videoRelativePath = 'data/smoke_1a_orig_backgroundsubtracted.avi';
     videoPath = fullfile(scriptDir, videoRelativePath);
     fprintf('No video file provided, using default: %s\n', videoPath);
 end
