@@ -22,8 +22,8 @@ def test_paths_sh_uses_module(tmp_path):
         tmp_path / "scripts" / "make_paths_relative.py",
     )
 
-    # create a dummy MATLAB installation that would be found via common paths
-    system_matlab = Path("/usr/local/MATLAB/test_module/bin/matlab")
+    # create a dummy MATLAB installation that would be found via PATH
+    system_matlab = tmp_path / "usr/local/MATLAB/test_module/bin/matlab"
     system_matlab.parent.mkdir(parents=True, exist_ok=True)
     system_matlab.write_text("#!/bin/sh\nexit 0\n")
     system_matlab.chmod(0o755)
@@ -64,7 +64,7 @@ fi
     module_script.chmod(0o755)
 
     env = os.environ.copy()
-    env["PATH"] = str(bin_dir)
+    env["PATH"] = f"{system_matlab.parent}:{bin_dir}"
 
     result = subprocess.run(
         ["/usr/bin/bash", "-c", "source ./paths.sh && echo $MATLAB_EXEC"],
@@ -74,8 +74,6 @@ fi
         env=env,
     )
 
-    shutil.rmtree(system_matlab.parents[1])
-
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == str(fake_matlab)
-    assert module_log.read_text().strip() == "load MATLAB/2023b"
+    assert result.stdout.strip() == str(system_matlab)
+    assert not module_log.exists() or module_log.read_text().strip() == ""

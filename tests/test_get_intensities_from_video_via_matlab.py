@@ -11,12 +11,21 @@ np = pytest.importorskip("numpy")
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from Code.video_intensity import get_intensities_from_video_via_matlab  # noqa: E402
+from Code import video_intensity  # noqa: E402
+from Code.video_intensity import (
+    get_intensities_from_video_via_matlab,
+)
 
 
 def test_get_intensities_from_video_via_matlab(monkeypatch, tmp_path):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = 'disp("hello")'
+
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: matlab_exec,
+    )
 
     mat_file = tmp_path / "out.mat"
     from scipy.io import savemat
@@ -65,6 +74,12 @@ def test_path_with_spaces_and_quotes(monkeypatch, tmp_path):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = 'disp("hello")'
 
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: matlab_exec,
+    )
+
     mat_file = tmp_path / "out.mat"
     from scipy.io import savemat
 
@@ -105,6 +120,12 @@ def test_error_message_includes_path_and_workdir(monkeypatch, tmp_path, caplog):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = "disp('fail')"
 
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: matlab_exec,
+    )
+
     def fake_run(cmd, capture_output, text, **kwargs):
         return subprocess.CompletedProcess(cmd, 1, stdout="oops", stderr="bad")
 
@@ -128,6 +149,12 @@ def test_error_message_includes_path_and_workdir(monkeypatch, tmp_path, caplog):
 def test_workdir_with_single_quote(monkeypatch, tmp_path):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = 'disp("hi")'
+
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: matlab_exec,
+    )
 
     mat_file = tmp_path / "out.mat"
     from scipy.io import savemat
@@ -176,6 +203,12 @@ def test_logs_stdout_on_failure(monkeypatch, caplog):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = "disp('fail')"
 
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: matlab_exec,
+    )
+
     def fake_run(cmd, *args, **kwargs):
         return subprocess.CompletedProcess(cmd, 1, stdout="hello", stderr="bad")
 
@@ -189,6 +222,12 @@ def test_logs_stdout_on_failure(monkeypatch, caplog):
 
 def test_matlab_batch_command_uses_brackets(monkeypatch):
     captured = {}
+
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: "matlab",
+    )
 
     def fake_run(cmd, capture_output, text, **kwargs):
         captured["cmd"] = cmd
@@ -208,6 +247,12 @@ def test_matlab_batch_command_uses_brackets(monkeypatch):
 def test_reads_v7_3_mat_file(monkeypatch, tmp_path):
     matlab_exec = "/usr/local/MATLAB/R2023b/bin/matlab"
     script_content = 'disp("hi")'
+
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: matlab_exec,
+    )
 
     mat_file = tmp_path / "out.mat"
     import h5py
@@ -241,6 +286,12 @@ def test_reads_v7_3_mat_file(monkeypatch, tmp_path):
 
 def test_command_uses_given_matlab_executable(monkeypatch):
     passed = "/usr/bin/custom"
+
+    monkeypatch.setattr(
+        video_intensity,
+        "find_matlab_executable",
+        lambda *args, **kwargs: passed,
+    )
 
     captured = {}
 
