@@ -11,6 +11,9 @@ cleanup() {
 # Trap common termination signals
 trap cleanup EXIT INT TERM
 
+# Log file for this job
+JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
+
 # Default SLURM settings if not provided as environment variables
 : ${SLURM_PARTITION:="day"}
 : ${SLURM_TIME:="6:00:00"}
@@ -48,8 +51,6 @@ PLUME_NAME="$(basename "${PLUME_CONFIG%.*}")"
 # Create output directories if they don't exist
 mkdir -p slurm_out slurm_err data/raw data/processed logs
 
-# Log file for this job
-JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
 echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
 
 
