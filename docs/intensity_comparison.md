@@ -262,6 +262,27 @@ conda run --prefix ./dev_env python scripts/run_intensity_batch.py \
     data/10302017_10cms_bounded.hdf5 process_smoke_video.m
 ```
 
+### Plume Transformation Utilities
+
+Use these helpers to prepare plume videos for analysis.
+
+- **`scale_custom_plume.m`** — rescale a custom plume to the CRIM intensity range.
+  ```matlab
+  scale_custom_plume("my_plume_meta.yaml");
+  ```
+- **`rescale_plume_range.m`** — map plume values to a new numeric range.
+  ```matlab
+  scaled = rescale_plume_range(data,0,1);
+  ```
+- **`rotate_video.rotate_video_clockwise`** — rotate a video 90° clockwise.
+  ```python
+  rotate_video_clockwise("in.avi","out.avi");
+  ```
+- **`video_to_hdf5`** — convert an AVI file to HDF5 for Python pipelines.
+  ```python
+  video_to_hdf5("in.avi","out.h5");
+  ```
+
 
 ### MATLAB Script Execution
 

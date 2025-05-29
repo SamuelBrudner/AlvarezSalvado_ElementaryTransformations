@@ -151,6 +151,7 @@ provided:
   the CRIM range specified in `configs/plume_intensity_stats.yaml`.
 - The optional `scaled_to_crim` flag prevents `load_custom_plume` from applying
   this scaling twice when the plume has already been normalised.
+- [Plume Transformation Utilities](docs/intensity_comparison.md#plume-transformation-utilities) provide scaling and rotation helpers.
 
 Example workflow:
 
