@@ -16,12 +16,15 @@ True
 from __future__ import annotations
 
 import argparse
+import logging
 import os
-from typing import Dict
+from typing import Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 try:
-    import h5py
-    import numpy as np
+    import h5py  # type: ignore
+    import numpy as np  # type: ignore
 except ImportError as exc:  # pragma: no cover - dependencies missing
     raise ImportError(
         "analyze_crimaldi_data requires numpy and h5py to be installed"
@@ -60,7 +63,7 @@ def analyze_crimaldi_data(path: str) -> Dict[str, float | dict]:
 
 
 def get_intensities_from_crimaldi(
-    hdf5_path: str, dataset_name: str = None
+    hdf5_path: str, dataset_name: Optional[str] = None
 ) -> np.ndarray:
     """Return a flat array of intensity values from the Crimaldi plume file.
 
@@ -108,7 +111,7 @@ def get_intensities_from_crimaldi(
                 # If no obvious match, use the first dataset
                 dataset_name = available_datasets[0]
 
-            print(f"Using dataset: {dataset_name}")
+            logger.info("Using dataset: %s", dataset_name)
 
         # Check if the dataset exists
         if dataset_name not in f:
@@ -134,7 +137,7 @@ def main() -> None:  # pragma: no cover - CLI wrapper
     print("Max:", stats["max"])
     print("Mean:", stats["mean"])
     print("Std:", stats["std"])
-    for p, v in stats["percentiles"].items():
+    for p, v in stats["percentiles"].items():  # type: ignore[union-attr]
         print(f"{p}th percentile: {v}")
 
 
