@@ -157,7 +157,8 @@ MATLAB_SCRIPT=$(mktemp /tmp/batch_job_XXXX.m)
 
 # Reset starting agent for loop iteration
 START_AGENT=$ORIGINAL_START_AGENT
-for SEED in "${RANDOM_SEEDS[@]}"; do
+for ((i=0; i<${#RANDOM_SEEDS[@]}; i++)); do
+    SEED=${RANDOM_SEEDS[i]}
     AGENT_INDEX=$((START_AGENT++))
     AGENT_DIR="${OUTPUT_BASE}/${PLUME_NAME}_${CONDITION_NAME}/${AGENT_INDEX}_${SEED}"
 
