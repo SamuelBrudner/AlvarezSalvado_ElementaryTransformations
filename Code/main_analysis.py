@@ -1,16 +1,23 @@
-"""Master script for batch post-processing and analysis."""
+"""Master script for batch post-processing and analysis.
+
+Examples
+--------
+>>> from Code.main_analysis import run_pipeline
+>>> run_pipeline("configs/example_analysis.yaml")
+"""
 
 from __future__ import annotations
 
-from typing import Any, List, Dict
 from pathlib import Path
+from typing import Any, Dict, List
 
-from Code.load_analysis_config import load_analysis_config
-from Code.data_discovery import discover_processed_data, check_parameter_consistency
 from Code.calculate_metrics import calculate_metrics
+from Code.comparative_analysis import (generate_plots, generate_tables,
+                                       run_statistical_tests)
 from Code.data_aggregation import aggregate_metrics
-from Code.comparative_analysis import generate_tables, generate_plots, run_statistical_tests
-
+from Code.data_discovery import (check_parameter_consistency,
+                                 discover_processed_data)
+from Code.load_analysis_config import load_analysis_config
 
 Record = dict[str, Any]
 
@@ -29,10 +36,12 @@ def run_pipeline(cfg_or_path: str | Path | Dict[str, Any]) -> None:
     for rec in discovered:
         metrics = calculate_metrics(rec, cfg)
         metadata = rec.get("metadata", {})
-        metrics.update({
-            "plume_type": metadata.get("plume"),
-            "sensing_mode": metadata.get("mode"),
-        })
+        metrics.update(
+            {
+                "plume_type": metadata.get("plume"),
+                "sensing_mode": metadata.get("mode"),
+            }
+        )
         records.append(metrics)
 
     aggregate_metrics(records, cfg)

@@ -1,4 +1,10 @@
-"""Validate exported simulation results against expected schema."""
+"""Validate exported simulation results against expected schema.
+
+Examples
+--------
+>>> from Code.validate_exported_data import validate_exported_data
+>>> validate_exported_data('run_dir')
+"""
 
 from __future__ import annotations
 

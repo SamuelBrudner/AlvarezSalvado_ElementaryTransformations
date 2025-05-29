@@ -1,19 +1,20 @@
-"""Animation utilities for agent trajectories."""
+"""Animation utilities for agent trajectories.
+
+Examples
+--------
+>>> from Code.trajectory_animation import animate_trajectories
+>>> animate_trajectories('trajectories.csv', output_path='anim.mp4')
+PosixPath('anim.mp4')
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.animation import FuncAnimation
-
-
-# Example usage in help text
-# -------------------------
-# >>> animate_trajectories('trajectories.csv', output_path='anim.mp4')
-# PosixPath('anim.mp4')
 
 
 def animate_trajectories(
@@ -52,7 +53,7 @@ def animate_trajectories(
     fig, ax = plt.subplots()
     ax.set_xlim(df["x"].min() - 5, df["x"].max() + 5)
     ax.set_ylim(df["y"].min() - 5, df["y"].max() + 5)
-    point, = ax.plot([], [], "o")
+    (point,) = ax.plot([], [], "o")
 
     def init() -> Iterable:
         point.set_data([], [])

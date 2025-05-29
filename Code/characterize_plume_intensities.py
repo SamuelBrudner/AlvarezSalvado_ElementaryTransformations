@@ -1,4 +1,12 @@
-"""Utilities to characterize plume intensities and manage JSON output."""
+"""Utilities to characterize plume intensities and manage JSON output.
+
+Examples
+--------
+>>> from Code.characterize_plume_intensities import process_plume
+>>> stats = process_plume("P1", [0.1, 0.2], "plume_stats.json")
+>>> list(stats.keys())
+['plume_id', 'statistics']
+"""
 
 from __future__ import annotations
 
@@ -79,7 +87,9 @@ def main(args: List[str] | None = None) -> None:  # pragma: no cover - CLI entry
     parser.add_argument("--output_json", required=True)
     parser.add_argument("--px_per_mm", type=float)
     parser.add_argument("--frame_rate", type=float)
-    parser.add_argument("--matlab_exec", default="matlab", help="Path to MATLAB executable")
+    parser.add_argument(
+        "--matlab_exec", default="matlab", help="Path to MATLAB executable"
+    )
 
     ns = parser.parse_args(args)
 

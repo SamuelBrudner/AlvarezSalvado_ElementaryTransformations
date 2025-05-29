@@ -1,4 +1,12 @@
-"""Load analysis configuration from a YAML file."""
+"""Load analysis configuration from a YAML file.
+
+Examples
+--------
+>>> from Code.load_analysis_config import load_analysis_config
+>>> cfg = load_analysis_config("configs/example_analysis.yaml")
+>>> isinstance(cfg, dict)
+True
+"""
 
 from __future__ import annotations
 
@@ -6,7 +14,7 @@ try:
     import yaml
 except ModuleNotFoundError:  # pragma: no cover - fallback if PyYAML is missing
     import json
-    import re
+    import re  # noqa: F401 - fallback parser does not use regex
     import types
 
     def _minimal_safe_load(text: str):
@@ -17,18 +25,18 @@ except ModuleNotFoundError:  # pragma: no cover - fallback if PyYAML is missing
             data = {}
             for line in text.splitlines():
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
-                if ':' not in line:
+                if ":" not in line:
                     continue
-                key, value = line.split(':', 1)
+                key, value = line.split(":", 1)
                 key = key.strip()
                 value = value.strip().strip("\"'")
-                if value.lower() in ('true', 'false'):
-                    data[key] = value.lower() == 'true'
+                if value.lower() in ("true", "false"):
+                    data[key] = value.lower() == "true"
                 else:
                     try:
-                        if '.' in value:
+                        if "." in value:
                             data[key] = float(value)
                         else:
                             data[key] = int(value)
@@ -38,8 +46,8 @@ except ModuleNotFoundError:  # pragma: no cover - fallback if PyYAML is missing
 
     yaml = types.SimpleNamespace(safe_load=_minimal_safe_load)
 
-from typing import Any, Dict
 from pathlib import Path
+from typing import Any, Dict
 
 
 def load_analysis_config(path: str | Path) -> Dict[str, Any]:

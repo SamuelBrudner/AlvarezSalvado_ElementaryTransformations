@@ -1,4 +1,12 @@
-"""Utilities for loading exported simulation data."""
+"""Utilities for loading exported simulation data.
+
+Examples
+--------
+>>> from Code.data_loading import load_trajectories
+>>> df = load_trajectories("run/trajectories.csv")
+>>> len(df)
+0
+"""
 
 from __future__ import annotations
 
@@ -8,7 +16,9 @@ from typing import Any, Dict
 import pandas as pd
 
 
-def load_trajectories(path: str | Path, cfg: Dict[str, Any] | None = None) -> pd.DataFrame:
+def load_trajectories(
+    path: str | Path, cfg: Dict[str, Any] | None = None
+) -> pd.DataFrame:
     """Load trajectories from a CSV file.
 
     Parameters
