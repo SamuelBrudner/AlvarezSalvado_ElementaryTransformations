@@ -190,6 +190,37 @@ The MATLAB executable is auto-detected when you source `paths.sh`. Pass
 `--matlab_exec` only if you need to override the detected path.
 Use `--allow-mismatch` if the intensity vectors have different lengths.
 
+#### When MATLAB cannot be found
+
+If `compare_intensity_stats` cannot locate MATLAB it prints an error:
+
+```text
+ERROR: MATLAB executable not found. Set $MATLAB_EXEC or use --matlab_exec
+```
+
+For example, running the command without a detected MATLAB might look like:
+
+```bash
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+    CRIM data/10302017_10cms_bounded_2.h5 \
+    SMOKE process_smoke_video.m
+```
+
+To fix this, either export the executable path:
+
+```bash
+export MATLAB_EXEC=/path/to/matlab
+```
+
+or pass it explicitly:
+
+```bash
+conda run --prefix ./dev-env python -m Code.compare_intensity_stats \
+    CRIM data/10302017_10cms_bounded_2.h5 \
+    SMOKE process_smoke_video.m \
+    --matlab_exec /path/to/matlab
+```
+
 For convenience, you can also use `scripts/run_intensity_batch.py` which wraps
 `Code.compare_intensity_stats` for the common case of comparing the default
 Crimaldi dataset with a smoke plume script. The helper reads the MATLAB path
