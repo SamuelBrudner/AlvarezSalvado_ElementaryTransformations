@@ -63,11 +63,17 @@ def cis(monkeypatch):
     fake_scipy_io = types.ModuleType("scipy.io")
     fake_scipy_io.loadmat = lambda _: {"all_intensities": [1.0, 2.0]}
     fake_scipy.io = fake_scipy_io
+    fake_loguru = types.ModuleType("loguru")
+    fake_loguru.logger = types.SimpleNamespace(info=lambda *a, **k: None)
+    fake_yaml = types.ModuleType("yaml")
+    fake_yaml.safe_load = lambda *a, **k: {}
 
     monkeypatch.setitem(sys.modules, "numpy", fake_numpy)
     monkeypatch.setitem(sys.modules, "h5py", fake_h5py)
     monkeypatch.setitem(sys.modules, "scipy", fake_scipy)
     monkeypatch.setitem(sys.modules, "scipy.io", fake_scipy_io)
+    monkeypatch.setitem(sys.modules, "loguru", fake_loguru)
+    monkeypatch.setitem(sys.modules, "yaml", fake_yaml)
 
     module = importlib.import_module("Code.compare_intensity_stats")
     importlib.reload(module)
@@ -159,3 +165,12 @@ def test_diff_option_writes_csv(cis, monkeypatch, tmp_path, capsys):
     assert len(diff_row) == 8
     # Ensure all delta fields are printed
     assert all(cell for cell in diff_row[1:])
+
+
+def test_compute_differences_requires_two_entries(cis):
+    """compute_differences should require exactly two result dictionaries."""
+    stats = simple_stats([1.0])
+    with pytest.raises(ValueError) as excinfo:
+        cis.compute_differences([("A", stats)])
+    msg = str(excinfo.value).lower()
+    assert "two" in msg and "diff" in msg
