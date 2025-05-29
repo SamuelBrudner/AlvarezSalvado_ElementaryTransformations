@@ -5,19 +5,19 @@ import pytest
 
 def load_yaml_simple(path):
     data = {}
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         current = None
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'):
+        for raw_line in f:
+            stripped = raw_line.strip()
+            if not stripped or stripped.startswith("#"):
                 continue
-            if not line.startswith('  '):
-                key = line.rstrip(':')
+            if not raw_line.startswith("  "):
+                key = stripped.rstrip(":")
                 current = key
                 data[current] = {}
             else:
-                k, v = line.split(':', 1)
-                data[current][k.strip()] = float(v)
+                k, v = stripped.split(":", 1)
+                data[current][k] = float(v)
     return data
 
 
