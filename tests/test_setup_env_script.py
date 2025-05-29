@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import pytest
+from pathlib import Path
 
 
 def test_setup_env_script_exists():
@@ -215,6 +216,32 @@ exit 0
     assert "pip install pre-commit" in executed
 
 
+def test_check_not_in_active_env_function_present():
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'check_not_in_active_env()' in content
+    assert "dev_env is currently active" in content
+
+
+def test_check_not_in_active_env_called_before_creation():
+    with open('setup_env.sh') as f:
+        content = f.read()
+    def_idx = content.index('check_not_in_active_env()')
+    call_idx = content.index('check_not_in_active_env', def_idx + 1)
+    env_idx = content.index('section "Setting up Conda environment"')
+    assert call_idx < env_idx
+
+
+def test_setup_aborts_if_env_active(tmp_path, monkeypatch):
+    bin_dir = tmp_path / 'bin'
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / 'conda'
+    (conda_base / 'etc/profile.d').mkdir(parents=True)
+    (conda_base / 'etc/profile.d/conda.sh').write_text('')
+
+    conda_script = bin_dir / 'conda'
+
 def test_setup_env_uses_user_bin_conda_lock_when_not_in_path(tmp_path, monkeypatch):
     """Ensure setup succeeds when conda-lock exists only in the user bin."""
     bin_dir = tmp_path / "bin"
@@ -225,12 +252,18 @@ def test_setup_env_uses_user_bin_conda_lock_when_not_in_path(tmp_path, monkeypat
     (conda_base / "etc/profile.d/conda.sh").write_text("")
 
     conda_script = bin_dir / "conda"
+
     conda_script.write_text(
         f"""#!/bin/bash
 if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
   echo \"{conda_base}\"
 elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
   echo '{{"platform":"linux-64"}}'
+elif [ \"$1\" = \"env\" ] && [ \"$2\" = \"create\" ] && [ \"$3\" = \"--help\" ]; then
+  echo "--force"
+  exit 0
+elif [ \"$1\" = \"env\" ]; then
+  exit 0
 elif [ \"$1\" = \"env\" ]; then
   exit 0
 elif [ \"$1\" = \"run\" ]; then
@@ -242,6 +275,18 @@ fi
     )
     conda_script.chmod(0o755)
 
+    monkeypatch.setenv('PATH', f"{bin_dir}:{os.environ['PATH']}")
+    dev_env = Path("dev_env")
+    dev_env.mkdir(exist_ok=True)
+    monkeypatch.setenv("CONDA_PREFIX", str(dev_env.resolve()))
+
+    result = subprocess.run(
+        ['bash', './setup_env.sh', '--skip-conda-lock', '--no-tests'],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert 'dev_env is currently active' in result.stdout + result.stderr
     user_base = tmp_path / "user"
     user_bin = user_base / "bin"
     user_bin.mkdir(parents=True)
@@ -296,5 +341,3 @@ def test_setup_env_invokes_nfs_cleanup():
     cleanup_indices = [i for i in range(len(content.splitlines())) if "cleanup_nfs_temp_files" in content.splitlines()[i]]
     for idx in remove_indices:
         assert any(c > idx for c in cleanup_indices)
-
-
