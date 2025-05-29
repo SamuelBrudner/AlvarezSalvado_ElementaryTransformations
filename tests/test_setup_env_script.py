@@ -214,3 +214,27 @@ exit 0
     executed = log_file.read_text()
     assert "pip install pre-commit" in executed
 
+
+
+def test_setup_env_exits_when_active(monkeypatch):
+    """Script should fail if run inside an active environment."""
+    monkeypatch.setenv("CONDA_PREFIX", os.path.abspath("dev_env"))
+    result = subprocess.run([
+        "bash",
+        "./setup_env.sh",
+        "--dev",
+    ], capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "deactivate" in result.stdout + result.stderr
+
+
+def test_setup_env_invokes_nfs_cleanup():
+    """Ensure cleanup function is defined and used after environment removal."""
+    with open("setup_env.sh") as f:
+        content = f.read()
+    assert "cleanup_nfs_temp_files()" in content
+    remove_indices = [i for i in range(len(content.splitlines())) if "conda env remove" in content.splitlines()[i]]
+    cleanup_indices = [i for i in range(len(content.splitlines())) if "cleanup_nfs_temp_files" in content.splitlines()[i]]
+    for idx in remove_indices:
+        assert any(c > idx for c in cleanup_indices)
+
