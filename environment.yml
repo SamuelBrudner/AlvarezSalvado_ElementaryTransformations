@@ -11,4 +11,3 @@ dependencies:
   - pytest
   - matplotlib
   - scipy
-  - pyyaml
