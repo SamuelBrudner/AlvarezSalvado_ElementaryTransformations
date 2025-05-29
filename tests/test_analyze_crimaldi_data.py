@@ -1,8 +1,10 @@
 # ruff: noqa: E402
 import os
 import sys
+from io import StringIO
 
 import pytest
+from loguru import logger
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -29,13 +31,18 @@ def test_statistics(tmp_path):
     assert stats["percentiles"][5] == pytest.approx(np.percentile(data, 5))
 
 
-def test_get_intensities_logs_dataset(tmp_path, capsys):
+def test_get_intensities_logs_dataset(tmp_path):
     tmpfile = tmp_path / "intensity.hdf5"
     data = np.arange(8, dtype=np.float32).reshape(2, 4)
     with h5py.File(tmpfile, "w") as f:
         f.create_dataset("dataset_a", data=data)
 
-    result = get_intensities_from_crimaldi(str(tmpfile))
-    captured = capsys.readouterr()
-    assert "Using dataset: dataset_a" in captured.err
+    buf = StringIO()
+    sink_id = logger.add(buf)
+    try:
+        result = get_intensities_from_crimaldi(str(tmpfile))
+    finally:
+        logger.remove(sink_id)
+
+    assert "Using dataset: dataset_a" in buf.getvalue()
     assert result.shape == (8,)
