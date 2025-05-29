@@ -21,6 +21,7 @@ dependencies:
   - pytest-cov
   - black
   - isort
+  - ruff
   - flake8
   - mypy
   - types-PyYAML
