@@ -192,10 +192,13 @@ cleanup_nfs_temp_files() {
 
 
 check_not_in_active_env() {
-    local env_path="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
-    if [ "${CONDA_PREFIX:-}" = "$env_path" ]; then
-        log ERROR "dev_env is currently active. Please 'conda deactivate' before running setup_env.sh"
-        return 1
+    if [ -d "./${LOCAL_ENV_DIR}" ]; then
+        local env_path
+        env_path="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
+        if [ "${CONDA_PREFIX:-}" = "$env_path" ]; then
+            log ERROR "dev_env is currently active. Please 'conda deactivate' before running setup_env.sh"
+            return 1
+        fi
     fi
 }
 
