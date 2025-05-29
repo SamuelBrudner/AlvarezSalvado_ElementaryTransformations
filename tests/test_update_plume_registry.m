@@ -15,6 +15,7 @@ end
 
 function testCreatesEntry(testCase)
     update_plume_registry('file.h5', 1, 2, testCase.TestData.yml);
+    verifyEqual(testCase, exist(testCase.TestData.yml, 'file') == 2, true);
     data = load_yaml(testCase.TestData.yml);
     verifyEqual(testCase, data.("file.h5").min, 1);
     verifyEqual(testCase, data.("file.h5").max, 2);
