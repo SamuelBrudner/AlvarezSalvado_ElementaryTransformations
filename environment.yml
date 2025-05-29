@@ -16,4 +16,6 @@ dependencies:
   - ruff
   - imageio
   - imageio-ffmpeg
-  - opencv-python
+  - pip
+  - pip:
+      - opencv-python
