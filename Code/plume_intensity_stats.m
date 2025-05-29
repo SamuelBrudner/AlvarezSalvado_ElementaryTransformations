@@ -4,12 +4,20 @@ function stats = plume_intensity_stats(yamlPath)
 %   from the given YAML file. If omitted, the default configuration file
 %   'configs/plume_intensity_stats.yaml' relative to the repository root is
 %   used.
+%
+%   Example:
+%       stats = plume_intensity_stats;
+%       stats2 = plume_intensity_stats('my_stats.yaml');
 
-if nargin < 1 || isempty(yamlPath)
-    thisDir = fileparts(mfilename('fullpath'));
-    rootDir = fileparts(thisDir);
-    yamlPath = fullfile(rootDir, 'configs', 'plume_intensity_stats.yaml');
+arguments
+    yamlPath (1,:) char = defaultStatsYaml()
 end
 
 stats = load_yaml(yamlPath);
+end
+
+function p = defaultStatsYaml
+thisDir = fileparts(mfilename('fullpath'));
+rootDir = fileparts(thisDir);
+p = fullfile(rootDir, 'configs', 'plume_intensity_stats.yaml');
 end
