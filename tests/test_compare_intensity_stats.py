@@ -23,7 +23,7 @@ def test_compare_intensity_stats_table(tmp_path, capsys):
     f1 = tmp_path / "a.h5"
     f2 = tmp_path / "b.h5"
     arr1 = np.array([1, 2, 3], dtype=float)
-    arr2 = np.array([4, 5], dtype=float)
+    arr2 = np.array([4, 5, 6], dtype=float)
     create_hdf5(f1, arr1)
     create_hdf5(f2, arr2)
 
@@ -47,7 +47,7 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
 
     video = tmp_path / "smoke.avi"
     video.write_bytes(b"dummy")
-    arr_vid = np.array([1.0, 2.0, 3.0], dtype=float)
+    arr_vid = np.array([1.0, 2.0], dtype=float)
 
     captured = {}
 
