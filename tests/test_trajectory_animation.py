@@ -1,9 +1,13 @@
+import importlib
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import types
+
+import pytest
+from _pytest.monkeypatch import MonkeyPatch
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 class DummySeries(list):
     def min(self):
@@ -35,22 +39,24 @@ class DummyDataFrame:
         return DummyDataFrame._ILoc(self)
 
 
-pd = types.SimpleNamespace(DataFrame=DummyDataFrame)
-
 class StubPoint:
+    def __init__(self):
+        self.data = None
+
     def set_data(self, x, y):
-        pass
+        self.data = (x, y)
 
 
 class StubAxis:
     def __init__(self):
         self.point = StubPoint()
+        self.limits = []
 
     def set_xlim(self, *_, **__):
-        pass
+        self.limits.append("x")
 
     def set_ylim(self, *_, **__):
-        pass
+        self.limits.append("y")
 
     def plot(self, *_, **__):
         return (self.point,)
@@ -59,105 +65,99 @@ class StubAxis:
 def _subplots():
     return object(), StubAxis()
 
-plt = types.SimpleNamespace(subplots=_subplots, close=lambda *_: None)
 
 class DummyAnim:
+    """Capture animation save calls."""
+
     last_instance = None
 
     def __init__(self, *_args, **_kwargs):
         DummyAnim.last_instance = self
         self.saved = None
 
-    def save(self, *_a, **_kw):
-        self.saved = (_a, _kw)
+    def save(self, *a, **kw):
+        self.saved = (a, kw)
         return None
 
-animation = types.SimpleNamespace(FuncAnimation=DummyAnim)
 
-sys.modules.setdefault("matplotlib", types.ModuleType("matplotlib"))
-sys.modules["matplotlib"].pyplot = plt
-sys.modules["matplotlib"].animation = animation
-sys.modules["matplotlib.pyplot"] = plt
-sys.modules["matplotlib.animation"] = animation
-sys.modules["pandas"] = types.ModuleType("pandas")
-sys.modules["pandas"].DataFrame = DummyDataFrame
+@pytest.fixture(scope="module")
+def anim_module():
+    """Provide ``Code.trajectory_animation`` with stubbed dependencies."""
 
-def _read_csv(path):
-    data = {"x": [], "y": []}
-    with open(path) as f:
-        header = next(f)
-        for line in f:
-            _, x, y = line.strip().split(",")
-            data["x"].append(float(x))
-            data["y"].append(float(y))
-    return DummyDataFrame(data)
+    def _read_csv(path):
+        data = {"x": [], "y": []}
+        with open(path) as f:
+            next(f)  # header
+            for line in f:
+                cols = line.strip().split(",")
+                data["x"].append(float(cols[1]))
+                data["y"].append(float(cols[2]))
+        return DummyDataFrame(data)
 
-sys.modules["pandas"].read_csv = _read_csv
+    # pandas stub
+    mp = MonkeyPatch()
 
-from Code.trajectory_animation import animate_trajectories
+    pd_mod = types.ModuleType("pandas")
+    pd_mod.read_csv = _read_csv
+    pd_mod.DataFrame = DummyDataFrame
+    mp.setitem(sys.modules, "pandas", pd_mod)
+
+    # matplotlib stubs
+    plt_mod = types.ModuleType("matplotlib.pyplot")
+    plt_mod.subplots = _subplots
+    plt_mod.close = lambda *_: None
+
+    anim_mod = types.ModuleType("matplotlib.animation")
+    anim_mod.FuncAnimation = DummyAnim
+
+    matplotlib_mod = types.ModuleType("matplotlib")
+    matplotlib_mod.pyplot = plt_mod
+    matplotlib_mod.animation = anim_mod
+
+    mp.setitem(sys.modules, "matplotlib", matplotlib_mod)
+    mp.setitem(sys.modules, "matplotlib.pyplot", plt_mod)
+    mp.setitem(sys.modules, "matplotlib.animation", anim_mod)
+
+    module = importlib.import_module("Code.trajectory_animation")
+    yield module
+    mp.undo()
 
 
-def test_animation_output_file(tmp_path):
+def test_animation_output_file(tmp_path, anim_module):
     csv_path = tmp_path / "trajectories.csv"
     csv_path.write_text("t,x,y\n0,0,0\n1,1,1\n")
     output_path = tmp_path / "anim.mp4"
-    animate_trajectories(csv_path, output_path=output_path)
+    anim_module.animate_trajectories(csv_path, output_path=output_path)
     assert DummyAnim.last_instance.saved[0][0] == output_path
 
 
-def test_update_uses_sequence_points(tmp_path, monkeypatch):
+def test_update_uses_sequence_points(tmp_path, anim_module, monkeypatch):
     """Verify the update function sets data using sequence inputs."""
 
-    df = pd.DataFrame({"x": [1, 2], "y": [3, 4]})
-
-    monkeypatch.setattr("Code.trajectory_animation.pd.read_csv", lambda *_: df)
+    df = DummyDataFrame({"x": [1, 2], "y": [3, 4]})
+    monkeypatch.setattr(anim_module.pd, "read_csv", lambda *_: df)
 
     fig = object()
-
-    class DummyAxis:
-        def __init__(self):
-            self.limits = []
-            self.point = DummyPoint()
-
-        def set_xlim(self, *_):
-            self.limits.append("x")
-
-        def set_ylim(self, *_):
-            self.limits.append("y")
-
-        def plot(self, *_, **__):
-            return (self.point,)
-
-
-    class DummyPoint:
-        def __init__(self):
-            self.data = None
-
-        def set_data(self, x, y):
-            self.data = (x, y)
-
-
-    dummy_axis = DummyAxis()
+    dummy_axis = StubAxis()
 
     def dummy_subplots():
         return fig, dummy_axis
 
-    monkeypatch.setattr("Code.trajectory_animation.plt.subplots", dummy_subplots)
+    monkeypatch.setattr(anim_module.plt, "subplots", dummy_subplots)
 
     captured = {}
 
-    class DummyAnim:
-        def __init__(self, *_args, **_kwargs):
-            captured["update_func"] = _args[1]
+    class LocalAnim:
+        def __init__(self, *args, **_kwargs):
+            captured["update_func"] = args[1]
 
         def save(self, *_, **__):
             return None
 
-    monkeypatch.setattr("Code.trajectory_animation.FuncAnimation", DummyAnim)
+    monkeypatch.setattr(anim_module, "FuncAnimation", LocalAnim)
 
-    animate_trajectories("dummy.csv", output_path=tmp_path / "out.mp4")
+    anim_module.animate_trajectories("dummy.csv", output_path=tmp_path / "out.mp4")
 
     update = captured["update_func"]
     update(0)
-
     assert dummy_axis.point.data == ([1], [3])
