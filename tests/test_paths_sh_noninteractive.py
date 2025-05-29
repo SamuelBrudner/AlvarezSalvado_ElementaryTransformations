@@ -3,6 +3,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+BASH = shutil.which("bash") or "/bin/bash"
+
 
 def test_paths_sh_noninteractive_quiet(tmp_path):
     repo_root = Path(__file__).resolve().parents[1]
@@ -32,7 +34,7 @@ def test_paths_sh_noninteractive_quiet(tmp_path):
 
     log_file = tmp_path / "log"
     result = subprocess.run(
-        ["/usr/bin/bash", "-c", f"source ./paths.sh > {log_file} 2>&1 && echo $MATLAB_EXEC"],
+        [BASH, "-c", f"source ./paths.sh > {log_file} 2>&1 && echo $MATLAB_EXEC"],
         cwd=tmp_path,
         capture_output=True,
         text=True,

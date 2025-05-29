@@ -3,6 +3,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+BASH = shutil.which("bash") or "/bin/bash"
+
 
 def test_paths_sh_uses_module(tmp_path):
     repo_root = Path(__file__).resolve().parents[1]
@@ -67,7 +69,7 @@ fi
     env["PATH"] = f"{system_matlab.parent}:{bin_dir}"
 
     result = subprocess.run(
-        ["/usr/bin/bash", "-c", "source ./paths.sh && echo $MATLAB_EXEC"],
+        [BASH, "-c", "source ./paths.sh && echo $MATLAB_EXEC"],
         cwd=tmp_path,
         capture_output=True,
         text=True,

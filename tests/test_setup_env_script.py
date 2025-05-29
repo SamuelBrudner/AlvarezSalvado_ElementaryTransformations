@@ -5,6 +5,8 @@ import shutil
 import pytest
 from pathlib import Path
 
+BASH = shutil.which("bash") or "/bin/bash"
+
 
 def test_setup_env_script_exists():
     assert os.path.isfile('setup_env.sh'), 'setup_env.sh does not exist'
@@ -89,7 +91,7 @@ fi
     monkeypatch.setenv("PYTHONUSERBASE", str(user_base))
     monkeypatch.delenv("CONDA_PREFIX", raising=False)
 
-    cmd = ["bash", "./setup_env.sh", "--skip-conda-lock", "--no-tests"]
+    cmd = [BASH, "./setup_env.sh", "--skip-conda-lock", "--no-tests"]
 
     result1 = subprocess.run(cmd, capture_output=True, text=True)
     assert result1.returncode == 0
@@ -194,7 +196,7 @@ fi
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
 
     result = subprocess.run(
-        ["bash", "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        [BASH, "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
         capture_output=True,
         text=True,
     )
@@ -265,7 +267,7 @@ exit 0
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
 
     result = subprocess.run(
-        ["bash", "./setup_env.sh", "--dev", "--skip-conda-lock", "--no-tests"],
+        [BASH, "./setup_env.sh", "--dev", "--skip-conda-lock", "--no-tests"],
         capture_output=True,
         text=True,
     )
@@ -378,7 +380,7 @@ fi
     monkeypatch.setenv("PATH", f"{user_bin}:{bin_dir}:{os.environ['PATH']}")
 
     result = subprocess.run(
-        ["bash", "./setup_env.sh", "--no-tests"],
+        [BASH, "./setup_env.sh", "--no-tests"],
         capture_output=True,
         text=True,
     )
@@ -389,7 +391,7 @@ def test_setup_env_exits_when_active(monkeypatch):
     """Script should fail if run inside an active environment."""
     monkeypatch.setenv("CONDA_PREFIX", os.path.abspath("dev_env"))
     result = subprocess.run([
-        "bash",
+        BASH,
         "./setup_env.sh",
         "--dev",
     ], capture_output=True, text=True)
@@ -454,7 +456,7 @@ fi
     monkeypatch.delenv("CONDA_PREFIX", raising=False)
 
     result = subprocess.run(
-        ["bash", "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        [BASH, "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
         capture_output=True,
         text=True,
     )
@@ -539,7 +541,7 @@ fi
     monkeypatch.delenv("CONDA_PREFIX", raising=False)
 
     result = subprocess.run([
-        "bash",
+        BASH,
         "./setup_env.sh",
         "--skip-conda-lock",
         "--no-tests",
@@ -610,7 +612,7 @@ fi
     conda_lock_script.chmod(0o755)
 
     result = subprocess.run(
-        ["bash", "./setup_env.sh", "--no-tests"],
+        [BASH, "./setup_env.sh", "--no-tests"],
         capture_output=True,
         text=True,
     )
