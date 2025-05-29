@@ -3,6 +3,7 @@ import re
 import subprocess
 import shutil
 import pytest
+from pathlib import Path
 
 
 def test_setup_env_script_exists():
@@ -64,18 +65,18 @@ def test_setup_env_exports_user_bin_for_conda_lock():
     with open('setup_env.sh') as f:
         content = f.read()
     assert 'site --user-base' in content
-    assert 'append_path_if_missing "${USER_BIN}"' in content
+    assert 'export PATH="${USER_BIN}:${PATH}"' in content
     assert 'hash -r' in content
 
 
-def test_setup_env_invokes_append_path_helper_after_pip():
-    """append_path_if_missing should run after pip fallback and before hash."""
+def test_setup_env_exports_user_bin_after_pip_install():
+    """USER_BIN export should occur after pip fallback and before hash."""
     with open('setup_env.sh') as f:
         content = f.read()
     pip_idx = content.index('python -m pip install --user conda-lock')
-    append_idx = content.index('append_path_if_missing "${USER_BIN}"')
+    export_idx = content.index('export PATH="${USER_BIN}:${PATH}"')
     hash_idx = content.index('hash -r')
-    assert pip_idx < append_idx < hash_idx
+    assert pip_idx < export_idx < hash_idx
 
 
 def test_setup_env_checks_existing_conda_lock():
@@ -237,3 +238,128 @@ def test_cleanup_nfs_called_after_remove():
         create_idx = after.index('conda env create')
         assert cleanup_idx < create_idx
 
+def test_check_not_in_active_env_function_present():
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'check_not_in_active_env()' in content
+    assert "dev_env is currently active" in content
+
+
+def test_check_not_in_active_env_called_before_creation():
+    with open('setup_env.sh') as f:
+        content = f.read()
+    def_idx = content.index('check_not_in_active_env()')
+    call_idx = content.index('check_not_in_active_env', def_idx + 1)
+    env_idx = content.index('section "Setting up Conda environment"')
+    assert call_idx < env_idx
+
+
+def test_setup_aborts_if_env_active(tmp_path, monkeypatch):
+    bin_dir = tmp_path / 'bin'
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / 'conda'
+    (conda_base / 'etc/profile.d').mkdir(parents=True)
+    (conda_base / 'etc/profile.d/conda.sh').write_text('')
+
+    conda_script = bin_dir / 'conda'
+
+def test_setup_env_uses_user_bin_conda_lock_when_not_in_path(tmp_path, monkeypatch):
+    """Ensure setup succeeds when conda-lock exists only in the user bin."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    conda_script = bin_dir / "conda"
+
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
+  echo \"{conda_base}\"
+elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
+  echo '{{"platform":"linux-64"}}'
+elif [ \"$1\" = \"env\" ] && [ \"$2\" = \"create\" ] && [ \"$3\" = \"--help\" ]; then
+  echo "--force"
+  exit 0
+elif [ \"$1\" = \"env\" ]; then
+  exit 0
+elif [ \"$1\" = \"env\" ]; then
+  exit 0
+elif [ \"$1\" = \"run\" ]; then
+  exit 0
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    monkeypatch.setenv('PATH', f"{bin_dir}:{os.environ['PATH']}")
+    dev_env = Path("dev_env")
+    dev_env.mkdir(exist_ok=True)
+    monkeypatch.setenv("CONDA_PREFIX", str(dev_env.resolve()))
+
+    result = subprocess.run(
+        ['bash', './setup_env.sh', '--skip-conda-lock', '--no-tests'],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert 'dev_env is currently active' in result.stdout + result.stderr
+    user_base = tmp_path / "user"
+    user_bin = user_base / "bin"
+    user_bin.mkdir(parents=True)
+
+    conda_lock_script = user_bin / "conda-lock"
+    conda_lock_script.write_text("#!/bin/bash\necho 'conda-lock 1.0.0'")
+    conda_lock_script.chmod(0o755)
+
+    python_script = bin_dir / "python"
+    python_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = "-m" ] && [ \"$2\" = "site" ] && [ \"$3\" = "--user-base" ]; then
+  echo '{user_base}'
+elif [ \"$1\" = "-m" ] && [ \"$2\" = "pip" ] && [ \"$3\" = "install" ]; then
+  exit 0
+else
+  /usr/bin/env python "$@"
+fi
+"""
+    )
+    python_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    monkeypatch.setenv("PYTHONUSERBASE", str(user_base))
+
+    result = subprocess.run(
+        ["bash", "./setup_env.sh", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+
+def test_setup_env_exits_when_active(monkeypatch):
+    """Script should fail if run inside an active environment."""
+    monkeypatch.setenv("CONDA_PREFIX", os.path.abspath("dev_env"))
+    result = subprocess.run([
+        "bash",
+        "./setup_env.sh",
+        "--dev",
+    ], capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "deactivate" in result.stdout + result.stderr
+
+
+def test_setup_env_invokes_nfs_cleanup():
+    """Ensure cleanup function is defined and used after environment removal."""
+    with open("setup_env.sh") as f:
+        content = f.read()
+    assert "cleanup_nfs_temp_files()" in content
+    remove_indices = [i for i in range(len(content.splitlines())) if "conda env remove" in content.splitlines()[i]]
+    cleanup_indices = [i for i in range(len(content.splitlines())) if "cleanup_nfs_temp_files" in content.splitlines()[i]]
+    for idx in remove_indices:
+        assert any(c > idx for c in cleanup_indices)

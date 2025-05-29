@@ -143,7 +143,6 @@ try_load_conda_module() {
 
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
-    local USER_BIN="$(python -m site --user-base)/bin"
     if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
         if [ -d "./${LOCAL_ENV_DIR}" ]; then
             log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
@@ -165,22 +164,25 @@ ensure_conda_lock() {
 
         # Refresh the shell to update PATH
         if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" 
+            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
         fi
 
         # Add conda to PATH
         export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
 
         # Always include user's pip bin directory
-        append_path_if_missing "${USER_BIN}"
-        if [ -x "${USER_BIN}/conda-lock" ]; then
-            "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
-        fi
+        USER_BIN="$(python -m site --user-base)/bin"
+        export PATH="${USER_BIN}:${PATH}"
+        [ -x "${USER_BIN}/conda-lock" ] && "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
         hash -r
 
         # Verify installation
-        if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-            error "conda-lock installed but not on PATH. Add ${USER_BIN}/conda-lock to PATH."
+        if ! command -v conda-lock >/dev/null 2>&1; then
+            if [ -x "${USER_BIN}/conda-lock" ]; then
+                "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
+            else
+                error "conda-lock installed but not on PATH. Add ${USER_BIN}/conda-lock to PATH."
+            fi
         fi
     fi
 }
@@ -188,6 +190,14 @@ cleanup_nfs_temp_files() {
     find "./${LOCAL_ENV_DIR}" -name '.nfs*' -type f -exec rm -f {} +
 }
 
+
+check_not_in_active_env() {
+    local env_path="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
+    if [ "${CONDA_PREFIX:-}" = "$env_path" ]; then
+        log ERROR "dev_env is currently active. Please 'conda deactivate' before running setup_env.sh"
+        return 1
+    fi
+}
 
 # --- Main setup function ---
 setup_environment() {
@@ -261,6 +271,11 @@ setup_environment() {
       run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml --overwrite 2>/dev/null || \
         run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
     fi
+  fi
+
+  # Abort if dev_env is currently active
+  if ! check_not_in_active_env; then
+    return 1
   fi
 
   # Create/update the local prefix environment
