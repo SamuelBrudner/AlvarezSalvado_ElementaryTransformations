@@ -12,7 +12,7 @@ def test_extract_intensities_from_video(tmp_path):
         [[255, 128], [64, 0]],
     ], dtype=np.uint8)
     video_path = tmp_path / "tiny.mp4"
-    imageio.imwrite(video_path, frames, fps=1)
+    imageio.imwrite(video_path, frames, fps=1, macro_block_size=None)
 
     expected = frames.reshape(-1) / 255.0
     result = vi.extract_intensities_from_video(str(video_path))
