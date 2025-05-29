@@ -44,6 +44,20 @@ def test_setup_env_has_conda_lock_pip_fallback():
     assert 'conda-lock --version' in content
 
 
+def test_conda_lock_not_installed_in_base():
+    """Ensure the script does not attempt to modify the base environment."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'conda install -y -n base -c conda-forge conda-lock' not in content
+
+
+def test_conda_lock_installed_in_prefix():
+    """Script should prefer installing conda-lock into the local prefix."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock' in content
+
+
 def test_setup_env_exports_user_bin_for_conda_lock():
     """Script should add the pip user bin directory to PATH if needed."""
     with open('setup_env.sh') as f:

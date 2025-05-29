@@ -145,11 +145,21 @@ try_load_conda_module() {
 ensure_conda_lock() {
     local USER_BIN="$(python -m site --user-base)/bin"
     if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-        log INFO "Installing conda-lock"
-        if ! run_command_verbose conda install -y -n base -c conda-forge conda-lock; then
-            log WARNING "conda install failed, attempting pip fallback"
+        if [ -d "./${LOCAL_ENV_DIR}" ]; then
+            log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
+            if ! run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock; then
+                log WARNING "conda install failed, attempting pip fallback"
+                if ! run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install conda-lock; then
+                    log WARNING "Failed to install conda-lock in prefix, falling back to user"
+                    if ! run_command_verbose python -m pip install --user conda-lock; then
+                        error "Failed to install conda-lock"
+                    fi
+                fi
+            fi
+        else
+            log INFO "Installing conda-lock via pip"
             if ! run_command_verbose python -m pip install --user conda-lock; then
-                error "Failed to install conda-lock with conda or pip"
+                error "Failed to install conda-lock with pip"
             fi
         fi
 
