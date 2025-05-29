@@ -100,3 +100,19 @@ environment are skipped unless the `--runslow` flag is supplied:
 ```bash
 conda run --prefix ./dev_env pytest --runslow
 ```
+
+## Plume Intensity Utilities
+
+The file `configs/plume_intensity_stats.yaml` stores summary statistics for the
+standard smoke (SMOKE) and Crimaldi (CRIM) plumes. It lists mean, median,
+percentile, and range values that are referenced when rescaling plume
+intensities.
+
+Both MATLAB and Python utilities automatically locate this file if no path is
+provided:
+
+- `plume_intensity_stats.m` determines the repository root at runtime and loads
+the YAML via `load_yaml`.
+- `Code.plume_utils.get_intensity_stats()` resolves the path relative to the
+  `Code` directory and parses the YAML using PyYAML (or a minimal fallback
+  parser when PyYAML is absent).
