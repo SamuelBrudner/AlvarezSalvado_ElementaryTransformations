@@ -3,7 +3,9 @@
 This module provides a function :func:`analyze_crimaldi_data` that loads the
 ``10302017_10cms_bounded.hdf5`` file and returns summary statistics of the
 ``/dataset_1`` dataset. It can also be executed as a script to print the
-statistics in a human‑readable form.
+statistics in a human‑readable form. When extracting intensities with
+``get_intensities_from_crimaldi`` the chosen dataset name is logged via
+``loguru``.
 
 Examples
 --------
@@ -18,6 +20,8 @@ from __future__ import annotations
 import argparse
 import os
 from typing import Dict
+
+from loguru import logger
 
 try:
     import h5py
@@ -108,7 +112,7 @@ def get_intensities_from_crimaldi(
                 # If no obvious match, use the first dataset
                 dataset_name = available_datasets[0]
 
-            print(f"Using dataset: {dataset_name}")
+            logger.info(f"Using dataset: {dataset_name}")
 
         # Check if the dataset exists
         if dataset_name not in f:
