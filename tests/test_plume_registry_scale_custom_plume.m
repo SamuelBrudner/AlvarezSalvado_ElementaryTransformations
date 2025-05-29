@@ -40,9 +40,9 @@ function testPlumeRegistryUpdated(testCase)
     verifyEqual(testCase, entry.max, stats.CRIM.max, 'AbsTol', 1e-12);
     verifyTrue(testCase, isfield(registry, 'orig.avi'));
     plume = load_plume_video(fullfile(testCase.TestData.tmpDir, 'orig.avi'), 1, 1);
-    scaled = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
-    expMin = min(scaled(:));
-    expMax = max(scaled(:));
+    % Original range should be stored without rescaling
+    expMin = min(plume.data(:));
+    expMax = max(plume.data(:));
     origEntry = registry.("orig.avi");
     verifyEqual(testCase, origEntry.min, expMin, 'AbsTol', 1e-12);
     verifyEqual(testCase, origEntry.max, expMax, 'AbsTol', 1e-12);
