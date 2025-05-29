@@ -45,6 +45,9 @@ trap cleanup EXIT INT TERM
 # Derive plume name from configuration file path (without extension)
 PLUME_NAME="$(basename "${PLUME_CONFIG%.*}")"
 
+# Ensure log directory exists early
+mkdir -p logs
+
 # Create output directories if they don't exist
 mkdir -p slurm_out slurm_err data/raw data/processed logs
 
