@@ -156,3 +156,21 @@ meta = 'my_plume_meta.yaml';
 scale_custom_plume(meta);       % writes <output_filename>_scaled.avi
 plume = load_custom_plume(meta); % scaled_to_crim skips another scaling step
 ```
+
+### Converting AVI to HDF5
+
+Use `video_to_hdf5` when you need an HDF5 version of the smoke video for
+Python-only pipelines:
+
+```bash
+conda run --prefix ./dev_env python - <<'PY'
+from Code.rotate_video import video_to_hdf5
+video_to_hdf5(
+    "data/smoke_1a_orig_backgroundsubtracted.avi",
+    "data/smoke_1a_orig_backgroundsubtracted.h5",
+)
+PY
+```
+
+Add the resulting path under `data.video_h5` in `configs/project_paths.yaml` so
+all scripts can locate it automatically.

@@ -28,7 +28,9 @@ def test_paths_sh_runs_without_syntaxerror(tmp_path):
     )
     assert result.returncode == 0, result.stderr + result.stdout
     assert "SyntaxError" not in result.stderr
-    assert (configs_dir / "project_paths.yaml").exists()
+    config_file = configs_dir / "project_paths.yaml"
+    assert config_file.exists()
+    assert "video_h5:" in config_file.read_text()
 
 
 # Helper for copying files required by paths.sh

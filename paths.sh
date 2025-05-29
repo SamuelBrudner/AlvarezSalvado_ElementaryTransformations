@@ -162,6 +162,7 @@ generate_paths_config() {
     # Export PROJECT_DIR for the template
     export PROJECT_DIR="$SCRIPT_DIR"
     export TMPDIR="${TMPDIR:-/tmp}"
+    export VIDEO_H5="${PROJECT_DIR}/data/custom_movie.h5"
     
     # Generate project_paths.yaml from template
     if [ ! -f "$PATHS_TEMPLATE" ]; then

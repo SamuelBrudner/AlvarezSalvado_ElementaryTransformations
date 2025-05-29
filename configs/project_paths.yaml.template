@@ -20,6 +20,9 @@ data:
   crimaldi: "${PROJECT_DIR}/data/10302017_10cms_bounded.hdf5"
   # Video file for analysis
   video: "${PROJECT_DIR}/data/smoke_1a_orig_backgroundsubtracted.avi"
+  # HDF5 version of the smoke video for Python-only workflows
+  video_h5: "${PROJECT_DIR}/data/smoke_1a_orig_backgroundsubtracted.h5"
+
 
 # Configuration files
 configs:
