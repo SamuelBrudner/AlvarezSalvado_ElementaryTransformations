@@ -18,8 +18,11 @@ def test_error_message_contains_hint(monkeypatch, tmp_path):
     fake_scipy_io = types.SimpleNamespace(loadmat=lambda p: {"all_intensities": []})
     monkeypatch.setitem(sys.modules, "scipy", types.SimpleNamespace(io=fake_scipy_io))
     monkeypatch.setitem(sys.modules, "scipy.io", fake_scipy_io)
+    monkeypatch.setitem(sys.modules, "h5py", types.SimpleNamespace(File=lambda *a, **k: None))
+    monkeypatch.setitem(sys.modules, "yaml", types.SimpleNamespace(safe_load=lambda *a, **k: {}, safe_dump=lambda *a, **k: None))
 
     vi = importlib.reload(importlib.import_module("Code.video_intensity"))
+    monkeypatch.setattr(vi, "find_matlab_executable", lambda p=None: p or "matlab")
     func = vi.get_intensities_from_video_via_matlab
 
     captured = {}
@@ -51,6 +54,7 @@ def test_error_message_contains_hint(monkeypatch, tmp_path):
 
     msg = str(exc.value)
     assert "/path/to/script.m" in msg
+    assert "/path/to" in msg
     assert "orig_script_dir" in msg
 
     assert "orig_script_path = '/path/to/script.m';" in captured["contents"]

@@ -257,9 +257,13 @@ def get_intensities_from_video_via_matlab(
             if proc.returncode != 0:
                 if proc.stdout:
                     logger.warning("MATLAB stdout:\n%s", proc.stdout)
-                hint = (
-                    "" if orig_script_path is None else f" (script: {orig_script_path})"
-                )
+                if orig_script_path is not None:
+                    orig_script_dir = os.path.dirname(orig_script_path)
+                    hint = (
+                        f" (orig_script_path: {orig_script_path}, orig_script_dir: {orig_script_dir})"
+                    )
+                else:
+                    hint = ""
                 error_msg = proc.stderr.strip() or "No error message from MATLAB"
                 raise RuntimeError(
                     f"MATLAB failed with exit code {proc.returncode}{hint}: {error_msg}"
