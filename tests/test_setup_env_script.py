@@ -123,3 +123,10 @@ fi
     assert "Unknown option" not in output
     assert "conda-lock lock" not in output
 
+
+def test_setup_env_checks_numpy_presence():
+    """Script should verify numpy import after environment creation."""
+    with open('setup_env.sh') as f:
+        content = f.read()
+    assert 'conda run --prefix "./${LOCAL_ENV_DIR}" python -c "import numpy"' in content
+
