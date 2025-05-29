@@ -474,14 +474,15 @@ run_tests() {
 main() {
   # Create a trap to handle early exits
   trap 'log ERROR "Setup was interrupted. Cleaning up..."' INT TERM
-  
-  # Run the main setup
+
+  # Run the main setup and capture status
   setup_environment
-  
-  # Clear the trap on successful completion
+  status=$?
+
+  # Clear the trap on completion
   trap - INT TERM
-  
-  exit 0
+
+  safe_exit "$status"
 }
 
 # --- Main execution ---

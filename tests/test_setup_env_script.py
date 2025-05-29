@@ -104,7 +104,7 @@ fi
 def test_setup_env_has_conda_lock_pip_fallback():
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'python3 -m pip install --user conda-lock' in content
+    assert 'python -m pip install --user conda-lock' in content
     assert 'conda-lock --version' in content
 
 
@@ -119,7 +119,7 @@ def test_conda_lock_installed_in_prefix():
     """Script should prefer installing conda-lock into the local prefix."""
     with open('setup_env.sh') as f:
         content = f.read()
-    assert 'conda run --prefix "./${LOCAL_ENV_DIR}" python -m pip install conda-lock' in content
+    assert 'conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock' in content
 
 
 def test_setup_env_exports_user_bin_for_conda_lock():
@@ -133,7 +133,7 @@ def test_setup_env_exports_user_bin_after_pip_install():
     """USER_BIN export should occur after pip fallback and before hash."""
     with open('setup_env.sh') as f:
         content = f.read()
-    pip_idx = content.index('python3 -m pip install --user conda-lock')
+    pip_idx = content.index('python -m pip install --user conda-lock')
     hash_idx = content.rindex('hash -r')
     assert pip_idx < hash_idx
 
