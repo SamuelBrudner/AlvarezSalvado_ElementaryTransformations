@@ -1,10 +1,18 @@
-"""Compute behavioral metrics for a single simulation run."""
+"""Compute behavioral metrics for a single simulation run.
+
+Examples
+--------
+>>> from Code.calculate_metrics import calculate_metrics
+>>> rec = {"trajectories": [{"x": 0, "y": 0}, {"x": 1, "y": 1}], "summary": {}}
+>>> cfg = {"metrics_to_compute": ["path_length"]}
+>>> calculate_metrics(rec, cfg)["path_length"]
+1.4142135623730951
+"""
 
 from __future__ import annotations
 
 import math
 from typing import Any, Dict, List
-
 
 Trajectory = List[Dict[str, float]]
 
@@ -80,7 +88,9 @@ def calculate_metrics(record: Dict[str, Any], cfg: Dict[str, Any]) -> Dict[str, 
         disp = end - start
         metrics["net_upwind_displacement"] = disp if pos_dir else -disp
     if "straightness" in metric_list:
-        net_disp = math.dist((traj[0]["x"], traj[0]["y"]), (traj[-1]["x"], traj[-1]["y"]))
+        net_disp = math.dist(
+            (traj[0]["x"], traj[0]["y"]), (traj[-1]["x"], traj[-1]["y"])
+        )
         path_len = metrics.get("path_length", 0.0)
         metrics["straightness"] = net_disp / path_len if path_len else float("nan")
     if "turning_rate" in metric_list:

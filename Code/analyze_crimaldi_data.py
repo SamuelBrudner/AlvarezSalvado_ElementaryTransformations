@@ -4,6 +4,13 @@ This module provides a function :func:`analyze_crimaldi_data` that loads the
 ``10302017_10cms_bounded.hdf5`` file and returns summary statistics of the
 ``/dataset_1`` dataset. It can also be executed as a script to print the
 statistics in a human‑readable form.
+
+Examples
+--------
+>>> from Code.analyze_crimaldi_data import analyze_crimaldi_data
+>>> stats = analyze_crimaldi_data("10302017_10cms_bounded.hdf5")
+>>> "min" in stats
+True
 """
 
 from __future__ import annotations

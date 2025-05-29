@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-import json
 import csv
 import math
 import statistics
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-
 # Type alias for clarity
 Record = Dict[str, Any]
 
 
-def _group_records(records: Iterable[Record], keys: List[str]) -> Dict[tuple, List[Record]]:
+def _group_records(
+    records: Iterable[Record], keys: List[str]
+) -> Dict[tuple, List[Record]]:
     groups: Dict[tuple, List[Record]] = {}
     for rec in records:
         key = tuple(rec.get(k) for k in keys)
@@ -83,7 +83,9 @@ def _normal_p_value(t_stat: float) -> float:
     return 2 * (1 - statistics.NormalDist().cdf(abs(t_stat)))
 
 
-def run_statistical_tests(records: List[Record], cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
+def run_statistical_tests(
+    records: List[Record], cfg: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """Run statistical tests specified in ``cfg``.
 
     Parameters
@@ -138,12 +140,14 @@ def run_statistical_tests(records: List[Record], cfg: Dict[str, Any]) -> List[Di
         se = math.sqrt(var_a / len(a) + var_b / len(b))
         t_stat = (mean_a - mean_b) / se if se != 0 else float("inf")
         p_val = _normal_p_value(t_stat)
-        results.append({
-            "metric": metric,
-            "groups": groups,
-            "t_stat": t_stat,
-            "p_value": p_val,
-        })
+        results.append(
+            {
+                "metric": metric,
+                "groups": groups,
+                "t_stat": t_stat,
+                "p_value": p_val,
+            }
+        )
     return results
 
 
@@ -161,7 +165,9 @@ def generate_plots(records: List[Record], cfg: Dict[str, Any]) -> List[Path]:
     return paths
 
 
-def generate_trajectory_heatmaps(records: List[Record], cfg: Dict[str, Any]) -> List[Path]:
+def generate_trajectory_heatmaps(
+    records: List[Record], cfg: Dict[str, Any]
+) -> List[Path]:
     """Generate trajectory heatmaps from records.
 
     Parameters

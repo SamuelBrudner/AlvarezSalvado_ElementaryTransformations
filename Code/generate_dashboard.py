@@ -1,4 +1,10 @@
-"""Generate a dashboard figure with multiple subplots based on config."""
+"""Generate a dashboard figure with multiple subplots based on config.
+
+Examples
+--------
+>>> from Code.generate_dashboard import generate_dashboard
+>>> generate_dashboard([], {"dashboard_layout": {"subplots": []}})
+"""
 
 from __future__ import annotations
 

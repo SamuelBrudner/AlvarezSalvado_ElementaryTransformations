@@ -1,9 +1,16 @@
-"""Scan simulation runs for common anomalies."""
+"""Scan simulation runs for common anomalies.
+
+Examples
+--------
+>>> from Code.check_simulation_health import check_simulation_health
+>>> check_simulation_health({"data_root": "./data"})
+[]
+"""
 
 from __future__ import annotations
 
 import math
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from Code.data_discovery import discover_processed_data
 
@@ -32,14 +39,21 @@ def check_simulation_health(cfg: Dict[str, Any]) -> List[Dict[str, str]]:
         else:
             b = bounds.get("successrate")
             if b and not (b[0] <= sr <= b[1]):
-                issues.append({"path": path, "issue": f"successrate {sr} outside [{b[0]}, {b[1]}]"})
+                issues.append(
+                    {
+                        "path": path,
+                        "issue": f"successrate {sr} outside [{b[0]}, {b[1]}]",
+                    }
+                )
 
         if "n_trials" in summary and "ntrials" in config:
             if summary["n_trials"] != config["ntrials"]:
-                issues.append({
-                    "path": path,
-                    "issue": f"n_trials {summary['n_trials']} != config ntrials {config['ntrials']}",
-                })
+                issues.append(
+                    {
+                        "path": path,
+                        "issue": f"n_trials {summary['n_trials']} != config ntrials {config['ntrials']}",
+                    }
+                )
 
         if require_traj:
             if trajectories is None:
@@ -52,9 +66,12 @@ def check_simulation_health(cfg: Dict[str, Any]) -> List[Dict[str, str]]:
 
 def main(argv: List[str] | None = None) -> None:
     import argparse
+
     from Code.load_analysis_config import load_analysis_config
 
-    parser = argparse.ArgumentParser(description="Check simulation directories for anomalies")
+    parser = argparse.ArgumentParser(
+        description="Check simulation directories for anomalies"
+    )
     parser.add_argument("config", help="Analysis config YAML file")
     args = parser.parse_args(argv)
 

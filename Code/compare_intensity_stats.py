@@ -1,4 +1,12 @@
-"""Compare intensity statistics across multiple datasets."""
+"""Compare intensity statistics across multiple datasets.
+
+Examples
+--------
+>>> from Code.compare_intensity_stats import load_intensities
+>>> arr = load_intensities("plume.h5", plume_type="crimaldi")
+>>> arr.shape[0] > 0
+True
+"""
 
 from __future__ import annotations
 
@@ -51,7 +59,6 @@ def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarra
     # Read the script contents
     with open(script_path, "r") as f:
         script_contents = f.read()
-
 
     return get_intensities_from_video_via_matlab(
         script_contents,
