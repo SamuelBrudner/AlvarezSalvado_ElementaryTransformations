@@ -22,6 +22,12 @@ def test_paths_sh_uses_module(tmp_path):
         tmp_path / "scripts" / "make_paths_relative.py",
     )
 
+    # create a dummy MATLAB installation that would be found via common paths
+    system_matlab = Path("/usr/local/MATLAB/test_module/bin/matlab")
+    system_matlab.parent.mkdir(parents=True, exist_ok=True)
+    system_matlab.write_text("#!/bin/sh\nexit 0\n")
+    system_matlab.chmod(0o755)
+
     # create fake module command
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -67,6 +73,8 @@ fi
         text=True,
         env=env,
     )
+
+    shutil.rmtree(system_matlab.parents[1])
 
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == str(fake_matlab)
