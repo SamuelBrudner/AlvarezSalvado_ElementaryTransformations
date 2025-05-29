@@ -354,6 +354,71 @@ def test_setup_env_exits_when_active(monkeypatch):
     assert "deactivate" in result.stdout + result.stderr
 
 
+def test_setup_succeeds_when_dev_env_missing(tmp_path, monkeypatch):
+    """Script should not abort if dev_env directory is absent and no environment is active."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
+  echo \"{conda_base}\"
+elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
+  echo '{{"platform":"linux-64"}}'
+elif [ \"$1\" = \"env\" ] && [ \"$2\" = \"create\" ] && [ \"$3\" = \"--help\" ]; then
+  echo "--force"
+  exit 0
+elif [ \"$1\" = \"env\" ]; then
+  exit 0
+elif [ \"$1\" = \"run\" ]; then
+  exit 0
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    conda_lock_script = bin_dir / "conda-lock"
+    conda_lock_script.write_text("#!/bin/bash\necho 'conda-lock 1.0.0'")
+    conda_lock_script.chmod(0o755)
+
+    user_base = tmp_path / "user"
+    user_bin = user_base / "bin"
+    user_bin.mkdir(parents=True)
+
+    python_script = bin_dir / "python"
+    python_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"-m\" ] && [ \"$2\" = \"site\" ] && [ \"$3\" = \"--user-base\" ]; then
+  echo '{user_base}'
+elif [ \"$1\" = \"-m\" ] && [ \"$2\" = \"pip\" ] && [ \"$3\" = \"install\" ]; then
+  exit 0
+else
+  /usr/bin/env python "$@"
+fi
+"""
+    )
+    python_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    monkeypatch.setenv("PYTHONUSERBASE", str(user_base))
+    monkeypatch.delenv("CONDA_PREFIX", raising=False)
+
+    result = subprocess.run(
+        ["bash", "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    assert "dev_env is currently active" not in result.stdout + result.stderr
+
+
 def test_setup_env_invokes_nfs_cleanup():
     """Ensure cleanup function is defined and used after environment removal."""
     with open("setup_env.sh") as f:
