@@ -1,59 +1,85 @@
-.PHONY: help test test-cov lint format check-format type-check clean
+# Makefile for the project
+# Includes paths from configs/makefile_paths.mk which is generated during setup
 
-# Project configuration
-VENV_PATH := $(shell pwd)/dev_env
-PYTHON := $(VENV_PATH)/bin/python
-PIP := $(VENV_PATH)/bin/pip
-PYTEST := $(VENV_PATH)/bin/pytest
-MYPY := $(VENV_PATH)/mypy
-BLACK := $(VENV_PATH)/black
-ISORT := $(VENV_PATH)/isort
-FLAKE8 := $(VENV_PATH)/flake8
+SHELL := /bin/bash
 
-# Help target to show available commands
+# Include the generated paths file
+-include configs/makefile_paths.mk
+
+# Default paths (used if makefile_paths.mk is not available)
+PROJECT_ROOT ?= $(CURDIR)
+SCRIPTS_DIR ?= $(PROJECT_ROOT)/Code
+OUTPUT_RAW ?= $(PROJECT_ROOT)/data/raw
+OUTPUT_PROCESSED ?= $(PROJECT_ROOT)/data/processed
+OUTPUT_FIGURES ?= $(PROJECT_ROOT)/figures
+
+# Ensure output directories exist
+$(shell mkdir -p $(OUTPUT_RAW) $(OUTPUT_PROCESSED) $(OUTPUT_FIGURES))
+
+# Python and test configuration
+PYTHON ?= python
+PYTEST ?= $(shell command -v pytest || echo "python -m pytest")
+PYTEST_OPTS ?= -v
+
+# Default target when you run just 'make'
 help:
+	@echo "Project: $(PROJECT_NAME)"
+	@echo "Root directory: $(PROJECT_ROOT)"
+	@echo ""
 	@echo "Available targets:"
-	@echo "  make test       - Run tests with pytest"
-	@echo "  make test-cov   - Run tests with coverage report"
-	@echo "  make lint       - Run all linters (black, isort, flake8, mypy)"
-	@echo "  make format     - Format code with black and isort"
-	@echo "  make check-format - Check code formatting without making changes"
-	@echo "  make type-check - Run type checking with mypy"
-	@echo "  make clean      - Clean up temporary files"
+	@echo "  test          - Run tests with pytest"
+	@echo "  test-cov      - Run tests with coverage report"
+	@echo "  clean         - Clean up temporary files"
+	@echo "  clean-all     - Clean all generated files and caches"
+	@echo "  setup         - Run setup script to generate configuration"
+	@echo "  help-paths    - Show configured paths"
 
-# Test targets
+# Show configured paths
+help-paths:
+	@echo "Project paths:"
+	@echo "  Project root: $(PROJECT_ROOT)"
+	@echo "  Scripts dir: $(SCRIPTS_DIR)"
+	@echo "  Output dirs:"
+	@echo "    - Raw: $(OUTPUT_RAW)"
+	@echo "    - Processed: $(OUTPUT_PROCESSED)"
+	@echo "    - Figures: $(OUTPUT_FIGURES)"
+
+# Setup target to generate configuration
+setup:
+	@echo "Setting up project configuration..."
+	@if [ -f "setup_env.sh" ]; then \
+		echo "Running setup_env.sh..."; \
+		source ./setup_env.sh; \
+	else \
+		echo "Error: setup_env.sh not found"; \
+		exit 1; \
+	fi
+
+# Test target
 test:
-	$(PYTEST) -v -s
+	@echo "Running tests..."
+	cd "$(SCRIPTS_DIR)" && $(PYTHON) -m pytest $(PYTEST_OPTS)
 
+# Test with coverage
 test-cov:
-	$(PYTEST) --cov=src --cov-report=term-missing -v
+	@echo "Running tests with coverage..."
+	cd "$(SCRIPTS_DIR)" && \
+	$(PYTHON) -m pytest --cov=. --cov-report=term-missing $(PYTEST_OPTS)
 
-# Linting and formatting targets
-lint: check-format type-check
-	@echo "Running flake8..."
-	$(FLAKE8) src tests
-
-format:
-	@echo "Running isort..."
-	$(ISORT) src tests
-	@echo "Running black..."
-	$(BLACK) src tests
-
-check-format:
-	@echo "Running isort check..."
-	$(ISORT) --check-only src tests
-	@echo "Running black check..."
-	$(BLACK) --check src tests
-
-type-check:
-	@echo "Running mypy..."
-	$(MYPY) src tests
-
-# Cleanup
+# Clean up generated files and caches
 clean:
-	@find . -type d -name '__pycache__' -exec rm -rf {} +
-	@find . -type f -name '*.py[co]' -delete
-	@find . -type d -name '.pytest_cache' -exec rm -rf {} +
-	@find . -type d -name '.mypy_cache' -exec rm -rf {} +
-	@find . -type d -name '.coverage' -delete
-	@find . -type d -name 'htmlcov' -exec rm -rf {} +
+	@echo "Cleaning up..."
+	find "$(PROJECT_ROOT)" -type d -name '__pycache__' -exec rm -rf {} +
+	find "$(PROJECT_ROOT)" -type f -name '*.py[co]' -delete
+	find "$(PROJECT_ROOT)" -type d -name '.pytest_cache' -exec rm -rf {} +
+	find "$(PROJECT_ROOT)" -type d -name '.mypy_cache' -exec rm -rf {} +
+	find "$(PROJECT_ROOT)" -type f -name '.coverage' -delete
+	rm -rf "$(PROJECT_ROOT)/htmlcov/"
+	rm -f "$(PROJECT_ROOT)/.coverage"
+
+# Clean all generated files including outputs (be careful!)
+clean-all: clean
+	@echo "Removing all generated outputs..."
+	rm -rf "$(OUTPUT_RAW)/*" "$(OUTPUT_PROCESSED)/*" "$(OUTPUT_FIGURES)/*"
+
+.PHONY: help help-paths setup test test-cov clean clean-all

@@ -488,6 +488,26 @@ elif [ "$SOURCED" -eq 0 ]; then
     main "$@"
 fi
 
+# Generate Makefile include with paths from project_paths.yaml
+generate_makefile_paths() {
+    local makefile_paths_script="${SCRIPT_DIR}/scripts/generate_makefile_paths.sh"
+    local config_dir="${SCRIPT_DIR}/configs"
+    
+    # Create configs directory if it doesn't exist
+    mkdir -p "$config_dir"
+    
+    if [ -f "$makefile_paths_script" ]; then
+        log INFO "Generating Makefile include with paths..."
+        if ! bash "$makefile_paths_script"; then
+            log WARNING "Failed to generate Makefile include with paths"
+            return 1
+        fi
+    else
+        log WARNING "Makefile paths generation script not found: $makefile_paths_script"
+        return 1
+    fi
+}
+
 # Source the paths script if it exists
 setup_paths() {
     if [ -f "$PATHS_SCRIPT" ]; then
@@ -501,6 +521,9 @@ setup_paths() {
         if command -v setup_paths >/dev/null 2>&1; then
             setup_paths
         fi
+        
+        # Generate Makefile paths after setting up the environment
+        generate_makefile_paths
     else
         log WARNING "Paths script not found: $PATHS_SCRIPT"
         return 1

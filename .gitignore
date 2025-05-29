@@ -1,5 +1,6 @@
 # Configuration files with machine-specific paths
 .pre-commit-config.yaml
+configs/makefile_paths.mk
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
