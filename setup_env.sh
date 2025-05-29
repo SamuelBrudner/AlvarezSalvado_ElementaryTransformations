@@ -144,6 +144,12 @@ try_load_conda_module() {
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
     if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
+        if [ -x "./${LOCAL_ENV_DIR}/bin/conda-lock" ]; then
+            log INFO "Using conda-lock from ${LOCAL_ENV_DIR}"
+            export PATH="./${LOCAL_ENV_DIR}/bin:${PATH}"
+            hash -r
+            return 0
+        fi
         if [ -d "./${LOCAL_ENV_DIR}" ]; then
             log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
             if ! run_command_verbose conda run --prefix "./${LOCAL_ENV_DIR}" conda install -y -c conda-forge conda-lock; then

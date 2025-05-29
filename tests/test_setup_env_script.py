@@ -505,3 +505,75 @@ fi
     log = log_file.read_text()
     assert "update" in log
     assert "create" not in log
+
+
+def test_conda_lock_skips_reinstall_when_present(tmp_path, monkeypatch):
+    """Existing conda-lock in dev_env/bin should be reused without reinstall."""
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
+
+    log_file = tmp_path / "conda_log"
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+echo "$@" >> "{log_file}"
+if [ "$1" = "info" ] && [ "$2" = "--base" ]; then
+  echo "{conda_base}"
+elif [ "$1" = "info" ] && [ "$2" = "--json" ]; then
+  echo '{{"platform":"linux-64"}}'
+elif [ "$1" = "env" ]; then
+  exit 0
+elif [ "$1" = "run" ]; then
+  exit 0
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    user_base = tmp_path / "user"
+    (user_base / "bin").mkdir(parents=True)
+
+    python_script = bin_dir / "python"
+    python_script.write_text(
+        f"""#!/bin/bash
+if [ "$1" = "-m" ] && [ "$2" = "site" ] && [ "$3" = "--user-base" ]; then
+  echo '{user_base}'
+elif [ "$1" = "-m" ] && [ "$2" = "pip" ] && [ "$3" = "install" ]; then
+  echo "$@" >> "{log_file}"
+  exit 0
+else
+  /usr/bin/env python "$@"
+fi
+"""
+    )
+    python_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    monkeypatch.setenv("PYTHONUSERBASE", str(user_base))
+    monkeypatch.delenv("CONDA_PREFIX", raising=False)
+
+    dev_bin = Path("dev_env/bin")
+    dev_bin.mkdir(parents=True, exist_ok=True)
+    conda_lock_script = dev_bin / "conda-lock"
+    conda_lock_script.write_text("#!/bin/bash\necho 'conda-lock 1.0.0'")
+    conda_lock_script.chmod(0o755)
+
+    result = subprocess.run(
+        ["bash", "./setup_env.sh", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    output = result.stdout + result.stderr
+    assert "Installing conda-lock" not in output
+    executed = log_file.read_text()
+    assert "conda install -y -c conda-forge conda-lock" not in executed
