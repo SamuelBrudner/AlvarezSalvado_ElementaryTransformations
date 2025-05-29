@@ -271,7 +271,7 @@ def get_intensities_from_video_via_matlab(
         try:
             data = loadmat(mat_path)
             arr = np.asarray(data["all_intensities"])  # type: ignore[index]
-        except NotImplementedError:
+        except (NotImplementedError, ValueError):
             with h5py.File(mat_path, "r") as f:
                 if "all_intensities" not in f:
                     raise KeyError("all_intensities not found in MAT-file")
