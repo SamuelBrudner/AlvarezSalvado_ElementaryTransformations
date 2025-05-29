@@ -187,8 +187,8 @@ conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
 ```
 
 The MATLAB executable is auto-detected when you source `paths.sh`. Pass
-`--matlab_exec` only if you need to override the detected path.
-Use `--allow-mismatch` if the intensity vectors have different lengths.
+`--matlab_exec` only if you need to override the detected path. When datasets
+have different lengths the tool logs a warning but still computes statistics.
 
 ### Pure Python Workflow
 

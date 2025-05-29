@@ -43,9 +43,9 @@ If MATLAB is not found, `paths.sh` tries to load a module named
 `MATLAB/$MATLAB_VERSION` (or `MATLAB_MODULE` if set). Set these variables
 before sourcing to override the default.
 Python utilities such as `Code.video_intensity` also honour `MATLAB_EXEC` when
-it points to a valid executable.
-Use `--allow-mismatch` with `Code.compare_intensity_stats` if your datasets have
-different lengths.
+it points to a valid executable. `Code.compare_intensity_stats` now processes
+datasets of different lengths automatically and logs a warning when lengths
+vary.
 
 `imageio` together with its `imageio-ffmpeg` backend is included in the default
 environment so the `--pure-python` option works without any extra

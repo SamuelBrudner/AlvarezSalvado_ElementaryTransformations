@@ -80,7 +80,6 @@ def load_video_script_intensities(path: str, matlab_exec_path: str) -> np.ndarra
 def compare_intensity_stats(
     sources: Iterable[Tuple[str, str, str | None]],
     matlab_exec_path: str = "matlab",
-    allow_mismatch: bool = False,
     pure_python: bool = False,
 ) -> List[Tuple[str, Stats]]:
     """Return statistics for each identifier/path/type triple.
@@ -92,37 +91,21 @@ def compare_intensity_stats(
     Returns:
         List of (identifier, stats_dict) tuples
 
-    Raises:
-        ValueError: If intensity vectors have different lengths
     """
     results: List[Tuple[str, Stats]] = []
-    expected_len: int | None = None
 
     for identifier, path, plume_type in sources:
         intensities = load_intensities(
             path, plume_type, matlab_exec_path, pure_python
         )
         logger.info("Dataset %s has length %d", identifier, len(intensities))
-        if expected_len is None:
-            expected_len = len(intensities)
-        elif len(intensities) != expected_len:
-            if allow_mismatch:
-                logger.warning(
-                    "Length mismatch for %s: expected %d but got %d",
-                    identifier,
-                    expected_len,
-                    len(intensities),
-                )
-            else:
-                logger.error(
-                    "Length mismatch for %s: expected %d but got %d",
-                    identifier,
-                    expected_len,
-                    len(intensities),
-                )
-                raise ValueError(
-                    f"Expected intensities of length {expected_len}, got {len(intensities)}"
-                )
+        if len(results) and len(intensities) != len(results[0][1]):
+            logger.warning(
+                "Length mismatch for %s: expected %d but got %d",
+                identifier,
+                len(results[0][1]),
+                len(intensities),
+            )
 
         stats = calculate_intensity_stats_dict(intensities)
         results.append((identifier, stats))
@@ -220,11 +203,6 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         "--diff", action="store_true", help="Show differences for two datasets"
     )
     parser.add_argument(
-        "--allow-mismatch",
-        action="store_true",
-        help="Allow intensity vectors of different lengths",
-    )
-    parser.add_argument(
         "--pure-python",
         action="store_true",
         help="Extract intensities from video files using Python",
@@ -257,7 +235,7 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         )
 
     results = compare_intensity_stats(
-        entries, ns.matlab_exec, ns.allow_mismatch, ns.pure_python
+        entries, ns.matlab_exec, ns.pure_python
     )
     if ns.diff:
         try:
