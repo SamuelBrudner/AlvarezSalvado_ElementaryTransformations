@@ -143,7 +143,6 @@ try_load_conda_module() {
 
 # Ensure conda-lock command exists and functions
 ensure_conda_lock() {
-    local USER_BIN="$(python -m site --user-base)/bin"
     if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
         if [ -d "./${LOCAL_ENV_DIR}" ]; then
             log INFO "Installing conda-lock into ${LOCAL_ENV_DIR}"
@@ -165,22 +164,25 @@ ensure_conda_lock() {
 
         # Refresh the shell to update PATH
         if [ -f "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" ]; then
-            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh" 
+            source "${CONDA_BASE_DIR}/etc/profile.d/conda.sh"
         fi
 
         # Add conda to PATH
         export PATH="${CONDA_BASE_DIR}/bin:${PATH}"
 
         # Always include user's pip bin directory
-        append_path_if_missing "${USER_BIN}"
-        if [ -x "${USER_BIN}/conda-lock" ]; then
-            "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
-        fi
+        USER_BIN="$(python -m site --user-base)/bin"
+        export PATH="${USER_BIN}:${PATH}"
+        [ -x "${USER_BIN}/conda-lock" ] && "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
         hash -r
 
         # Verify installation
-        if ! command -v conda-lock >/dev/null 2>&1 || ! conda-lock --version >/dev/null 2>&1; then
-            error "conda-lock installed but not on PATH. Add ${USER_BIN}/conda-lock to PATH."
+        if ! command -v conda-lock >/dev/null 2>&1; then
+            if [ -x "${USER_BIN}/conda-lock" ]; then
+                "${USER_BIN}/conda-lock" --version >/dev/null 2>&1 || true
+            else
+                error "conda-lock installed but not on PATH. Add ${USER_BIN}/conda-lock to PATH."
+            fi
         fi
     fi
 }
