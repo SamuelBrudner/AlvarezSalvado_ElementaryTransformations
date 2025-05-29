@@ -21,7 +21,10 @@ import numpy as np
 
 from Code.analyze_crimaldi_data import get_intensities_from_crimaldi
 from Code.intensity_stats import calculate_intensity_stats_dict
-from Code.video_intensity import get_intensities_from_video_via_matlab
+from Code.video_intensity import (
+    get_intensities_from_video_via_matlab,
+    extract_intensities_from_video,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +35,7 @@ def load_intensities(
     path: str,
     plume_type: str | None = None,
     matlab_exec_path: str = "matlab",
+    pure_python: bool = False,
 ) -> np.ndarray:
     """Load intensity vector based on plume type.
 
@@ -46,6 +50,8 @@ def load_intensities(
     if plume_type == "crimaldi":
         return get_intensities_from_crimaldi(path)
     if plume_type == "video":
+        if pure_python or path.lower().endswith((".avi", ".mp4", ".mov")):
+            return extract_intensities_from_video(path)
         return load_video_script_intensities(path, matlab_exec_path)
     raise ValueError(f"Unknown plume_type: {plume_type}")
 
@@ -75,6 +81,7 @@ def compare_intensity_stats(
     sources: Iterable[Tuple[str, str, str | None]],
     matlab_exec_path: str = "matlab",
     allow_mismatch: bool = False,
+    pure_python: bool = False,
 ) -> List[Tuple[str, Stats]]:
     """Return statistics for each identifier/path/type triple.
 
@@ -92,7 +99,9 @@ def compare_intensity_stats(
     expected_len: int | None = None
 
     for identifier, path, plume_type in sources:
-        intensities = load_intensities(path, plume_type, matlab_exec_path)
+        intensities = load_intensities(
+            path, plume_type, matlab_exec_path, pure_python
+        )
         logger.info("Dataset %s has length %d", identifier, len(intensities))
         if expected_len is None:
             expected_len = len(intensities)
@@ -216,6 +225,11 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
         help="Allow intensity vectors of different lengths",
     )
     parser.add_argument(
+        "--pure-python",
+        action="store_true",
+        help="Extract intensities from video files using Python",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         help="Logging level (DEBUG, INFO, WARNING, etc.)",
@@ -242,7 +256,9 @@ def main(argv: List[str] | None = None) -> None:  # pragma: no cover - CLI wrapp
             "Expected pairs (identifier path) or triples (identifier plume_type path)"
         )
 
-    results = compare_intensity_stats(entries, ns.matlab_exec, ns.allow_mismatch)
+    results = compare_intensity_stats(
+        entries, ns.matlab_exec, ns.allow_mismatch, ns.pure_python
+    )
     if ns.diff:
         try:
             diff = compute_differences(results)

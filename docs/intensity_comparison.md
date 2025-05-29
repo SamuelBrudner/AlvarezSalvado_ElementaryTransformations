@@ -190,6 +190,22 @@ The MATLAB executable is auto-detected when you source `paths.sh`. Pass
 `--matlab_exec` only if you need to override the detected path.
 Use `--allow-mismatch` if the intensity vectors have different lengths.
 
+### Pure Python Workflow
+
+Video files can be processed without MATLAB using the `--pure-python` flag. The
+helper function reads frames via `imageio` and stores the resulting intensities
+in a NumPy ``.npy`` file. Install ``imageio`` with ``pip install imageio`` if it
+isn't already available.
+
+Example:
+
+```bash
+conda run --prefix ./dev_env python -m Code.compare_intensity_stats \
+    SMOKE data/smoke_1a_bgsub_raw.avi \
+    CRIM data/10302017_10cms_bounded_2.h5 \
+    --pure-python
+```
+
 #### When MATLAB cannot be found
 
 If `compare_intensity_stats` cannot locate MATLAB it prints an error:
