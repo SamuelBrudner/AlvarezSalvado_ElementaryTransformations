@@ -3,6 +3,7 @@ function tests = test_scale_custom_plume
 end
 
 function setupOnce(testCase)
+
     addpath(fullfile(pwd, 'Code'));
     tmpDir = tempname;
     mkdir(tmpDir);
@@ -44,4 +45,5 @@ function testScalingAndMetadata(testCase)
     stats = plume_intensity_stats();
     verifyEqual(testCase, min(plume.data(:)), stats.CRIM.min, 'AbsTol', 1e-12);
     verifyEqual(testCase, max(plume.data(:)), stats.CRIM.max, 'AbsTol', 1e-12);
+
 end
