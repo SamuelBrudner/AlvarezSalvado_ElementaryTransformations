@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Any, Dict
 from pathlib import Path
-from typing import Any, Dict
 
 import numpy as np
 
@@ -54,18 +53,22 @@ with _YAML_PATH.open("r", encoding="utf-8") as fh:
     _INTENSITY_STATS: Dict[str, Dict[str, Any]] = yaml.safe_load(fh)
 
 
-def get_intensity_stats() -> Dict[str, Dict[str, Any]]:
-    """Return stored intensity statistics for the default plumes."""
+def get_intensity_stats(path: str | Path | None = None) -> Dict[str, Dict[str, Any]]:
+    """Return stored intensity statistics for the default plumes.
+
+    Parameters
+    ----------
+    path:
+        Optional path to a YAML file with intensity statistics. When ``None``,
+        returns cached stats from ``configs/plume_intensity_stats.yaml``.
+    """
     if path is None:
-        path = (
-            Path(__file__).resolve().parent.parent
-            / "configs"
-            / "plume_intensity_stats.yaml"
-        )
+        return _INTENSITY_STATS
     path = Path(path)
-    with open(path, "r", encoding="utf-8") as fh:
+    if not path.exists():
+        raise FileNotFoundError(path)
+    with path.open("r", encoding="utf-8") as fh:
         return yaml.safe_load(fh)
-    return _INTENSITY_STATS
 
 
 def _rescale(arr: np.ndarray, target_min: float, target_max: float) -> np.ndarray:
@@ -81,3 +84,4 @@ def rescale_to_crim_range(arr: np.ndarray) -> np.ndarray:
     """Linearly rescale ``arr`` to match the Crimaldi min and max."""
     stats = get_intensity_stats()
     return _rescale(arr, stats["CRIM"]["min"], stats["CRIM"]["max"])
+
