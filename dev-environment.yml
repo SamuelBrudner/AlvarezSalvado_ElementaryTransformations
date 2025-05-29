@@ -12,6 +12,7 @@ dependencies:
   - pyyaml
   - matplotlib
   - scipy
+  - imageio
   
   # Development tools
   - conda-lock>=2.0.0
