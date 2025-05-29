@@ -61,7 +61,7 @@ def animate_trajectories(
 
     def update(frame: int) -> Iterable:
         row = df.iloc[frame]
-        point.set_data(row["x"], row["y"])
+        point.set_data([row["x"]], [row["y"]])
         return (point,)
 
     anim = FuncAnimation(fig, update, frames=len(df), init_func=init, blit=True)
