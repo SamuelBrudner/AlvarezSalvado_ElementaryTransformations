@@ -314,14 +314,42 @@ def test_check_not_in_active_env_called_before_creation():
 
 
 def test_setup_aborts_if_env_active(tmp_path, monkeypatch):
-    bin_dir = tmp_path / 'bin'
+    """setup_env.sh should exit if dev_env is already active."""
+    bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
 
-    conda_base = tmp_path / 'conda'
-    (conda_base / 'etc/profile.d').mkdir(parents=True)
-    (conda_base / 'etc/profile.d/conda.sh').write_text('')
+    conda_base = tmp_path / "conda"
+    (conda_base / "etc/profile.d").mkdir(parents=True)
+    (conda_base / "etc/profile.d/conda.sh").write_text("")
 
-    conda_script = bin_dir / 'conda'
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
+  echo \"{conda_base}\"
+elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
+  echo '{{"platform":"linux-64"}}'
+elif [ \"$1\" = \"run\" ]; then
+  exit 0
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    dev_env = Path("dev_env")
+    dev_env.mkdir(exist_ok=True)
+    monkeypatch.setenv("CONDA_PREFIX", str(dev_env.resolve()))
+
+    result = subprocess.run(
+        [BASH, "./setup_env.sh", "--skip-conda-lock", "--no-tests"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "dev_env is currently active" in result.stdout + result.stderr
 
 def test_setup_env_uses_user_bin_conda_lock_when_not_in_path(tmp_path, monkeypatch):
     """Ensure setup succeeds when conda-lock exists only in the user bin."""
@@ -387,14 +415,36 @@ fi
 
     assert result.returncode == 0
 
-def test_setup_env_exits_when_active(monkeypatch):
+def test_setup_env_exits_when_active(tmp_path, monkeypatch):
     """Script should fail if run inside an active environment."""
-    monkeypatch.setenv("CONDA_PREFIX", os.path.abspath("dev_env"))
-    result = subprocess.run([
-        BASH,
-        "./setup_env.sh",
-        "--dev",
-    ], capture_output=True, text=True)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    conda_script = bin_dir / "conda"
+    conda_script.write_text(
+        f"""#!/bin/bash
+if [ \"$1\" = \"info\" ] && [ \"$2\" = \"--base\" ]; then
+  echo \"{tmp_path}\"
+elif [ \"$1\" = \"info\" ] && [ \"$2\" = \"--json\" ]; then
+  echo '{{"platform":"linux-64"}}'
+else
+  exit 0
+fi
+"""
+    )
+    conda_script.chmod(0o755)
+
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+
+    dev_env = Path("dev_env")
+    dev_env.mkdir(exist_ok=True)
+    monkeypatch.setenv("CONDA_PREFIX", str(dev_env.resolve()))
+
+    result = subprocess.run(
+        [BASH, "./setup_env.sh", "--dev", "--skip-conda-lock"],
+        capture_output=True,
+        text=True,
+    )
     assert result.returncode != 0
     assert "deactivate" in result.stdout + result.stderr
 
