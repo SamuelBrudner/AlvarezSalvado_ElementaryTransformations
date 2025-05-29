@@ -32,12 +32,48 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional
 
+try:
+    import imageio.v3 as imageio
+except Exception:  # noqa: BLE001
+    imageio = None
+
 import h5py
 import numpy as np
 import yaml
 from scipy.io import loadmat
 
 logger = logging.getLogger(__name__)
+
+
+def extract_intensities_from_video(
+    video_path: str,
+    px_per_mm: float | None = None,
+    frame_rate: float | None = None,
+) -> np.ndarray:
+    """Return a flattened array of normalised grayscale intensities.
+
+    Parameters
+    ----------
+    video_path : str
+        Path to the video file.
+    px_per_mm, frame_rate : float, optional
+        Present for API compatibility; values are ignored.
+    """
+
+    if imageio is None:  # pragma: no cover - environment may lack imageio
+        raise ImportError("imageio is required for pure Python video processing")
+
+    frames = []
+    for frame in imageio.imiter(video_path):
+        arr = np.asarray(frame)
+        if arr.ndim == 3:
+            arr = np.mean(arr[..., :3], axis=2)
+        frames.append(arr.astype(np.float64) / 255.0)
+
+    if not frames:
+        raise ValueError("no frames found in video")
+
+    return np.concatenate([f.reshape(-1) for f in frames])
 
 
 def find_matlab_executable(user_path: Optional[str] = None) -> str:

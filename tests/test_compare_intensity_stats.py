@@ -45,26 +45,29 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
     arr_crim = np.array([10.0, 20.0], dtype=float)
     create_hdf5(hfile, arr_crim)
 
-    script = tmp_path / "video_script.m"
-    script.write_text("disp('hi')")
+    video = tmp_path / "smoke.avi"
+    video.write_bytes(b"dummy")
     arr_vid = np.array([1.0, 2.0, 3.0], dtype=float)
 
     captured = {}
 
-    def fake_func(s, m="matlab", orig_script_path=None, **kwargs):
-        captured["matlab_exec"] = m
+    def fake_extract(path, px_per_mm=None, frame_rate=None):
+        captured["path"] = path
         return arr_vid
 
-    monkeypatch.setattr(cis, "get_intensities_from_video_via_matlab", fake_func)
+    def fake_matlab(*args, **kwargs):  # pragma: no cover - should not be called
+        raise AssertionError("MATLAB path should not be used")
+
+    monkeypatch.setattr(cis, "extract_intensities_from_video", fake_extract)
+    monkeypatch.setattr(cis, "get_intensities_from_video_via_matlab", fake_matlab)
 
     cis.main(
         [
             "VID",
-            "video",
-            str(script),
+            str(video),
             "CRIM",
-            "crimaldi",
             str(hfile),
+            "--pure-python",
         ]
     )
     out = capsys.readouterr().out.strip().splitlines()
@@ -73,7 +76,7 @@ def test_compare_intensity_stats_video_vs_crimaldi(monkeypatch, tmp_path, capsys
     assert out[2].split("\t")[0] == "CRIM"
     assert f"{arr_vid.mean():.3f}" in out[1]
     assert f"{arr_crim.mean():.3f}" in out[2]
-    assert captured["matlab_exec"] == "matlab"
+    assert captured["path"] == str(video)
 
 
 def test_matlab_exec_option(monkeypatch, tmp_path):

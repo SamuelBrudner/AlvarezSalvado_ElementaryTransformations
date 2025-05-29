@@ -99,3 +99,23 @@ def test_orig_script_path_passed(monkeypatch, tmp_path):
 
     cis.load_intensities(str(mfile), plume_type="video")
     assert captured["orig_script_path"] == str(mfile)
+
+
+def test_video_file_uses_python_loader(monkeypatch, tmp_path):
+    vfile = tmp_path / "clip.avi"
+    vfile.write_bytes(b"data")
+    captured = {}
+
+    def fake_extract(path, px_per_mm=None, frame_rate=None):
+        captured["path"] = path
+        return np.array([9.0])
+
+    def fake_matlab(*args, **kwargs):
+        raise AssertionError("matlab loader should not be used")
+
+    monkeypatch.setattr(cis, "extract_intensities_from_video", fake_extract)
+    monkeypatch.setattr(cis, "get_intensities_from_video_via_matlab", fake_matlab)
+
+    arr = cis.load_intensities(str(vfile), plume_type="video", pure_python=True)
+    assert np.array_equal(arr, np.array([9.0]))
+    assert captured["path"] == str(vfile)
