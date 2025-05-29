@@ -89,7 +89,15 @@ Example snippet from `configs/my_complex_plume_config.yaml`:
 px_per_mm: 6.536
 # Frame rate of the video in Hz
 frame_rate: 60
+# Automatically repeat the movie when triallength exceeds its length
+# loop: true
+# Override the movie length with a specific number of frames
+# triallength: 7200
 ```
+
+The optional `loop` flag repeats the movie when `triallength` is longer than the
+source video. Setting `triallength` lets you cut or extend each trial to an
+explicit number of frames.
 
 
 ## Running Tests
