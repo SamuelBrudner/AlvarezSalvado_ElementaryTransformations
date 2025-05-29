@@ -60,6 +60,25 @@ With the environment active you can run MATLAB and Python scripts from the `Code
 conda run --prefix ./dev_env python -m Code.some_script
 ```
 
+### Video Processing Example
+
+The `Code.rotate_video` module provides utilities to rotate videos and
+convert them to HDF5.  Paths below are given relative to the project
+root:
+
+```python
+from Code.rotate_video import rotate_video_clockwise, video_to_hdf5
+
+rotate_video_clockwise(
+    "data/raw/example.avi",
+    "data/processed/example_rotated.avi",
+)
+video_to_hdf5(
+    "data/processed/example_rotated.avi",
+    "data/processed/example.h5",
+)
+```
+
 ## Step-by-Step
 
 1 and 2 are only *as required* -- check if there's evidence they've already run
