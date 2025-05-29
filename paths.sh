@@ -38,6 +38,15 @@ find_matlab() {
         return 0
     fi
     
+    # Try module system if available before searching common paths
+    if command -v module >/dev/null 2>&1; then
+        module load "$MATLAB_MODULE" >/dev/null 2>&1 || module load MATLAB >/dev/null 2>&1 || true
+        if command -v matlab >/dev/null 2>&1; then
+            command -v matlab
+            return 0
+        fi
+    fi
+
     # Try common MATLAB executable locations
     local matlab_paths=(
         "/usr/local/MATLAB/*/bin/matlab"
@@ -56,18 +65,7 @@ find_matlab() {
             fi
         done
     done
-    
-    # Try module system if available
-    if command -v module >/dev/null 2>&1; then
-        if ! module load "$MATLAB_MODULE" >/dev/null 2>&1; then
-            module load MATLAB >/dev/null 2>&1 || true
-        fi
-        if command -v matlab >/dev/null 2>&1; then
-            command -v matlab
-            return 0
-        fi
-    fi
-    
+
     return 1
 }
 
