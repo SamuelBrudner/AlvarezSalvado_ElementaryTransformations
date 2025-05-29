@@ -8,3 +8,5 @@ Run the analysis pipeline::
     run_pipeline("configs/example_analysis.yaml")
 """
 from .rotate_video import rotate_video_clockwise
+
+__all__ = ["rotate_video_clockwise"]
