@@ -17,8 +17,10 @@ OUTPUT_FIGURES ?= $(PROJECT_ROOT)/figures
 $(shell mkdir -p $(OUTPUT_RAW) $(OUTPUT_PROCESSED) $(OUTPUT_FIGURES))
 
 # Python and test configuration
-PYTHON ?= python
-PYTEST ?= $(shell command -v pytest || echo "python -m pytest")
+# Use the pytest from the conda environment
+CONDA_ENV_PATH := $(shell conda info --base 2>/dev/null || echo "$(PWD)/dev_env")
+PYTHON ?= $(CONDA_ENV_PATH)/bin/python
+PYTEST ?= $(CONDA_ENV_PATH)/bin/pytest
 PYTEST_OPTS ?= -v
 
 # Default target when you run just 'make'
