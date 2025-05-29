@@ -283,6 +283,21 @@ Use these helpers to prepare plume videos for analysis.
   video_to_hdf5("in.avi","out.h5");
   ```
 
+### Plume Registry
+
+Processed plume files and their intensity ranges are tracked in
+`configs/plume_registry.yaml`. Each entry stores the minimum and maximum values
+used for scaling:
+
+```yaml
+# Example entry
+plumes/smoke_scaled.h5:
+  min: 0.1
+  max: 3.1
+```
+
+Transformation utilities automatically append or update this registry when new
+plume files are generated.
 
 ### MATLAB Script Execution
 

@@ -152,6 +152,10 @@ provided:
 - The optional `scaled_to_crim` flag prevents `load_custom_plume` from applying
   this scaling twice when the plume has already been normalised.
 - [Plume Transformation Utilities](docs/intensity_comparison.md#plume-transformation-utilities) provide scaling and rotation helpers.
+- Intensity ranges for processed plumes are stored in
+  `configs/plume_registry.yaml`; transformation scripts update this file
+  automatically. See
+  [Plume Registry](docs/intensity_comparison.md#plume-registry).
 
 Example workflow:
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 try:  # pragma: no cover - fallback if PyYAML is unavailable
     import yaml  # type: ignore
@@ -37,6 +37,19 @@ except ModuleNotFoundError:  # pragma: no cover - minimal YAML support
     )
 
 
+def load_registry(yaml_path: Path = Path("configs/plume_registry.yaml")) -> Dict[str, Dict[str, float]]:
+    """Return the plume intensity registry as a dictionary."""
+    if yaml_path.exists():
+        with yaml_path.open("r", encoding="utf-8") as fh:
+            loaded = yaml.safe_load(fh) or {}
+            if isinstance(loaded, dict):
+                return {
+                    k: {"min": float(v.get("min", 0.0)), "max": float(v.get("max", 0.0))}
+                    for k, v in loaded.items()
+                }
+    return {}
+
+
 def update_plume_registry(
     path: str,
     min_val: float,
@@ -57,3 +70,14 @@ def update_plume_registry(
     registry[path] = {"min": float(min_val), "max": float(max_val)}
     with yaml_path.open("w", encoding="utf-8") as fh:
         yaml.safe_dump(registry, fh)
+
+
+def load_registry(yaml_path: Path = Path("configs/plume_registry.yaml")) -> dict:
+    """Return the contents of ``yaml_path`` or an empty dict if missing."""
+
+    if not yaml_path.exists():
+        return {}
+
+    with yaml_path.open("r", encoding="utf-8") as fh:
+        loaded = yaml.safe_load(fh) or {}
+        return loaded if isinstance(loaded, dict) else {}
