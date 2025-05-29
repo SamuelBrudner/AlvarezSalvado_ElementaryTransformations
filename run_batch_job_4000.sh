@@ -52,6 +52,7 @@ TOTAL_JOBS=$(( NUM_CONDITIONS * JOBS_PER_COND ))
 
 ########################  disk space check  ########################
 : ${BYTES_PER_AGENT:=50000000} # BYTES_PER_AGENT=50000000
+
 REQUIRED=$(( AGENTS_PER_CONDITION * NUM_CONDITIONS * BYTES_PER_AGENT * 12 / 10 / 1024 ))
 FREE=$(df -k --output=avail "$OUTPUT_BASE" | tail -1)
 (( FREE >= REQUIRED )) || { echo "ERR not enough space"; exit 1; }
@@ -75,6 +76,8 @@ PICK=$(( TASK % NUM_CONDITIONS ))
 BLOCK=$(( TASK / NUM_CONDITIONS ))
 PLUME=${PLUMES[$((PICK/${#SENSING[@]}))]}
 SENSE=${SENSING[$((PICK%${#SENSING[@]}))]}
+PLUME_NAME="$PLUME"
+SENSING_NAME="$SENSE"
 START=$(( BLOCK*AGENTS_PER_JOB + 1 ))
 END=$(( (BLOCK+1)*AGENTS_PER_JOB )); (( END>AGENTS_PER_CONDITION )) && END=$AGENTS_PER_CONDITION
 
@@ -87,14 +90,17 @@ if isempty(which('run_navigation_cfg')), addpath(fullfile(pwd,'Code')); end
 ws=warning('off','all'); cleanupObj=onCleanup(@()warning(ws));
 MAT
 for AG in $(seq $START $END); do
+  AGENT_ID=$AG
+  SEED=$AG
+  OUT_DIR="\\${OUTPUT_BASE}/\\${EXPERIMENT_NAME}/\\${PLUME_NAME}_\\${SENSING_NAME}/\\${AGENT_ID}_\\${SEED}"
   cat >>"$MATLAB_SCRIPT"<<MAT
 try
   cfg = load_config('$PLUME_CONFIG');
   cfg.plume_video = '$PLUME_VIDEO';
   cfg.bilateral   = $( [[ $SENSE == bilateral ]] && echo true || echo false );
-  cfg.randomSeed  = $AG;
+  cfg.randomSeed  = $SEED;
   cfg.ntrials=1; cfg.plotting=0;
-  cfg.outputDir   = '$OUTPUT_BASE/$EXPERIMENT_NAME/${PLUME}_${SENSE}/${AG}_$AG';
+  cfg.outputDir   = '$OUT_DIR';
   mkdir(cfg.outputDir);
   R = run_navigation_cfg(cfg);
   save(fullfile(cfg.outputDir,'result.mat'),'R','-v7');
