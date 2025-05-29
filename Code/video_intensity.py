@@ -6,7 +6,9 @@ are supplied, they are inserted as variable assignments at the beginning of the
 script so that MATLAB code can access them directly.  When
 ``orig_script_path`` is provided, the variables ``orig_script_path`` and
 ``orig_script_dir`` are also defined, pointing to the path of the original
-script and its directory, respectively.
+script and its directory, respectively.  When videos are processed purely in
+Python, the module reports the estimated and actual memory usage so large files
+do not surprise the user.
 
 Examples
 --------
@@ -45,6 +47,38 @@ from scipy.io import loadmat
 logger = logging.getLogger(__name__)
 
 
+def estimate_video_memory(video_path: str) -> float | None:
+    """Return estimated memory usage in bytes for loading ``video_path``.
+
+    The estimate is derived from the frame count and frame dimensions reported
+    by :func:`imageio.get_reader`.  If metadata is unavailable, ``None`` is
+    returned.
+    """
+    if imageio is None:  # pragma: no cover - imageio may be missing
+        return None
+
+    try:
+        reader = imageio.get_reader(video_path)
+    except Exception:  # noqa: BLE001
+        return None
+
+    try:
+        meta = reader.get_meta_data()
+        nframes = meta.get("nframes")
+        size = meta.get("size")
+    finally:
+        with contextlib.suppress(Exception):
+            reader.close()
+
+    if not isinstance(nframes, int) or not (
+        isinstance(size, (list, tuple)) and len(size) == 2
+    ):
+        return None
+
+    width, height = size
+    return float(nframes * width * height * np.dtype(np.float64).itemsize)
+
+
 def extract_intensities_from_video(
     video_path: str,
     px_per_mm: float | None = None,
@@ -63,15 +97,28 @@ def extract_intensities_from_video(
     if imageio is None:  # pragma: no cover - environment may lack imageio
         raise ImportError("imageio is required for pure Python video processing")
 
-    frames = []
+    est_bytes = estimate_video_memory(video_path)
+    if est_bytes is not None:
+        logger.info("Estimated memory usage: ~%.1f MB", est_bytes / (1024 ** 2))
+
+    frames: List[np.ndarray] = []
+    total_bytes = 0
     for frame in imageio.imiter(video_path):
         arr = np.asarray(frame)
         if arr.ndim == 3:
             arr = np.mean(arr[..., :3], axis=2)
-        frames.append(arr.astype(np.float64) / 255.0)
+        arr = arr.astype(np.float64) / 255.0
+        total_bytes += arr.nbytes
+        frames.append(arr)
 
     if not frames:
         raise ValueError("no frames found in video")
+
+    logger.info(
+        "Loaded %d frames (~%.1f MB)",
+        len(frames),
+        total_bytes / (1024 ** 2),
+    )
 
     return np.concatenate([f.reshape(-1) for f in frames])
 
