@@ -185,6 +185,14 @@ ensure_conda_lock() {
     fi
 }
 
+check_not_in_active_env() {
+    local env_path="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
+    if [ "${CONDA_PREFIX:-}" = "$env_path" ]; then
+        log ERROR "dev_env is currently active. Please 'conda deactivate' before running setup_env.sh"
+        return 1
+    fi
+}
+
 # --- Main setup function ---
 setup_environment() {
   section "Starting environment setup"
@@ -257,6 +265,11 @@ setup_environment() {
       run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml --overwrite 2>/dev/null || \
         run_command_verbose conda-lock lock -f "${BASE_ENV_FILE}" -p "${PLATFORM}" --lockfile conda-lock.yml
     fi
+  fi
+
+  # Abort if dev_env is currently active
+  if ! check_not_in_active_env; then
+    return 1
   fi
 
   # Create/update the local prefix environment
