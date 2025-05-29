@@ -12,3 +12,8 @@ plotting: 0
 ntrials: 10
 # Wind speed in arbitrary units
 ws: 1
+# Automatically repeat the movie when triallength exceeds its length
+# loop: true
+
+# Override the movie length with a specific number of frames
+# triallength: 7200

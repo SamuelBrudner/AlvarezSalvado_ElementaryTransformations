@@ -45,3 +45,9 @@ def test_pyproject_requires_opencv() -> None:
 
     deps: list[str] = project.get("project", {}).get("dependencies", [])
     assert any(dep.split("==")[0] == "opencv-python" for dep in deps)
+def test_envs_require_ipykernel() -> None:
+    dev_env_text = _read_env("dev-environment.yml")
+    base_env_text = _read_env("environment.yml")
+    assert "ipykernel" in dev_env_text
+    assert "ipykernel" in base_env_text
+    
