@@ -1,13 +1,8 @@
-import os
-import sys
-
 import pytest
 
 np = pytest.importorskip("numpy")
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from Code import compare_intensity_stats as cis
+from Code import compare_intensity_stats as cis  # noqa: E402
 
 
 def test_h5_path_uses_crimaldi_loader(monkeypatch, tmp_path):

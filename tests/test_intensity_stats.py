@@ -1,13 +1,10 @@
-import os
 import sys
 import types
 import pytest
 
 np = pytest.importorskip("numpy")
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from Code.intensity_stats import calculate_intensity_stats_dict, main
+from Code.intensity_stats import calculate_intensity_stats_dict, main  # noqa: E402
 
 
 def test_calculate_intensity_stats_dict():
