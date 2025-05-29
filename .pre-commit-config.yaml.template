@@ -45,7 +45,7 @@ repos:
       # Pytest - run tests with coverage
       - id: pytest
         name: pytest (coverage)
-        entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" pytest -v --cov=askdata --cov-report=term-missing --cov-fail-under=20 tests/' --
+        entry: bash -c 'source "{{CONDA_PREFIX}}/etc/profile.d/conda.sh" && conda run -p "{{ENV_PATH}}" pytest -v --cov=Code --cov-report=term-missing --cov-fail-under=20 tests/' --
         language: system
         pass_filenames: false
         always_run: true
