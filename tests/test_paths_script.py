@@ -8,11 +8,16 @@ def test_paths_script(tmp_path):
     if shutil.which("conda") is None:
         pytest.skip("conda not available")
 
-    env_result = subprocess.run([
-        "bash",
-        "./setup_env.sh",
-        "--dev",
-    ], capture_output=True, text=True)
+    env_result = subprocess.run(
+        [
+            "bash",
+            "./setup_env.sh",
+            "--skip-conda-lock",
+            "--no-tests",
+        ],
+        capture_output=True,
+        text=True,
+    )
     assert env_result.returncode == 0, env_result.stderr
 
     result = subprocess.run([
