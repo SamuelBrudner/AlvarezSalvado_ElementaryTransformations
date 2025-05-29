@@ -190,14 +190,27 @@ cleanup_nfs_temp_files() {
     find "./${LOCAL_ENV_DIR}" -name '.nfs*' -type f -exec rm -f {} +
 }
 
+conda_env_exists() {
+    if [ -d "./${LOCAL_ENV_DIR}" ]; then
+        local abs_env
+        abs_env="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
+        if conda env list | awk '{print $NF}' | grep -Fq "$abs_env"; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
 
 check_not_in_active_env() {
     if [ -d "./${LOCAL_ENV_DIR}" ]; then
         local env_path
         env_path="$(cd "./${LOCAL_ENV_DIR}" && pwd)"
         if [ "${CONDA_PREFIX:-}" = "$env_path" ]; then
-            log ERROR "dev_env is currently active. Please 'conda deactivate' before running setup_env.sh"
-            return 1
+            if ! command -v conda-lock >/dev/null 2>&1; then
+                log ERROR "dev_env is currently active. Please 'conda deactivate' before running setup_env.sh"
+                return 1
+            fi
         fi
     fi
 }
@@ -205,9 +218,12 @@ check_not_in_active_env() {
 # --- Main setup function ---
 setup_environment() {
   section "Starting environment setup"
-  
+
   # Check if conda is installed, attempt to load via modules if missing
   if ! command -v conda >/dev/null 2>&1; then
+    if ! check_not_in_active_env; then
+      return 1
+    fi
     if try_load_conda_module && command -v conda >/dev/null 2>&1; then
       log INFO "Loaded Conda via module system"
     elif [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
@@ -276,7 +292,7 @@ setup_environment() {
     fi
   fi
 
-  # Abort if dev_env is currently active
+  # Abort if dev_env is currently active and conda-lock is unavailable
   if ! check_not_in_active_env; then
     return 1
   fi
@@ -286,22 +302,28 @@ setup_environment() {
   log INFO "Creating/updating local Conda environment in './$LOCAL_ENV_DIR'"
   
   if [ -f "conda-lock.yml" ]; then
-    if conda_supports_force; then
+    if conda_env_exists; then
+      log INFO "Updating existing environment from lock file"
+      run_command_verbose conda env update --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
+    elif conda_supports_force; then
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml --force
     else
       log INFO "Old conda detected - removing existing environment"
       run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
-  cleanup_nfs_temp_files || true
+      cleanup_nfs_temp_files || true
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" --file conda-lock.yml
     fi
   else
     log WARNING "conda-lock.yml not found, falling back to direct environment creation"
-    if conda_supports_force; then
+    if conda_env_exists; then
+      log INFO "Updating existing environment using $BASE_ENV_FILE"
+      run_command_verbose conda env update --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
+    elif conda_supports_force; then
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}" --force
     else
       log INFO "Old conda detected - removing existing environment"
       run_command_verbose conda env remove --prefix "./${LOCAL_ENV_DIR}" -y || true
-  cleanup_nfs_temp_files || true
+      cleanup_nfs_temp_files || true
       run_command_verbose conda env create --prefix "./${LOCAL_ENV_DIR}" -f "${BASE_ENV_FILE}"
     fi
   fi
