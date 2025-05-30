@@ -32,6 +32,8 @@ function testNoStreamingError(~)
     catch ME
         assert(~strcmp(ME.identifier,'run_navigation_cfg:BilateralStreamingUnsupported'), ...
             'BilateralStreamingUnsupported should not be thrown');
+        assert(~contains(ME.message,'navigation_model_vec_stream not yet implemented'), ...
+            'Streaming should be disabled when bilateral');
     end
 
     rmdir(tmpDir,'s');
