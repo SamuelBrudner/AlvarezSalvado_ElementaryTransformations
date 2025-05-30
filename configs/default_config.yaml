@@ -14,7 +14,7 @@ experiment:
 
 # Simulation parameters
 plume_types: ["crimaldi", "custom"]
-sensing_modes: ["bilateral", "unilateral"]
+sensing_modes: ["unilateral"]  # bilateral mode on hold
 plume_config: "configs/my_complex_plume_config.yaml"
 
 # MATLAB options

@@ -14,8 +14,7 @@ plumes:
   - custom
 
 sensing_modes:
-  - bilateral
-  - unilateral
+  - unilateral  # bilateral mode on hold
 
 matlab:
   version: "R2021a"

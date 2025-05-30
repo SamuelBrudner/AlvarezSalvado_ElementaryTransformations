@@ -13,7 +13,7 @@ data_loading_options:
 
 metadata_extraction:
   plume_regex: "(gaussian|smoke)_([a-z]+)"
-  mode_regex: "(bilateral|unilateral)"
+  mode_regex: "(bilateral|unilateral)"  # bilateral mode paused; regex kept for backwards compatibility
 
 metrics_calculation:
   velocity_threshold: 1.0
