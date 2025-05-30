@@ -79,6 +79,7 @@ def video_to_scaled_rotated_h5(
 
     Use :mod:`scripts.run_plume_pipeline` for a command-line interface.
     """
+
     video_to_hdf5(avi_path, raw_h5)
 
     with h5py.File(raw_h5, "r+") as f:
