@@ -82,11 +82,12 @@ elseif isfield(cfg,'plume_video')
     assert(all(isfield(cfg,{'px_per_mm','frame_rate'})), ...
         'px_per_mm and frame_rate are required for video plumes');
 
-    % Auto-enable streaming on SLURM clusters when not specified
-    if ~isfield(cfg,'use_streaming') && isSlurmCluster()
-        if isfield(cfg,'bilateral') && cfg.bilateral
+    % Auto-enable streaming on SLURM clusters when not specified. Bilateral
+    % simulations do not support streaming, so explicitly disable it first.
+    if ~isfield(cfg,'use_streaming')
+        if isfield(cfg,'bilateral') && cfg.bilateral && isSlurmCluster()
             cfg.use_streaming = false;
-        else
+        elseif isSlurmCluster()
             cfg.use_streaming = true;
         end
     end
