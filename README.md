@@ -111,7 +111,7 @@ See [docs/plume_pipeline.md](docs/plume_pipeline.md#processing-custom-plumes) fo
 
 1. Run `./setup_env.sh --dev` to create `./dev_env`.
    - Add `--clean-install` to force removal of the existing environment.
-2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing.
+2. Source `./paths.sh` to generate `configs/project_paths.yaml` and detect MATLAB. `paths.sh` uses this file and falls back to default paths when `yq` is missing. Clone the YAMLMatlab toolbox into `external/yamlmatlab/` from the project's recommended source. Without it, `load_yaml` and related functions fall back to simple parsing.
 3. Execute `conda run --prefix ./dev_env python -m Code.compare_intensity_stats`.
 4. Run `pre-commit` and verify all checks succeed before committing changes.
 
