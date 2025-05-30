@@ -88,6 +88,10 @@ elseif isfield(cfg,'plume_video')
     end
 
     if isfield(cfg,'use_streaming') && cfg.use_streaming
+        if isfield(cfg,'bilateral') && cfg.bilateral
+            error('run_navigation_cfg:BilateralStreamingUnsupported', ...
+                  'Bilateral model cannot be run in streaming mode');
+        end
         % ~~~ streaming mode (placeholder implementation) ~~~
         vr = VideoReader(cfg.plume_video);
         tl = chooseTrialLength(cfg, floor(vr.Duration * vr.FrameRate));
