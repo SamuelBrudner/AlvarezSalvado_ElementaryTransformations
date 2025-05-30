@@ -225,5 +225,10 @@ export PLUME_METADATA=out_dir/input_meta.yaml
 sbatch run_batch_job_4000.sh # or run_full_batch.sh
 ```
 
+For a quick smoke test use `run_test_batch.sh` instead:
+```bash
+bash run_test_batch.sh
+```
+
 See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for further options.
 
