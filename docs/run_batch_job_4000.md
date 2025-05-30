@@ -40,11 +40,11 @@ etc.) together with `px_per_mm` and `frame_rate`. When a movie has been
 converted to HDF5, reference the companion YAML under `plume_metadata`
 instead.
 
-Generate such a YAML with:
+Generate such a YAML by processing the raw movie directly:
 
 ```bash
 conda run --prefix ./dev_env python -m scripts.process_custom_plume \
-    configs/my_plume.yaml
+    input.avi configs 6.536 60
 ```
 
 During batch runs you can override the default video by exporting
