@@ -92,11 +92,15 @@ conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
     data/processed/example_scaled.h5 data/processed/example_rotated.h5
 ```
 
-To process a custom plume described by a metadata file, use `scripts.process_custom_plume.py`:
+To process a custom plume video, use `scripts.process_custom_plume.py`:
 
 ```bash
-conda run --prefix ./dev_env python -m scripts.process_custom_plume configs/my_plume.yaml
+conda run --prefix ./dev_env python -m scripts.process_custom_plume \
+    input.avi out_dir 6.536 60
 ```
+
+This writes `input_raw.h5`, `input_scaled.h5`, `input_rotated.h5` and
+`input_meta.yaml` into `out_dir`.
 
 See [docs/plume_pipeline.md](docs/plume_pipeline.md#processing-custom-plumes) for details.
 
@@ -206,13 +210,12 @@ all scripts can locate it automatically.
 ## Running Simulations
 
 Configuration files for navigation runs may define either a `plume_video`
-or a `plume_metadata` entry. `plume_video` points to a raw movie while
-`plume_metadata` references a YAML file describing an HDF5 plume. Create
-such a YAML with:
+or a `plume_metadata` entry. Use the script below to generate
+`plume_metadata` from a raw video:
 
 ```bash
 conda run --prefix ./dev_env python -m scripts.process_custom_plume \
-    configs/my_plume.yaml
+    input.avi out_dir 6.536 60
 ```
 
 When launching `run_batch_job_4000.sh` you can override the default
