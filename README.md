@@ -99,8 +99,8 @@ conda run --prefix ./dev_env python -m scripts.process_custom_plume \
     input.avi out_dir 6.536 60
 ```
 
-This writes `input_raw.h5`, `input_scaled.h5`, `input_rotated.h5` and
-`input_meta.yaml` into `out_dir`.
+The script writes `input_meta.yaml`, `input_raw.h5`, `input_scaled.h5`, and
+`input_rotated.h5` into `out_dir`.
 
 See [docs/plume_pipeline.md](docs/plume_pipeline.md#processing-custom-plumes) for details.
 
@@ -217,6 +217,9 @@ or a `plume_metadata` entry. Use the script below to generate
 conda run --prefix ./dev_env python -m scripts.process_custom_plume \
     input.avi out_dir 6.536 60
 ```
+
+The script writes `<base>_meta.yaml`, `<base>_raw.h5`, `<base>_scaled.h5`, and
+`<base>_rotated.h5` into the specified directory.
 
 When launching `run_batch_job_4000.sh` you can override the default
 video by exporting `PLUME_METADATA`:
