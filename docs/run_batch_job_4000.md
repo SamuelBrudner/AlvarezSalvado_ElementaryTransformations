@@ -72,6 +72,13 @@ The array size should equal the total number of jobs computed from `AGENTS_PER_C
 
 Use `run_full_batch.sh` for the standard four‑condition production run or `run_test_batch.sh` for a quick smoke test. Both wrappers export the necessary variables before calling `run_batch_job_4000.sh`.
 
+When `PLUME_METADATA` is exported as shown above, `run_test_batch.sh` submits a short array job for debugging:
+
+```bash
+export PLUME_METADATA=configs/my_plume_meta.yaml
+bash run_test_batch.sh
+```
+
 ## Output
 
 Results are written under `${OUTPUT_BASE}/${EXPERIMENT_NAME}/<plume>_<mode>/<agent>_<seed>` as MATLAB `.mat` files. After MATLAB completes, the script converts each result into CSV and JSON using `export_results`. Processed data are placed under `data/processed` with the same folder hierarchy.
