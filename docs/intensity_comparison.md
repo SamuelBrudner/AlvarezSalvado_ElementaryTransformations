@@ -286,12 +286,12 @@ Use these helpers to prepare plume videos for analysis.
 ### Plume Registry
 
 Processed plume files and their intensity ranges are tracked in
-`configs/plume_registry.yaml`. Each entry stores the minimum and maximum values
-used for scaling:
+`configs/plume_registry.yaml`. Each entry is keyed by filename only and stores
+the minimum and maximum values used for scaling:
 
 ```yaml
 # Example entry
-plumes/smoke_scaled.h5:
+smoke_scaled.h5:
   min: 0.1
   max: 3.1
 ```

@@ -56,18 +56,23 @@ def update_plume_registry(
     max_val: float,
     yaml_path: Path = Path("configs/plume_registry.yaml"),
 ) -> None:
-    """Update or insert intensity range for ``path`` in ``yaml_path``."""
+    """Update or insert intensity range for ``path`` in ``yaml_path``.
+
+    The registry uses ``Path(path).name`` as the key so absolute paths are
+    normalised to their filename.
+    """
     registry: Dict[str, Dict[str, Any]] = {}
     if yaml_path.exists():
         with yaml_path.open("r", encoding="utf-8") as fh:
             loaded = yaml.safe_load(fh) or {}
             if isinstance(loaded, dict):
                 registry = loaded
-    entry = registry.get(path)
+    key = Path(path).name
+    entry = registry.get(key)
     if entry:
         min_val = min(float(entry.get("min", min_val)), min_val)
         max_val = max(float(entry.get("max", max_val)), max_val)
-    registry[path] = {"min": float(min_val), "max": float(max_val)}
+    registry[key] = {"min": float(min_val), "max": float(max_val)}
     with yaml_path.open("w", encoding="utf-8") as fh:
         yaml.safe_dump(registry, fh)
 
