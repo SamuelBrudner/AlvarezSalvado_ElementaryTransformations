@@ -138,6 +138,7 @@ find "$RAW_DIR" -name result.mat | while read -r f; do
   out=${f/$RAW_DIR/data\/processed}; out=${out%/result.mat}
   mkdir -p "$out"; echo "try,export_results('$f','$out','Format','both');catch,end" >>"$EXPORT_SCRIPT"
 done
+echo "clear cleanupObj;" >>"$EXPORT_SCRIPT"
 echo "exit" >>"$EXPORT_SCRIPT"
 [[ -s "$EXPORT_SCRIPT" ]] && matlab -nodisplay -nosplash -r "run('$EXPORT_SCRIPT');" || true
 
