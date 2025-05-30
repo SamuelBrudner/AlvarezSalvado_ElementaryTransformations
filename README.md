@@ -92,6 +92,15 @@ conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
     data/processed/example_scaled.h5 data/processed/example_rotated.h5
 ```
 
+To process a custom plume described by a metadata file, use `scripts.process_custom_plume.py`:
+
+```bash
+conda run --prefix ./dev_env python -m scripts.process_custom_plume configs/my_plume.yaml
+```
+
+See [docs/plume_pipeline.md](docs/plume_pipeline.md#processing-custom-plumes) for details.
+
+
 ## Step-by-Step
 
 1 and 2 are only *as required* -- check if there's evidence they've already run
@@ -124,15 +133,13 @@ Example snippet from `configs/my_complex_plume_config.yaml`:
 px_per_mm: 6.536
 # Frame rate of the video in Hz
 frame_rate: 60
-# Automatically repeat the movie when triallength exceeds its length
-# loop: true
 # Override the movie length with a specific number of frames
 # triallength: 7200
 ```
 
-The optional `loop` flag repeats the movie when `triallength` is longer than the
-source video. Setting `triallength` lets you cut or extend each trial to an
-explicit number of frames.
+When `triallength` exceeds the movie length, the video automatically loops.
+Setting `triallength` lets you cut or extend each trial to an explicit number of
+frames.
 
 
 ## Running Tests
@@ -160,9 +167,10 @@ provided:
   `Code` directory and parses the YAML using PyYAML (or a minimal fallback
   parser when PyYAML is absent).
 - `scale_custom_plume.m` rescales a custom plume movie once so its values match
-  the CRIM range specified in `configs/plume_intensity_stats.yaml`.
-- The optional `scaled_to_crim` flag prevents `load_custom_plume` from applying
-  this scaling twice when the plume has already been normalised.
+  the CRIM range specified in `configs/plume_intensity_stats.yaml` and writes
+  a new metadata file with `scaled_to_crim: true`.
+  Plume movies should be pre-scaled with this function before calling
+  `load_custom_plume`.
 - [Plume Transformation Utilities](docs/intensity_comparison.md#plume-transformation-utilities) provide scaling and rotation helpers.
 - Intensity ranges for processed plumes are stored in
   `configs/plume_registry.yaml`; each entry is keyed by filename only.
@@ -173,8 +181,8 @@ Example workflow:
 
 ```matlab
 meta = 'my_plume_meta.yaml';
-scale_custom_plume(meta);       % writes <output_filename>_scaled.avi
-plume = load_custom_plume(meta); % scaled_to_crim skips another scaling step
+scale_custom_plume(meta);       % writes <output_filename>_scaled.avi and updates metadata
+plume = load_custom_plume(meta); % simply loads the pre-scaled video
 ```
 
 ### Converting AVI to HDF5

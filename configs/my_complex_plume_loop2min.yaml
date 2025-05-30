@@ -24,6 +24,5 @@ plotting: 0
 ntrials: 1
 
 
-# test looping – 2 min × 60 fps
-loop: true
+# Extended trial – 2 min × 60 fps
 triallength: 7200

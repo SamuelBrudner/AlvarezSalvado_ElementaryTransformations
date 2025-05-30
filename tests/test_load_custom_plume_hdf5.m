@@ -27,13 +27,12 @@ function teardownOnce(testCase)
 end
 
 function testLoadViaFilename(testCase)
-    stats = plume_intensity_stats();
     plume = load_custom_plume(testCase.TestData.meta);
     verifySize(testCase, plume.data, [2 2 2]);
     verifyEqual(testCase, plume.px_per_mm, 1);
     verifyEqual(testCase, plume.frame_rate, 1);
-    verifyEqual(testCase, min(plume.data(:)), stats.CRIM.min, 'AbsTol',1e-12);
-    verifyEqual(testCase, max(plume.data(:)), stats.CRIM.max, 'AbsTol',1e-12);
+    verifyEqual(testCase, min(plume.data(:)), 0, 'AbsTol',1e-12);
+    verifyEqual(testCase, max(plume.data(:)), 1, 'AbsTol',1e-12);
 end
 
 function testLoadViaOutputH5(testCase)
@@ -45,10 +44,9 @@ function testLoadViaOutputH5(testCase)
     fprintf(fid,'vid_mm_per_px: 1\n');
     fprintf(fid,'fps: 1\n');
     fclose(fid);
-    stats = plume_intensity_stats();
     plume = load_custom_plume(meta);
     verifySize(testCase, plume.data, [2 2 2]);
-    verifyEqual(testCase, min(plume.data(:)), stats.CRIM.min, 'AbsTol',1e-12);
-    verifyEqual(testCase, max(plume.data(:)), stats.CRIM.max, 'AbsTol',1e-12);
+    verifyEqual(testCase, min(plume.data(:)), 0, 'AbsTol',1e-12);
+    verifyEqual(testCase, max(plume.data(:)), 1, 'AbsTol',1e-12);
     delete(meta);
 end

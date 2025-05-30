@@ -44,7 +44,7 @@ if ~isfield(registry, info.output_filename)
     update_plume_registry(info.output_filename, origMin, origMax, registry_path);
 end
 
-% store movie in 0..1 so load_custom_plume rescales correctly
+% store movie in 0..1; load_custom_plume expects this format
 scaled01 = rescale_plume_range(scaled, 0, 1);
 
 vw = VideoWriter(out_video);

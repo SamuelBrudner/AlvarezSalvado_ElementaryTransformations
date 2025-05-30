@@ -27,14 +27,8 @@ function teardownOnce(testCase)
     rmdir(testCase.TestData.tmpDir,'s');
 end
 
-function testRescalingToCrimaldiRange(testCase)
-    stats = plume_intensity_stats();
+function testReturnsOriginalMovie(testCase)
     orig = load_plume_video(testCase.TestData.video,1,1);
-    preMin = min(orig.data(:));
-    preMax = max(orig.data(:));
     plume = load_custom_plume(testCase.TestData.meta);
-    verifyEqual(testCase,min(plume.data(:)),stats.CRIM.min,'AbsTol',1e-12);
-    verifyEqual(testCase,max(plume.data(:)),stats.CRIM.max,'AbsTol',1e-12);
-    verifyTrue(testCase, abs(preMin - stats.CRIM.min) > 1e-6 || ...
-        abs(preMax - stats.CRIM.max) > 1e-6);
+    verifyEqual(testCase, plume.data, orig.data);
 end
