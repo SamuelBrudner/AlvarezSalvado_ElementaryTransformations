@@ -20,7 +20,7 @@ trap cleanup EXIT SIGINT SIGTERM
 
 ########################  directories  #############################
 for d in slurm_out slurm_err data/processed; do mkdir -p "$d"; done
-RAW_DIR="data/raw"; mkdir -p "$RAW_DIR"
+RAW_DIR="$OUTPUT_BASE"; mkdir -p "$RAW_DIR"
 mkdir -p logs
 JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
 echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
@@ -135,8 +135,8 @@ matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT');" || { echo "MATLAB failed"; ex
 
 # MATLAB-based export (kept as is since it's MATLAB-specific)
 EXPORT_SCRIPT=$(mktemp -p "$TMPDIR" export_job_XXXX.m)
-find "$RAW_DIR" -name result.mat | while read -r f; do
-  out=${f/$RAW_DIR/data\/processed}; out=${out%/result.mat}
+find "$OUTPUT_BASE" -name result.mat | while read -r f; do
+  out=${f/$OUTPUT_BASE/data\/processed}; out=${out%/result.mat}
   mkdir -p "$out"; echo "try,export_results('$f','$out','Format','both');catch,end" >>"$EXPORT_SCRIPT"
 done
 echo "clear cleanupObj;" >>"$EXPORT_SCRIPT"
