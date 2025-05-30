@@ -179,6 +179,8 @@ catch ME
 end
 
 EOF
+    PROGRESS=$(( AGENT_INDEX * 100 / AGENTS_PER_CONDITION ))
+    echo "Progress: ${PROGRESS}%" >> "$JOB_LOG"
 done
 
 echo "exit(0);" >> "$MATLAB_SCRIPT"
@@ -195,6 +197,7 @@ fi
 
 # Mark completion in log
 echo "Job ${SLURM_ARRAY_TASK_ID:-0} completed" >> "$JOB_LOG"
+echo "Summary: processed agents ${ORIGINAL_START_AGENT}-${END_AGENT} of ${AGENTS_PER_CONDITION} for condition ${CONDITION_NAME}" >> "$JOB_LOG"
 
 # Exit with success code
 exit 0
