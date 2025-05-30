@@ -237,3 +237,9 @@ bash run_test_batch.sh
 
 See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for further options.
 
+## Roadmap
+
+The project continues to evolve. Upcoming tasks include:
+
+- [ ] Add streaming support for the bilateral navigation model
+
