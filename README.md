@@ -160,9 +160,10 @@ provided:
   `Code` directory and parses the YAML using PyYAML (or a minimal fallback
   parser when PyYAML is absent).
 - `scale_custom_plume.m` rescales a custom plume movie once so its values match
-  the CRIM range specified in `configs/plume_intensity_stats.yaml`.
-- The optional `scaled_to_crim` flag prevents `load_custom_plume` from applying
-  this scaling twice when the plume has already been normalised.
+  the CRIM range specified in `configs/plume_intensity_stats.yaml` and writes
+  a new metadata file with `scaled_to_crim: true`.
+  Plume movies should be pre-scaled with this function before calling
+  `load_custom_plume`.
 - [Plume Transformation Utilities](docs/intensity_comparison.md#plume-transformation-utilities) provide scaling and rotation helpers.
 - Intensity ranges for processed plumes are stored in
   `configs/plume_registry.yaml`; transformation scripts update this file
@@ -173,8 +174,8 @@ Example workflow:
 
 ```matlab
 meta = 'my_plume_meta.yaml';
-scale_custom_plume(meta);       % writes <output_filename>_scaled.avi
-plume = load_custom_plume(meta); % scaled_to_crim skips another scaling step
+scale_custom_plume(meta);       % writes <output_filename>_scaled.avi and updates metadata
+plume = load_custom_plume(meta); % simply loads the pre-scaled video
 ```
 
 ### Converting AVI to HDF5
