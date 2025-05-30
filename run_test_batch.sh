@@ -16,12 +16,20 @@ PLUME_VIDEO="$(pwd)/data/smoke_1a_orig_backgroundsubtracted.avi"
 
 TEST_OUTPUT="test_output/$TEST_NAME"; mkdir -p "$TEST_OUTPUT"
 
+if [[ -n "${PLUME_METADATA:-}" ]]; then
+    DESC="Metadata"
+    PLUME_PATH="$PLUME_METADATA"
+else
+    DESC="Movie"
+    PLUME_PATH="$PLUME_VIDEO"
+fi
+
 echo "🚀 Starting test batch: $TEST_NAME"
 cat <<EOF
 
 Jobs               : $TEST_JOBS
 Agents/condition   : $TEST_AGENTS
-Movie              : $PLUME_VIDEO
+$DESC              : $PLUME_PATH
 Output             : $TEST_OUTPUT
 EOF
 
@@ -34,6 +42,7 @@ AGENTS_PER_JOB=$TEST_AGENTS_PER_JOB,\
 OUTPUT_BASE=$TEST_OUTPUT,\
 PLUME_CONFIG=$PLUME_CONFIG,\
 PLUME_VIDEO=$PLUME_VIDEO,\
+PLUME_METADATA=$PLUME_METADATA,\
 SLURM_PARTITION=$TEST_PARTITION,\
 SLURM_TIME=$TEST_TIME,\
 SLURM_MEM=$TEST_MEM,\
