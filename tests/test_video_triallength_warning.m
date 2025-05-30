@@ -29,5 +29,6 @@ function testWarningEmitted(testCase)
     run_navigation_cfg(cfg);
     [msg,~] = lastwarn;
     verifyEqual(testCase, msg, ...
-        'Trial truncated to movie length; set cfg.loop=true to repeat.');
+        ['Trial will end exactly at movie length. ' ...
+         'Add cfg.loop=true or cfg.triallength to change this.']);
 end
