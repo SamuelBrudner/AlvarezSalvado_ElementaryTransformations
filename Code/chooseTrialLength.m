@@ -3,6 +3,10 @@ function tl = chooseTrialLength(cfg, defaultTL)
 %
 %   TL = CHOOSETRIALLENGTH(CFG, DEFAULTTL) returns CFG.triallength when
 %   it exists and is non-empty; otherwise returns DEFAULTTL.
+%
+%   Example:
+%       cfg.triallength = 150;
+%       tl = chooseTrialLength(cfg, 200);
 
 if isfield(cfg,'triallength') && ~isempty(cfg.triallength)
     tl = cfg.triallength;
