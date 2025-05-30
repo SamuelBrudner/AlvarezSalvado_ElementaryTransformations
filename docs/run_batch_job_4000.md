@@ -21,7 +21,7 @@ The script accepts configuration via environment variables. Important ones inclu
 
 - `EXPERIMENT_NAME` – subdirectory under `data/raw` for results (`default_experiment` by default).
 - `PLUME_TYPES` – space‑separated list such as `"crimaldi custom"`.
-- `SENSING_MODES` – typically `"bilateral unilateral"`.
+- `SENSING_MODES` – defaults to `"unilateral"`; bilateral sensing is currently paused.
 - `AGENTS_PER_CONDITION` – total agents to simulate for each plume/sensing pair.
 - `AGENTS_PER_JOB` – number of agents each array task runs.
 - `PLUME_CONFIG` – path to the YAML configuration file.
@@ -70,7 +70,7 @@ PLUME_VIDEO=data/smoke_plume.h5,PLUME_METADATA=data/smoke_plume_meta.yaml \
 
 The array size should equal the total number of jobs computed from `AGENTS_PER_CONDITION`, `AGENTS_PER_JOB`, `PLUME_TYPES` and `SENSING_MODES`. The script checks available disk space before starting and loads the appropriate MATLAB module.
 
-Use `run_full_batch.sh` for the standard four‑condition production run or `run_test_batch.sh` for a quick smoke test. Both wrappers export the necessary variables before calling `run_batch_job_4000.sh`.
+Use `run_full_batch.sh` for the two‑condition production run (bilateral sensing is paused) or `run_test_batch.sh` for a quick smoke test. Both wrappers export the necessary variables before calling `run_batch_job_4000.sh`.
 
 When `PLUME_METADATA` is exported as shown above, `run_test_batch.sh` submits a short array job for debugging:
 
