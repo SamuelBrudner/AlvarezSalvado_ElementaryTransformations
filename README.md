@@ -229,6 +229,11 @@ For a quick smoke test use `run_test_batch.sh` instead:
 ```bash
 bash run_test_batch.sh
 ```
+`run_test_batch.sh` writes results under `test_output/<timestamp>/`. Since
+`run_batch_job_4000.sh` expects results inside
+`${OUTPUT_BASE}/${EXPERIMENT_NAME}`, the script sets `OUTPUT_BASE` to that
+`test_output` directory. A typical path looks like:
+`test_output/plume_test_20240101_120000/plume_unilateral/`.
 
 See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for further options.
 
