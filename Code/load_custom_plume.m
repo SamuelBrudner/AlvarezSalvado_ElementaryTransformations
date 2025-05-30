@@ -9,9 +9,9 @@ function plume = load_custom_plume(metadata_path)
 %       fps              - frame rate of the processed video
 %       scaled_to_crim   - (optional) set true if video is already scaled
 %
-%   The returned structure is the same as produced by LOAD_PLUME_VIDEO. The
-%   plume data is rescaled to the CRIM intensity range using RESCALE_PLUME_RANGE
-%   unless the optional metadata field 'scaled_to_crim' is true.
+%   The returned structure is the same as produced by LOAD_PLUME_VIDEO. No
+%   rescaling of the plume data is performed; values are returned exactly as
+%   stored in the movie file.
 %
 %   Example:
 %       plume = load_custom_plume('meta.yaml');
@@ -38,8 +38,4 @@ else
     plume = load_plume_video(video_path, px_per_mm, frame_rate);
 end
 
-if ~isfield(info, 'scaled_to_crim') || ~info.scaled_to_crim
-    stats = plume_intensity_stats();
-    plume.data = rescale_plume_range(plume.data, stats.CRIM.min, stats.CRIM.max);
-end
 end
