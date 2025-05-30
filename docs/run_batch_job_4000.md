@@ -32,6 +32,32 @@ The script accepts configuration via environment variables. Important ones inclu
 - `MATLAB_VERSION` – module name used if MATLAB is not on `PATH` (`2023b`).
 - `BYTES_PER_AGENT` – estimated disk usage per agent (defaults to `50000000`).
 
+### Video and Metadata Configuration
+
+`plume_video` and `plume_metadata` are mutually exclusive keys in a
+plume configuration file. Use `plume_video` for raw movies (AVI, MP4,
+etc.) together with `px_per_mm` and `frame_rate`. When a movie has been
+converted to HDF5, reference the companion YAML under `plume_metadata`
+instead.
+
+Generate such a YAML with:
+
+```bash
+conda run --prefix ./dev_env python -m scripts.process_custom_plume \
+    configs/my_plume.yaml
+```
+
+During batch runs you can override the default video by exporting
+`PLUME_METADATA`:
+
+```bash
+sbatch --export=ALL,PLUME_METADATA=configs/my_plume_meta.yaml \
+       run_batch_job_4000.sh
+```
+The script assigns `cfg.plume_metadata` when this variable is set
+and falls back to `cfg.plume_video` otherwise (see lines 103–111 of
+`run_batch_job_4000.sh`).
+
 ## Submitting the Job
 
 `run_batch_job_4000.sh` is designed to be submitted as a SLURM array. A minimal submission might look like:
