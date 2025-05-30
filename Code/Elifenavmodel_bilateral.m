@@ -1,6 +1,6 @@
 
 
-function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials, params)
+function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials, varargin)
 
 
 
@@ -78,21 +78,34 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
  kbil = 40;         % strength of bilateral (cross-antennal) drive 40 deg/s (*****this parameter only in deg/sec, not per sample)
  knoise = 1;        % strength of random turning (set to zero to view only deterministic turns)
 
- ws = 1;            % windspeed.  ws=1 uses fit model parameters.  decreases scale down both Kup and Kdown
+ws = 1;            % windspeed.  ws=1 uses fit model parameters.  decreases scale down both Kup and Kdown
                     % gets set to 0 below for Gaussian environment
- if (nargin<=3)
-     ntrials=1;
- end
- if nargin < 5
-     params = struct();
- end
+if nargin < 4 || isempty(ntrials)
+    ntrials = 1;
+end
+
+plume = [];
+params = struct();
+if strcmpi(environment,'video')
+    if ~isempty(varargin)
+        plume = varargin{1};
+        if numel(varargin) > 1
+            params = varargin{2};
+        end
+    end
+else
+    if ~isempty(varargin)
+        params = varargin{1};
+    end
+end
 
  fields = intersect(fieldnames(params), who);
  for f = fields'
      eval([f{1} ' = params.(f{1});']);
  end
  dt = 1/50; % default sample period for 50 Hz
-  switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
+  switch environment % If we are using environments at 15 Hz, converts the time constants
+                     % to 15 Hz or the frame rate specified by video plumes
      
     case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
         tau_Aon = tau_Aon*tscale;
@@ -110,9 +123,30 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
         tmodOFF = tmodOFF/tscale;
         dt = 1/15;
         
-      case {'gaussian', 'Gaussian'}
+    case {'gaussian', 'Gaussian'}
         kbil = kbil/50;       % convert to 50 frames/sec for Gaussian
         dt = 1/50;
+
+    case {'video'}
+        if isempty(plume)
+            error('A plume structure must be provided for video environment');
+        end
+        tscale = plume.frame_rate/50;
+        tau_Aon = tau_Aon*tscale;
+        tau_Aoff = tau_Aoff*tscale;
+        tau_ON = tau_ON*tscale;
+        tau_OFF1 = tau_OFF1*tscale;
+        tau_OFF2 = tau_OFF2*tscale;
+
+        kup = kup/tscale;
+        kdown = kdown/tscale;
+        kbil = kbil/plume.frame_rate;
+
+        turnbase = turnbase/tscale;
+        tmodON = tmodON/tscale;
+        tmodOFF = tmodOFF/tscale;
+        pxscale = 1 / plume.px_per_mm;
+        dt = 1/plume.frame_rate;
   end
 
 %allocate space for results
@@ -164,6 +198,8 @@ switch environment
     case {'gaussian', 'Gaussian'} % Gaussian odor gradient without any wind
         x(1,:) = 20*rand(1,ntrials)-10;
         y(1,:) = 20*rand(1,ntrials)-10;
+    case {'video'}
+        x(1,:) = 0; y(1,:) = 0;
 end
 heading = 360*rand(1,ntrials); % starts with a random heading
 
@@ -239,12 +275,33 @@ for i = 1:triallength
             odorR(i,:) = odor(i,:);
             ws=1;
             
-         case {'gaussian', 'Gaussian'}
+        case {'gaussian', 'Gaussian'}
             odor(i,:) = pmax*exp(-(x(i,:).^2+y(i,:).^2)/(2*sigma^2));
-            odorL(i,:) = pmax*exp(-((x(i,:)+lx).^2+(y(i,:)+ly).^2)/(2*sigma^2));    
+            odorL(i,:) = pmax*exp(-((x(i,:)+lx).^2+(y(i,:)+ly).^2)/(2*sigma^2));
             odorR(i,:) = pmax*exp(-((x(i,:)+rx).^2+(y(i,:)+ry).^2)/(2*sigma^2));
             ws = 0;
             p(i,:) = odor(i,:);
+
+        case {'video'}
+            tind = mod(i-1, size(plume.data,3)) + 1;
+            xind = round(10*x(i,:)*plume.px_per_mm)+1;
+            yind = round(-10*y(i,:)*plume.px_per_mm)+1;
+            out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))), ...
+                                 union(find(yind<1),find(yind>size(plume.data,1))));
+            within = setdiff(1:ntrials,out_of_plume);
+            odor(i,out_of_plume) = 0;
+            odorL(i,out_of_plume) = 0;
+            odorR(i,out_of_plume) = 0;
+            for it = within
+                odor(i,it) = plume.data(yind(it), xind(it), tind);
+                odorL(i,it) = odor(i,it);
+                odorR(i,it) = odor(i,it);
+            end
+            if exist('params','var') && isfield(params,'ws')
+                ws = params.ws;
+            else
+                ws = 0;
+            end
     end
 
     % Adaptation
@@ -300,7 +357,11 @@ odorOFF(end,:) = [];
 x(end,:) = []; y(end,:) = [];
 heading(end,:) = [];
 heading = heading-90;           % rotate h so upwind is 90 deg for display
-t = (1:length(odorON))/50;
+if strcmp(environment,'video')
+    t = (1:length(odorON))/plume.frame_rate;
+else
+    t = (1:length(odorON))/50;
+end
 
 
 start = [x(1,:)', y(1,:)'];
@@ -424,10 +485,15 @@ if plotting>=2
     figure;
     set(gcf,'PaperPositionMode','auto');
     set(gcf,'Position',[44    50   329   613]);
-    t = [1:length(odor)]/50;
-    switch environment
-        case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
-            t = (1:length(odor))/15;
+    if strcmp(environment,'video')
+        t = (1:length(odor))/plume.frame_rate;
+    else
+        t = [1:length(odor)]/50;
+        switch environment
+            case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
+                t = (1:length(odor))/15;
+        end
+    end
     end
 	color = 'k';
 
@@ -460,7 +526,11 @@ if plotting>=2
     figure;
     set(gcf,'PaperPositionMode','auto');
     set(gcf,'Position',[375    50   329   613]);
-    t = [1:length(odor)]/50;
+    if strcmp(environment,'video')
+        t = (1:length(odor))/plume.frame_rate;
+    else
+        t = [1:length(odor)]/50;
+    end
 
     subplot(4,1,1);
     hold off; plot(t,turn,'k');
