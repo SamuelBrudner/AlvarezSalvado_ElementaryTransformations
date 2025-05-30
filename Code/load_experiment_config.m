@@ -21,6 +21,7 @@ if ~exist(config_file, 'file')
     error('Configuration file not found: %s', config_file);
 end
 
+
 % Load YAML configuration
 try
     yaml_cfg = load_yaml(config_file);
@@ -31,6 +32,19 @@ end
 % Convert YAML structure to MATLAB struct
 cfg = struct(yaml_cfg);
 
+% Ensure experiment struct exists before mapping fields
+if ~isfield(cfg, 'experiment') || ~isstruct(cfg.experiment)
+    cfg.experiment = struct();
+end
+
+% Map legacy plume and sensing fields onto experiment settings
+if isfield(cfg, 'plumes')
+    cfg.experiment.plume_types = cfg.plumes;
+end
+if isfield(cfg, 'sensing_modes')
+    cfg.experiment.sensing_modes = cfg.sensing_modes;
+end
+
 % Apply any overrides from varargin
 for i = 1:2:length(varargin)
     field = varargin{i};
@@ -39,11 +53,6 @@ for i = 1:2:length(varargin)
     else
         warning('Unknown configuration field: %s', field);
     end
-end
-
-% Set default values for required fields
-if ~isfield(cfg, 'experiment') || ~isstruct(cfg.experiment)
-    cfg.experiment = struct();
 end
 
 % Set default experiment values
