@@ -43,3 +43,14 @@ def test_load_casts_values_to_float(tmp_path, monkeypatch):
     assert data["plume.h5"]["max"] == 2.0
     assert isinstance(data["plume.h5"]["min"], float)
     assert isinstance(data["plume.h5"]["max"], float)
+
+
+def test_absolute_path_uses_basename(tmp_path):
+    reg_path = tmp_path / "registry.yaml"
+    abs_path = tmp_path / "data" / "plume.h5"
+    abs_path.parent.mkdir()
+    abs_path.write_text("dummy")
+
+    update_plume_registry(str(abs_path), 1.0, 2.0, reg_path)
+    data = load_registry(reg_path)
+    assert "plume.h5" in data

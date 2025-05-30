@@ -163,8 +163,8 @@ provided:
   this scaling twice when the plume has already been normalised.
 - [Plume Transformation Utilities](docs/intensity_comparison.md#plume-transformation-utilities) provide scaling and rotation helpers.
 - Intensity ranges for processed plumes are stored in
-  `configs/plume_registry.yaml`; transformation scripts update this file
-  automatically. See
+  `configs/plume_registry.yaml`; each entry is keyed by filename only.
+  Transformation scripts update this file automatically. See
   [Plume Registry](docs/intensity_comparison.md#plume-registry).
 
 Example workflow:
