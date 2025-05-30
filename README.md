@@ -211,19 +211,12 @@ all scripts can locate it automatically.
 
 Configuration files may define either `plume_video` or `plume_metadata`. A minimal workflow is:
 
-1. Generate `<base>_meta.yaml` from a raw video.
+1. Run `scripts.process_custom_plume` on the raw video to create `<base>_meta.yaml`.
 ```bash
-conda run --prefix ./dev_env python -m scripts.process_custom_plume 
+conda run --prefix ./dev_env python -m scripts.process_custom_plume
     input.avi out_dir 6.536 60
 ```
 2. Export this path when launching the batch job.
-
-The script writes `<base>_meta.yaml`, `<base>_raw.h5`, `<base>_scaled.h5`, and
-`<base>_rotated.h5` into the specified directory.
-
-When launching `run_batch_job_4000.sh` you can override the default
-video by exporting `PLUME_METADATA`:
-
 ```bash
 export PLUME_METADATA=out_dir/input_meta.yaml
 ```
@@ -233,13 +226,4 @@ sbatch run_batch_job_4000.sh # or run_full_batch.sh
 ```
 
 See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for further options.
-The script uses `cfg.plume_metadata` when this variable is present and
-falls back to `cfg.plume_video` otherwise.
 
-### SLURM Batch Execution
-
-See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for a full list of
-environment variables accepted by `run_batch_job_4000.sh` and instructions on
-submitting it with `sbatch`. When processing a custom plume video, generate a
-metadata YAML using `process_custom_plume.py` and supply this file through
-`PLUME_METADATA` when launching the job.
