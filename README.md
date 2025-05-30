@@ -209,21 +209,20 @@ all scripts can locate it automatically.
 
 ## Running Simulations
 
-Configuration files for navigation runs may define either a `plume_video`
-or a `plume_metadata` entry. Use the script below to generate
-`plume_metadata` from a raw video:
+Configuration files may define either `plume_video` or `plume_metadata`. A minimal workflow is:
 
+1. Run `scripts.process_custom_plume` on the raw video to create `<base>_meta.yaml`.
 ```bash
-conda run --prefix ./dev_env python -m scripts.process_custom_plume \
+conda run --prefix ./dev_env python -m scripts.process_custom_plume
     input.avi out_dir 6.536 60
 ```
-
-When launching `run_batch_job_4000.sh` you can override the default
-video by exporting `PLUME_METADATA`:
-
+2. Export this path when launching the batch job.
 ```bash
-sbatch --export=ALL,PLUME_METADATA=configs/my_plume_meta.yaml \
-       run_batch_job_4000.sh
+export PLUME_METADATA=out_dir/input_meta.yaml
 ```
-The script uses `cfg.plume_metadata` when this variable is present and
-falls back to `cfg.plume_video` otherwise.
+3. Run the batch job.
+```bash
+sbatch run_batch_job_4000.sh # or run_full_batch.sh
+```
+
+See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for further options.
