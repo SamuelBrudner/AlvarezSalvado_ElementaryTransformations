@@ -20,7 +20,7 @@ trap cleanup EXIT SIGINT SIGTERM
 
 ########################  directories  #############################
 for d in slurm_out slurm_err data/processed; do mkdir -p "$d"; done
-RAW_DIR="$OUTPUT_BASE"; mkdir -p "$RAW_DIR"
+mkdir -p "$OUTPUT_BASE"
 mkdir -p logs
 JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
 echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
