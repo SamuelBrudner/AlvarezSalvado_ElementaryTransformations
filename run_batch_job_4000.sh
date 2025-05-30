@@ -118,7 +118,7 @@ cat >>"$MATLAB_SCRIPT"<<MAT
   mkdir(cfg.outputDir);
   R = run_navigation_cfg(cfg);
   save(fullfile(cfg.outputDir,'result.mat'),'R','-v7');
-catch ME, fprintf(2,'Seed %d: %s\\n',$AG,getReport(ME)); end
+ catch ME, fprintf(2,'ERROR: Seed %d: %s\\n',$AG,getReport(ME)); end
 pause(0.05);
 MAT
   PROGRESS=$(( AG * 100 / AGENTS_PER_CONDITION ))
@@ -129,6 +129,11 @@ echo "exit" >>"$MATLAB_SCRIPT"
 
 ########################  run MATLAB  ##############################
 matlab $MATLAB_OPTIONS -r "run('$MATLAB_SCRIPT');" || { echo "MATLAB failed"; exit 1; }
+
+if ! find "$OUTPUT_BASE" -name result.mat | grep -q .; then
+  echo "ERROR: no result.mat produced" >&2
+  exit 1
+fi
 
 ########################  export CSV/JSON  #########################
 # Use conda run -p for any Python commands
