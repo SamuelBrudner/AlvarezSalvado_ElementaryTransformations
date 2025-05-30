@@ -29,6 +29,10 @@ function out = run_navigation_cfg(cfg)
 %   Note  The streaming backend is only stubbed in this commit; set
 %         cfg.use_streaming = false (or omit the key) until you replace the
 %         placeholder at the bottom of this file.
+%
+%   Example:
+%       cfg = load_config(fullfile('tests','sample_config.yaml'));
+%       out = run_navigation_cfg(cfg);
 
 % -------------------------------------------------------------------------
 % 0. choose which model variant we will call
@@ -118,15 +122,4 @@ else
 end
 end
 % ===== end main function =================================================
-
-
-% ──────────────────────────────────────────────────────────────────────────
-function tl = chooseTrialLength(cfg, defaultTL)
-% Return cfg.triallength if present, otherwise fall back to defaultTL.
-    if isfield(cfg,'triallength') && ~isempty(cfg.triallength)
-        tl = cfg.triallength;
-    else
-        tl = defaultTL;
-    end
-end
 
