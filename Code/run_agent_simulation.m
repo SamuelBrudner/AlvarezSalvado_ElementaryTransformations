@@ -74,10 +74,16 @@ try
     
     % Clear large variables to save memory
     clear result sim_cfg;
-    
+
 catch ME
-    error('Error in simulation (agent %d, seed %d): %s', ...
-          agent_id, seed, getReport(ME));
+    log_file = fullfile(output_dir, 'error.log');
+    fid = fopen(log_file, 'w');
+    if fid ~= -1
+        fprintf(fid, '%s', getReport(ME, 'extended', 'hyperlinks', 'off'));
+        fclose(fid);
+    end
+    fprintf('Error in simulation (agent %d): %s\n', agent_id, ME.message);
+    return;
 end
 
 % Add a small pause to prevent file system overload
