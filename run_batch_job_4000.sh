@@ -21,6 +21,9 @@ trap cleanup EXIT SIGINT SIGTERM
 ########################  directories  #############################
 for d in slurm_out slurm_err data/processed; do mkdir -p "$d"; done
 RAW_DIR="data/raw"; mkdir -p "$RAW_DIR"
+mkdir -p logs
+JOB_LOG="logs/${SLURM_ARRAY_TASK_ID:-0}.log"
+echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
 
 ########################  defaults  ################################
 : ${EXPERIMENT_NAME:=default_experiment}
@@ -117,6 +120,8 @@ cat >>"$MATLAB_SCRIPT"<<MAT
 catch ME, fprintf(2,'Seed %d: %s\\n',$AG,getReport(ME)); end
 pause(0.05);
 MAT
+  PROGRESS=$(( AG * 100 / AGENTS_PER_CONDITION ))
+  echo "Progress: ${PROGRESS}%" >> "$JOB_LOG"
 done
 echo "exit" >>"$MATLAB_SCRIPT"
 
@@ -137,6 +142,7 @@ echo "exit" >>"$EXPORT_SCRIPT"
 [[ -s "$EXPORT_SCRIPT" ]] && matlab -nodisplay -nosplash -r "run('$EXPORT_SCRIPT');" || true
 
 echo "Job finished successfully."
+echo "Summary: processed agents ${START}-${END} of ${AGENTS_PER_CONDITION} for ${SENSE} ${PLUME}" >> "$JOB_LOG"
 
 # Example of how to run Python scripts with the conda environment:
 # if [ -d "./dev_env" ]; then
