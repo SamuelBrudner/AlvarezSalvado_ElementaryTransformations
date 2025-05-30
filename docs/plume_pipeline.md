@@ -22,7 +22,9 @@ conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
 ```
 
 The script creates the three HDF5 files and updates
-`configs/plume_registry.yaml` with their intensity ranges.
+`configs/plume_registry.yaml` with their intensity ranges. Input and output
+arguments may be either relative or absolute paths. When absolute paths are
+supplied, the registry records only the base filename so entries remain portable.
 
 ## Python API
 

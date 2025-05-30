@@ -3,7 +3,9 @@
 
 This script converts an AVI video to HDF5, rescales intensities to the
 Crimaldi range, rotates frames 90° clockwise, and updates the plume
-registry. Paths are given relative to the repository root.
+registry. Paths may be absolute or relative to the repository root. When
+absolute paths are provided, only the base filename is recorded in
+``configs/plume_registry.yaml``.
 
 Example
 -------
