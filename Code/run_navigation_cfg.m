@@ -84,7 +84,11 @@ elseif isfield(cfg,'plume_video')
 
     % Auto-enable streaming on SLURM clusters when not specified
     if ~isfield(cfg,'use_streaming') && isSlurmCluster()
-        cfg.use_streaming = true;
+        if isfield(cfg,'bilateral') && cfg.bilateral
+            cfg.use_streaming = false;
+        else
+            cfg.use_streaming = true;
+        end
     end
 
     if isfield(cfg,'use_streaming') && cfg.use_streaming
