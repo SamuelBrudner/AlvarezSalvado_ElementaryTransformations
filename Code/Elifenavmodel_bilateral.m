@@ -284,24 +284,50 @@ for i = 1:triallength
 
         case {'video'}
             tind = mod(i-1, size(plume.data,3)) + 1;
+
             xind = round(10*x(i,:)*plume.px_per_mm)+1;
             yind = round(-10*y(i,:)*plume.px_per_mm)+1;
             out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))), ...
                                  union(find(yind<1),find(yind>size(plume.data,1))));
             within = setdiff(1:ntrials,out_of_plume);
             odor(i,out_of_plume) = 0;
-            odorL(i,out_of_plume) = 0;
-            odorR(i,out_of_plume) = 0;
             for it = within
                 odor(i,it) = plume.data(yind(it), xind(it), tind);
-                odorL(i,it) = odor(i,it);
-                odorR(i,it) = odor(i,it);
             end
+
+            xLind = round(10*xL(i,:)*plume.px_per_mm)+1;
+            yLind = round(-10*yL(i,:)*plume.px_per_mm)+1;
+            out_of_plumeL = union(union(find(xLind<1),find(xLind>size(plume.data,2))), ...
+                                   union(find(yLind<1),find(yLind>size(plume.data,1))));
+            withinL = setdiff(1:ntrials,out_of_plumeL);
+            odorL(i,out_of_plumeL) = 0;
+            for it = withinL
+                odorL(i,it) = plume.data(yLind(it), xLind(it), tind);
+            end
+
+            xRind = round(10*xR(i,:)*plume.px_per_mm)+1;
+            yRind = round(-10*yR(i,:)*plume.px_per_mm)+1;
+            out_of_plumeR = union(union(find(xRind<1),find(xRind>size(plume.data,2))), ...
+                                   union(find(yRind<1),find(yRind>size(plume.data,1))));
+            withinR = setdiff(1:ntrials,out_of_plumeR);
+            odorR(i,out_of_plumeR) = 0;
+            for it = withinR
+                odorR(i,it) = plume.data(yRind(it), xRind(it), tind);
+            end
+
             if exist('params','var') && isfield(params,'ws')
                 ws = params.ws;
             else
                 ws = 0;
             end
+    end
+
+    if strcmp(environment,'video') && tind == 1 && i > 1
+        Aon(i,:) = 0;
+        Aoff(i,:) = 0;
+        ON(i,:) = 0;
+        R(i,:) = 0;
+        Rh(i,:) = 0;
     end
 
     % Adaptation
