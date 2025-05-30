@@ -122,7 +122,8 @@ pause(0.05);
 MAT
   PROGRESS=$(( AG * 100 / AGENTS_PER_CONDITION ))
   echo "Progress: ${PROGRESS}%" >> "$JOB_LOG"
-done
+  done
+echo "clear cleanupObj;" >>"$MATLAB_SCRIPT"
 echo "exit" >>"$MATLAB_SCRIPT"
 
 ########################  run MATLAB  ##############################

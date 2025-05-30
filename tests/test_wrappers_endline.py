@@ -3,7 +3,7 @@ import unittest
 
 class TestWrapperEndsWithNewline(unittest.TestCase):
     def test_wrapper_ends_with_newline(self):
-        for fname in ["run_full_batch.sh", "run_test_batch.sh"]:
+        for fname in ["run_full_batch.sh", "run_test_batch.sh", "run_batch_job_4000.sh"]:
             with open(fname, "rb") as f:
                 content = f.read()
             self.assertTrue(
