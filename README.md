@@ -202,3 +202,25 @@ PY
 
 Add the resulting path under `data.video_h5` in `configs/project_paths.yaml` so
 all scripts can locate it automatically.
+
+## Running Simulations
+
+Configuration files for navigation runs may define either a `plume_video`
+or a `plume_metadata` entry. `plume_video` points to a raw movie while
+`plume_metadata` references a YAML file describing an HDF5 plume. Create
+such a YAML with:
+
+```bash
+conda run --prefix ./dev_env python -m scripts.process_custom_plume \
+    configs/my_plume.yaml
+```
+
+When launching `run_batch_job_4000.sh` you can override the default
+video by exporting `PLUME_METADATA`:
+
+```bash
+sbatch --export=ALL,PLUME_METADATA=configs/my_plume_meta.yaml \
+       run_batch_job_4000.sh
+```
+The script uses `cfg.plume_metadata` when this variable is present and
+falls back to `cfg.plume_video` otherwise.
