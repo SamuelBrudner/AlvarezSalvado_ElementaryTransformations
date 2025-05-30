@@ -82,6 +82,16 @@ video_to_hdf5(
 )
 ```
 
+The convenience function :func:`Code.plume_pipeline.video_to_scaled_rotated_h5`
+performs conversion, scaling to the Crimaldi range, and rotation in one step.
+See `docs/plume_pipeline.md` or run the script directly:
+
+```bash
+conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
+    data/raw/example.avi data/processed/example_raw.h5 \
+    data/processed/example_scaled.h5 data/processed/example_rotated.h5
+```
+
 ## Step-by-Step
 
 1 and 2 are only *as required* -- check if there's evidence they've already run

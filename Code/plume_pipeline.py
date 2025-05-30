@@ -66,7 +66,20 @@ def video_to_scaled_rotated_h5(
     scaled_h5: str | Path,
     rotated_h5: str | Path,
 ) -> None:
-    """Full pipeline: AVI → HDF5 → scaled → rotated."""
+    """Full pipeline: AVI → HDF5 → scaled → rotated.
+
+    Examples
+    --------
+    >>> video_to_scaled_rotated_h5(
+    ...     "input.avi",
+    ...     "input_raw.h5",
+    ...     "input_scaled.h5",
+    ...     "input_rotated.h5",
+    ... )
+
+    Use :mod:`scripts.run_plume_pipeline` for a command-line interface.
+    """
+
     video_to_hdf5(avi_path, raw_h5)
 
     with h5py.File(raw_h5, "r+") as f:

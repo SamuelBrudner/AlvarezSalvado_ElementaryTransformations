@@ -1,10 +1,41 @@
 # Plume Processing Pipeline
 
-This repository includes helper functions to convert plume videos to HDF5 and apply common transformations. The main entry point is `video_to_scaled_rotated_h5` which performs the following steps:
+`video_to_scaled_rotated_h5` converts an AVI file to HDF5, rescales
+intensities to the Crimaldi range, rotates each frame 90° clockwise and
+records the resulting files in `configs/plume_registry.yaml`.
 
-1. **Convert** the input AVI file to HDF5 using `video_to_hdf5`. The raw intensities and frame dimensions are stored under the dataset `dataset1`.
-2. **Scale** the intensities to the Crimaldi range with `scale_hdf5_to_crim_range`.
-3. **Rotate** the scaled frames 90° clockwise via `rotate_hdf5_clockwise`.
-4. **Record** the intensity ranges of the intermediate files in `configs/plume_registry.yaml`.
+## Usage
 
-The resulting HDF5 files preserve the original video shape as dataset attributes `height`, `width` and `frames`.
+Ensure the development environment is available and activate the paths:
+
+```bash
+./setup_env.sh --dev
+source ./paths.sh
+```
+
+Run the pipeline using the command line helper:
+
+```bash
+conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
+    data/raw/input.avi data/processed/input_raw.h5 \
+    data/processed/input_scaled.h5 data/processed/input_rotated.h5
+```
+
+The script creates the three HDF5 files and updates
+`configs/plume_registry.yaml` with their intensity ranges.
+
+## Python API
+
+You can invoke the pipeline directly from Python:
+
+```python
+from Code.plume_pipeline import video_to_scaled_rotated_h5
+
+video_to_scaled_rotated_h5(
+    "data/raw/input.avi",
+    "data/processed/input_raw.h5",
+    "data/processed/input_scaled.h5",
+    "data/processed/input_rotated.h5",
+)
+```
+
