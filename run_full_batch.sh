@@ -30,6 +30,12 @@ export OUTPUT_BASE
 export SLURM_MEM="$MEM_PER_TASK"
 export SLURM_TIME="$TIME_LIMIT"
 export SLURM_ARRAY_CONCURRENT="$MAX_CONCURRENT"
+if [[ -n "${PLUME_METADATA:-}" ]]; then
+    export PLUME_METADATA
+    echo "Using plume metadata: $PLUME_METADATA"
+else
+    echo "Using plume movie   : $PLUME_VIDEO"
+fi
 
 echo "Submitting $TOTAL_JOBS array tasks (4 conditions × $AGENTS_PER_CONDITION agents)…"
 
