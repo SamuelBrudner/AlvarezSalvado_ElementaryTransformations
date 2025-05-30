@@ -28,7 +28,7 @@ echo "Starting job ${SLURM_ARRAY_TASK_ID:-0}" > "$JOB_LOG"
 ########################  defaults  ################################
 : ${EXPERIMENT_NAME:=default_experiment}
 : ${PLUME_TYPES:="crimaldi custom"}
-: ${SENSING_MODES:="bilateral unilateral"}
+: ${SENSING_MODES:="unilateral"}  # bilateral runs paused pending review
 : ${AGENTS_PER_CONDITION:=1000}
 : ${AGENTS_PER_JOB:=100}
 : ${PLUME_CONFIG:=configs/my_complex_plume_config.yaml}

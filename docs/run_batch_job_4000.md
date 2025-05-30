@@ -21,7 +21,7 @@ The script accepts configuration via environment variables. Important ones inclu
 
 - `EXPERIMENT_NAME` – subdirectory under `data/raw` for results (`default_experiment` by default).
 - `PLUME_TYPES` – space‑separated list such as `"crimaldi custom"`.
-- `SENSING_MODES` – typically `"bilateral unilateral"`.
+- `SENSING_MODES` – defaults to `"unilateral"`; bilateral runs are temporarily paused.
 - `AGENTS_PER_CONDITION` – total agents to simulate for each plume/sensing pair.
 - `AGENTS_PER_JOB` – number of agents each array task runs.
 - `PLUME_CONFIG` – path to the YAML configuration file.
