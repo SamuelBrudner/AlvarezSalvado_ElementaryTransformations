@@ -92,6 +92,15 @@ conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
     data/processed/example_scaled.h5 data/processed/example_rotated.h5
 ```
 
+To process a custom plume described by a metadata file, use `scripts.process_custom_plume.py`:
+
+```bash
+conda run --prefix ./dev_env python -m scripts.process_custom_plume configs/my_plume.yaml
+```
+
+See [docs/plume_pipeline.md](docs/plume_pipeline.md#processing-custom-plumes) for details.
+
+
 ## Step-by-Step
 
 1 and 2 are only *as required* -- check if there's evidence they've already run
