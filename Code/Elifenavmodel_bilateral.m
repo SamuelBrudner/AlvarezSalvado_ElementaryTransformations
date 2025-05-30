@@ -520,7 +520,6 @@ if plotting>=2
                 t = (1:length(odor))/15;
         end
     end
-    end
 	color = 'k';
 
     subplot(5,1,1);
