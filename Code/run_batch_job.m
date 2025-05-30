@@ -61,5 +61,26 @@ else
     end
 end
 
+% Collect error logs
+error_logs = {};
+for agent_id = start_agent:end_agent
+    plume_idx = mod((job_id - 1) ./ cfg.experiment.jobs_per_condition, cfg.experiment.num_plumes) + 1;
+    sensing_idx = mod(floor((job_id - 1) ./ cfg.experiment.jobs_per_condition ./ cfg.experiment.num_plumes), cfg.experiment.num_sensing) + 1;
+    plume_name = cfg.experiment.plume_types{plume_idx};
+    sensing_name = cfg.experiment.sensing_modes{sensing_idx};
+    seed = sum(double(plume_name)) + sum(double(sensing_name)) + agent_id;
+    agent_dir = cfg.get_output_dir(plume_name, sensing_name, agent_id, seed);
+    log_file = fullfile(agent_dir, 'error.log');
+    if exist(log_file, 'file')
+        error_logs{end+1} = log_file; %#ok<AGROW>
+    end
+end
+
 fprintf('Batch job %d completed (agents %d-%d)\n', job_id, start_agent, end_agent);
+if ~isempty(error_logs)
+    fprintf('Errors occurred for %d agents:\n', numel(error_logs));
+    fprintf('  %s\n', error_logs{:});
+else
+    fprintf('No errors detected for this batch.\n');
+end
 end
