@@ -99,8 +99,8 @@ conda run --prefix ./dev_env python -m scripts.process_custom_plume \
     input.avi out_dir 6.536 60
 ```
 
-This writes `input_raw.h5`, `input_scaled.h5`, `input_rotated.h5` and
-`input_meta.yaml` into `out_dir`.
+The script writes `input_meta.yaml`, `input_raw.h5`, `input_scaled.h5`, and
+`input_rotated.h5` into `out_dir`.
 
 See [docs/plume_pipeline.md](docs/plume_pipeline.md#processing-custom-plumes) for details.
 
@@ -226,3 +226,4 @@ sbatch run_batch_job_4000.sh # or run_full_batch.sh
 ```
 
 See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for further options.
+
