@@ -227,3 +227,11 @@ sbatch --export=ALL,PLUME_METADATA=configs/my_plume_meta.yaml \
 ```
 The script uses `cfg.plume_metadata` when this variable is present and
 falls back to `cfg.plume_video` otherwise.
+
+### SLURM Batch Execution
+
+See [docs/run_batch_job_4000.md](docs/run_batch_job_4000.md) for a full list of
+environment variables accepted by `run_batch_job_4000.sh` and instructions on
+submitting it with `sbatch`. When processing a custom plume video, generate a
+metadata YAML using `process_custom_plume.py` and supply this file through
+`PLUME_METADATA` when launching the job.
