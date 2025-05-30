@@ -107,6 +107,8 @@ conda run --prefix ./dev_env python -m scripts.run_plume_pipeline \
 - `Code/` – MATLAB and Python modules
 - `configs/` – configuration templates
 - `data/` – raw and processed datasets
+  - Processed files can live outside this repository as long as you provide the
+    correct paths in your configuration files or on the command line.
 - `docs/` – project documentation
 
 For citations and metadata, see `CITATION.cff` and `codemeta.json`.
