@@ -114,6 +114,7 @@ cat >>"$MATLAB_SCRIPT"<<MAT
   cfg.randomSeed  = $SEED;
   cfg.ntrials=1; cfg.plotting=0;
   cfg.outputDir   = '$OUT_DIR';
+  fprintf('Saving results to %s\n', cfg.outputDir);
   mkdir(cfg.outputDir);
   R = run_navigation_cfg(cfg);
   save(fullfile(cfg.outputDir,'result.mat'),'R','-v7');
