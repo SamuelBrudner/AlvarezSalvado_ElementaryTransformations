@@ -18,8 +18,5 @@ plotting: 0
 # Number of trials to run
 ntrials: 1
 
-# Loop the video so it repeats when the end is reached
-loop: true
-
 # Duration of each trial in frames (2 min × 60 fps)
 triallength: 7200

@@ -23,8 +23,8 @@ function out = run_navigation_cfg(cfg)
 %       (b) plume_metadata – YAML file understood by load_custom_plume
 %
 %   Extra helpers:
-%   • loop:true without triallength → movie will repeat automatically.
-%   • triallength overrides the natural movie length.
+%   • triallength overrides the natural movie length (movie loops automatically
+%     when extended).
 %
 %   Note  The streaming backend is only stubbed in this commit; set
 %         cfg.use_streaming = false (or omit the key) until you replace the
@@ -40,9 +40,8 @@ end
 
 % guard-rail warning for truncated trials
 if isfield(cfg,'environment') && strcmpi(cfg.environment,'video') && ...
-        ~isfield(cfg,'triallength') && ~isfield(cfg,'loop')
-    warning(['Trial will end exactly at movie length. ' ...
-             'Add cfg.loop=true or cfg.triallength to change this.']);
+        ~isfield(cfg,'triallength')
+    warning('Trial will end exactly at movie length. Set cfg.triallength to change this.');
 end
 
 % -------------------------------------------------------------------------
