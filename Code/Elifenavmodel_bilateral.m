@@ -189,7 +189,8 @@ for i = 1:triallength
     
     switch environment
         
-        case {'Crimaldi', 'crimaldi'}            
+        case {'Crimaldi', 'crimaldi'}
+            plume_filename = get_plume_file();
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
             xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
             yind = -round(10*y(i,:)/pxscale)+1;
@@ -202,7 +203,7 @@ for i = 1:triallength
             
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read('10302017_10cms_bounded.hdf5','/dataset_1',[yind(it) xind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read(plume_filename,'/dataset_1',[yind(it) xind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
                 odorL(i,it) = odor(i,it);       % left odor is just odor at the fly
             end
             
@@ -219,7 +220,7 @@ for i = 1:triallength
             withinR=setdiff([1:ntrials],out_of_plumeR);
             odorR(i,out_of_plumeR)=0;
             for it=withinR
-                odorR(i,it)=max(0,h5read('10302017_10cms_bounded.hdf5','/dataset_1',[yRind(it) xRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odorR(i,it)=max(0,h5read(plume_filename,'/dataset_1',[yRind(it) xRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
             
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
