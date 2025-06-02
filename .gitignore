@@ -216,3 +216,7 @@ data/*
 
 # Local development
 tmp/
+# SLURM outputs
+logs/
+slurm-*.out
+slurm-*.err
