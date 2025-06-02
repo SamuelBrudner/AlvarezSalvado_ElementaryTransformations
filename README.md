@@ -28,33 +28,16 @@ If your Codex environment includes a `setup_env.sh` script, run it with the `--d
 bash setup_env.sh --dev
 ```
 
-This repository includes a few automated tests under the `tests/` directory. If your Codex environment provides a `setup_env.sh` script, you can use it to create a conda environment with required dependencies before running the tests or MATLAB code.
-
-## Running simulations on SLURM
-
-Use `slurm_submit.sh` to generate a batch file from `slurm_job_template.slurm`. The
-script reads several environment variables, all of which have sensible defaults:
-
-- `AGENTS_PER_CONDITION` (default `1000`)
-- `AGENTS_PER_JOB` (default `10`)
-- `TRIAL_LENGTH` (default `5000`)
-- `ENVIRONMENT` (default `Crimaldi`)
-- `OUTPUT_DIR` (defaults to the current directory)
-- `PARTITION` (default `day`)
-- `TIME_LIMIT` (default `6:00:00`)
-- `MEM_PER_TASK` (default `64G`)
-- `MAX_CONCURRENT` (default `100`)
-- `EXP_NAME` (default `crimaldi`)
-
-If present, you may optionally run `bash setup_env.sh --dev` before submitting
-jobs to set up a conda environment.
-
-Example workflow:
+This repository now includes a small pytest suite. After creating the development environment you can run the tests with:
 
 ```bash
-bash slurm_submit.sh job.slurm
-sbatch job.slurm
+pytest -q
 ```
+
+The `slurm_submit.sh` helper script supports a `-h`/`--help` option that prints
+usage instructions and also logs the calculated array size and selected paths
+when invoked.
+
 
 ## License
 
