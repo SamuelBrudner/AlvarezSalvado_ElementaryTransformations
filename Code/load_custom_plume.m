@@ -33,7 +33,7 @@ else
 end
 
 if use_h5
-    plume = load_plume_hdf5(h5_path, px_per_mm, frame_rate);
+    plume = load_plume_hdf5_info(h5_path, px_per_mm, frame_rate);
 else
     plume = load_plume_video(video_path, px_per_mm, frame_rate);
 end

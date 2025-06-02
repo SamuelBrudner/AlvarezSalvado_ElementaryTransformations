@@ -1,10 +1,11 @@
 
 
-function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials, varargin)
+function out = navigation_model_vec(triallength, environment, plotting, ntrials, plume, params)
 
+% [x,y,heading,odor,successrate,latency,start,odorON,odorOFF]...
+%     = navigation_model_vec(triallength, environment, plotting,ntrials)
 
-
-% [x,y,heading,odor,odorON,odorOFF] = Elifenavmodel_bilateral(triallength, environment, plotting,ntrials)
+% [x,y,heading,odor,odorON,odorOFF] = navigation_model_vec(triallength, environment, plotting,ntrials, plume)
 %
 %   triallength -> Length of each trial in samples
 %   environment -> String specifying the environment of the simulation.
@@ -23,13 +24,13 @@ function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntria
 %                        - 'openlooppulse15' and 'openlooppulsewb15' are
 %                        equivalent to the two previous ones but the model
 %                        will run at 15 Hz instead of at 50 Hz.
-%
 %  plotting -> 1 to plot
 %  ntrials -> number of trials (added by JDV)
 %    if ntrials>1, x, y,heading, odor* are returned as arrays, with each
 %    column corresponding to a separate trial.
+%  plume -> structure describing a video plume when environment is 'video'
 %
-% This program simulates trials of a navigation model developed by the
+% This program simulates one trial of a navigation model developed by the
 % Nagel lab, based on walking Drosophila behavior. It generates
 % trajectories and heading of a virtual fly in a virtual environment in
 % response to odor signals.
@@ -56,57 +57,42 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
  tau_OFF1 = 31;  % fast time constant for OFF differentiation (in samples at 50Hz)
  tau_OFF2 = 242; % slow time constant for OFF differentiation (in samples at 50Hz)
  
- scaleON = 1; % This parameter may be used to scale the ON response 
- scaleOFF = 1; % This parameter may be used to scale the OFF response 
+ scaleON = 1; % This parameter might be used to scale the ON response 
+ scaleOFF = 1; % This parameter might be used to scale the OFF response 
 
  
  % NAVIGATION MODEL PARAMETERS
  turnbase = 0.12;  % baseline turn rate; this is a probability when used at 50Hz, we scale it when running at 15 Hz so the overall turn rate is the same
  tsigma = 20;     % sigma of turn amplitude distribution (degrees/s)
- vbase = 6;        % baseline velocity, mm/sec
+ vbase = 6;        % baseline velocity, mm/s
 
  tmodON =  0.03;    % strength of ON turning modulation 
  tmodOFF = 0.75;         % strength of OFF turning modulation 
 
- vmodON = 0.45;     % strength of ON velocity modulation (mm/sec)
- vmodOFF = 0.8;    % strength of OFF velocity modulation (mm/sec)
+ vmodON = 0.45;     % strength of ON velocity modulation (mm/s)
+ vmodOFF = 0.8;    % strength of OFF velocity modulation (mm/s)
 
  kup = 5;          % strength of upwind drive (deg/samp)
  kdown = 0.5;       % strength of downwind drive (deg/samp)
+
  
- L = 0.02;          % distance between antennae (cm) 200 microns = 0.02 (for Gaussian only)
- kbil = 40;         % strength of bilateral (cross-antennal) drive 40 deg/s (*****this parameter only in deg/sec, not per sample)
- knoise = 1;        % strength of random turning (set to zero to view only deterministic turns)
-
-ws = 1;            % windspeed.  ws=1 uses fit model parameters.  decreases scale down both Kup and Kdown
-                    % gets set to 0 below for Gaussian environment
-if nargin < 4 || isempty(ntrials)
-    ntrials = 1;
+if (nargin<=3)
+    ntrials=1;
+end
+if nargin < 5
+    plume = struct([]);
+end
+if nargin < 6
+    params = struct();
 end
 
-plume = [];
-params = struct();
-if strcmpi(environment,'video')
-    if ~isempty(varargin)
-        plume = varargin{1};
-        if numel(varargin) > 1
-            params = varargin{2};
-        end
-    end
-else
-    if ~isempty(varargin)
-        params = varargin{1};
-    end
+fields = intersect(fieldnames(params), who);
+for f = fields'
+    eval([f{1} ' = params.(f{1});']);
 end
+dt = 1/50; % default sample period for 50 Hz simulations
+switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
 
- fields = intersect(fieldnames(params), who);
- for f = fields'
-     eval([f{1} ' = params.(f{1});']);
- end
- dt = 1/50; % default sample period for 50 Hz
-  switch environment % If we are using environments at 15 Hz, converts the time constants
-                     % to 15 Hz or the frame rate specified by video plumes
-     
     case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
         tau_Aon = tau_Aon*tscale;
         tau_Aoff = tau_Aoff*tscale;
@@ -116,17 +102,11 @@ end
 
         kup = kup/tscale;
         kdown = kdown/tscale;
-        kbil = kbil/15;         % convert to 15 frames/sec for Crimaldi data
 
         turnbase = turnbase/tscale;
         tmodON = tmodON/tscale;
         tmodOFF = tmodOFF/tscale;
         dt = 1/15;
-        
-    case {'gaussian', 'Gaussian'}
-        kbil = kbil/50;       % convert to 50 frames/sec for Gaussian
-        dt = 1/50;
-
     case {'video'}
         if isempty(plume)
             error('A plume structure must be provided for video environment');
@@ -140,12 +120,11 @@ end
 
         kup = kup/tscale;
         kdown = kdown/tscale;
-        kbil = kbil/plume.frame_rate;
 
         turnbase = turnbase/tscale;
         tmodON = tmodON/tscale;
         tmodOFF = tmodOFF/tscale;
-        pxscale = 1 / plume.px_per_mm;
+        pxscale = 1 / plume.px_per_mm; % convert pixels to mm
         dt = 1/plume.frame_rate;
   end
 
@@ -154,8 +133,6 @@ x = zeros(triallength,ntrials);
 y = zeros(triallength,ntrials);
 % heading = zeros(triallength,ntrials);
 odor = zeros(triallength,ntrials);
-odorL = zeros(triallength,ntrials);
-odorR = zeros(triallength,ntrials);
 odorON = zeros(triallength,ntrials);
 odorOFF = zeros(triallength,ntrials);
 downwind=zeros(triallength,ntrials);
@@ -188,8 +165,8 @@ switch environment
         % COMPARE: It will use the same starting positions in every simulation
 %         load('startpositions plume.mat');
 %         x(1,:) = iniX(1:ntrials); y(1,:) = iniY(1:ntrials);
-        % ------------------------------------------------------
-        x(1,:) = (rand(1,ntrials).*16)-8; %rand(1,ntrials)*10-5; % random distribution of initial X positions centered around 0, with sigma=16
+        % -----------------------------------------------------------------
+        x(1,:) = (rand(1,ntrials).*16)-8; %rand(1,ntrials)*10-5; % gaussian distribution of initial X positions centered around 0, with sigma=4
         y(1,:) = rand(1,ntrials)*5-30; % random distribution of initial Y positions, between -25 and -30
     case {'openlooppulse15','openlooppulsewb15'} % Single odor pulses at 15 Hz
         x(1,:)= 0; y(1,:)= 0; triallength = 1050;
@@ -203,14 +180,18 @@ switch environment
 end
 heading = 360*rand(1,ntrials); % starts with a random heading
 
-%% Parameters of odor environments
+
+
+
+%% SIMULATE DIFFERENTIAL EQUATIONS -----------------------------------------
+
+
 odormax = 1; % Maximal odor concentration for pulse environments
 sigma = 5; % Width of gaussian gradient in cm
 pmax = 1; % Maximal odor probability for gaussian environment
 plume_xlims=[1 216];
 plume_ylims=[1 406];
 
-% open loop environments
 OLzero=zeros(3501,1);
 OLodorlib.openlooppulse15.data    =OLzero; OLodorlib.openlooppulse15.data(450:600) = 1;
 OLodorlib.openlooppulse15.ws=1;
@@ -220,23 +201,20 @@ OLodorlib.openlooppulsewb15.data  =OLzero; OLodorlib.openlooppulsewb15.data(450:
 OLodorlib.openlooppulsewb15.ws=0;
 OLodorlib.openlooppulsewb.data    =OLzero; OLodorlib.openlooppulsewb.data(1500:2000)= 1;
 OLodorlib.openlooppulsewb.ws=0;
+OLodorlib.openloopslope.data    =[OLzero]; 
+% OLodorlib.openloopslope.data(1501:2000) = 1; 
+% OLodorlib.openloopslope.data(2001:3000) = 1/1000*fliplr([1:1000]);
+OLodorlib.openloopslope.data = exp(-((([-1750:1750-1]).^2)/100000));
+OLodorlib.openloopslope.ws=1;
 
-
-%% SIMULATE DIFFERENTIAL EQUATIONS -----------------------------------------
+ws=1;
 
 for i = 1:triallength
 
     % Get odor concentration
-    [lx,ly] = pol2cart(2*pi/360*(heading(i,:)),L);
-    [rx,ry] = pol2cart(2*pi/360*(heading(i,:)-180),L);
-    xL(i,:) = x(i,:)+lx;
-    yL(i,:) = y(i,:)+ly;
-    xR(i,:) = x(i,:)+rx;
-    yR(i,:) = y(i,:)+ry;
-    
     switch environment
         
-        case {'Crimaldi', 'crimaldi'}            
+        case {'Crimaldi', 'crimaldi'}
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
             xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
             xind = max(1, min(216, xind)); % Clamp to valid range
@@ -244,88 +222,38 @@ for i = 1:triallength
             yind = max(1, min(406, yind)); % Clamp to valid range
             out_of_plume=union(union(find(xind<plume_xlims(1)),find(xind>plume_xlims(2))),union(find(yind<plume_ylims(1)),find(yind>plume_ylims(2))));
             within=setdiff([1:ntrials],out_of_plume);
-            odor(i,out_of_plume)=0;   
-            odorL(i,out_of_plume)=0; 
-            xL(i,:) = (xind-108)*pxscale/10;
-            yL(i,:) = -(yind-1)*pxscale/10;
-            
+            odor(i,out_of_plume)=0;
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
-                odorL(i,it) = odor(i,it);       % left odor is just odor at the fly
+                odor(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[tind yind(it) xind(it)],[1 1 1])); % Draws odor concentration for the current position and time
             end
-            
-            if L<(pxscale/10)       % right odor is the minimum of L or 1 pixel away from the fly 
-                xRind = round((1/L)*rx)+xind; xR(i,:) = (xRind-108)*pxscale/10;
-                xRind = max(1, min(216, xRind)); % Clamp to valid range
-                yRind = -round((1/L)*ry)+yind; yR(i,:) = -(yRind-1)*pxscale/10;
-                yRind = max(1, min(406, yRind)); % Clamp to valid range
-            else
-                xRind = round(rx/(pxscale/10))+xind; xR(i,:) = (xRind-108)*pxscale/10;
-                xRind = max(1, min(216, xRind)); % Clamp to valid range
-                yRind = -round(ry/(pxscale/10))+yind; yR(i,:) = -(yRind-1)*pxscale/10;
-                yRind = max(1, min(406, yRind)); % Clamp to valid range
-            end   
-            
-            %[xind xRind yind yRind]
-            out_of_plumeR=union(union(find(xRind<plume_xlims(1)),find(xRind>plume_xlims(2))),union(find(yRind<plume_ylims(1)),find(yRind>plume_ylims(2))));
-            withinR=setdiff([1:ntrials],out_of_plumeR);
-            odorR(i,out_of_plumeR)=0;
-            for it=withinR
-                odorR(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[xRind(it) yRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
-            end
-            
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
             odor(i,:) = odormax*OLodorlib.(environment).data(i);
-            odorL(i,:) = odor(i,:);     % no difference between left and right in open loop
-            odorR(i,:) = odor(i,:);
-            ws=1;
-            
-        case {'gaussian', 'Gaussian'}
+            ws=OLodorlib.(environment).ws;
+         case {'gaussian', 'Gaussian'}
             odor(i,:) = pmax*exp(-(x(i,:).^2+y(i,:).^2)/(2*sigma^2));
-            odorL(i,:) = pmax*exp(-((x(i,:)+lx).^2+(y(i,:)+ly).^2)/(2*sigma^2));
-            odorR(i,:) = pmax*exp(-((x(i,:)+rx).^2+(y(i,:)+ry).^2)/(2*sigma^2));
-            ws = 0;
-            p(i,:) = odor(i,:);
-
-        case {'video'}
-            tind = mod(i-1, plume.dims(3)) + 1;
-
-            xind = round(10*x(i,:)*plume.px_per_mm) + round(plume.dims(1)/2);
-            yind = round(-10*y(i,:)*plume.px_per_mm)+1;
-            out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))), ...
-                                 union(find(yind<1),find(yind>plume.dims(2))));
-            within = setdiff(1:ntrials,out_of_plume);
-            odor(i,out_of_plume) = 0;
-            for it = within
-                odor(i,it) = max(0,h5read(plume.filename,plume.dataset,[xind(it) yind(it) tind],[1 1 1]));
-            end
-
-            xLind = round(10*xL(i,:)*plume.px_per_mm) + round(size(plume.data,2)/2);
-            yLind = round(-10*yL(i,:)*plume.px_per_mm)+1;
-            out_of_plumeL = union(union(find(xLind<1),find(xLind>size(plume.data,2))), ...
-                                   union(find(yLind<1),find(yLind>size(plume.data,1))));
-            withinL = setdiff(1:ntrials,out_of_plumeL);
-            odorL(i,out_of_plumeL) = 0;
-            for it = withinL
-                odorL(i,it) = plume.data(yLind(it), xLind(it), tind);
-            end
-
-            xRind = round(10*xR(i,:)*plume.px_per_mm) + round(size(plume.data,2)/2);
-            yRind = round(-10*yR(i,:)*plume.px_per_mm)+1;
-            out_of_plumeR = union(union(find(xRind<1),find(xRind>size(plume.data,2))), ...
-                                   union(find(yRind<1),find(yRind>size(plume.data,1))));
-            withinR = setdiff(1:ntrials,out_of_plumeR);
-            odorR(i,out_of_plumeR) = 0;
-            for it = withinR
-                odorR(i,it) = plume.data(yRind(it), xRind(it), tind);
-            end
-
             if exist('params','var') && isfield(params,'ws')
                 ws = params.ws;
             else
                 ws = 0;
             end
+            p(i,:) = odor(i,:);
+        case {'video'}
+            tind = mod(i-1, size(plume.data,3)) + 1;
+            xind = round(10*x(i,:)*plume.px_per_mm) + round(size(plume.data,2)/2);
+            yind = round(-10*y(i,:)*plume.px_per_mm)+1;
+            out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))),union(find(yind<1),find(yind>size(plume.data,1))));
+            within = setdiff(1:ntrials,out_of_plume);
+            odor(i,out_of_plume) = 0;
+            for it = within
+                odor(i,it) = plume.data(yind(it), xind(it), tind);
+            end
+            if exist('params','var') && isfield(params,'ws')
+                ws = params.ws;
+            else
+                ws = 0;
+            end
+
     end
 
     if strcmp(environment,'video') && tind == 1 && i > 1
@@ -353,24 +281,30 @@ for i = 1:triallength
     Rh(i+1,:) = Rh(i,:) + (Coff(i,:) - Rh(i,:))/tau_OFF2; % slow filter
     Rd(i+1,:) = max(0,Rh(i,:)-R(i,:)); % difference of filtered vectors
     odorOFF(i+1,:) = scaleOFF * Rd(i+1,:);
+    
+ %%% alternate OFF response (model 1, filter first)
+%     R(i+1,:) = R(i,:) + (odor(i,:) - R(i,:))/tau_OFF1; % fast filter
+%     Rh(i+1,:) = Rh(i,:) + (odor(i,:) - Rh(i,:))/tau_OFF2; % slow filter
+%     Rd(i+1,:) = max(0,Rh(i,:)-R(i,:)); % difference of filtered vectors
+%     odorOFF(i+1,:) = scaleOFF * Rd(i,:)./(Rd(i,:) + Aoff(i,:) + beta);
+ 
  
     % Random turning
     pturn(i,:) = turnbase - tmodON*odorON(i,:) + tmodOFF*odorOFF(i,:); %generates probability of turning
     turn(i,:) = rand(1,ntrials)<pturn(i,:); % Checks if turning happens considering current probability
-    N(i,:) = knoise*turn(i,:).*tsigma.*(round(rand(1,ntrials))*2-1).*randn(1,ntrials).^2; % Draws a random turn size from a gaussian distribution with a width of tsigma; squares result and chooses a random sign
+%     N(i,:) = turn(i,:).*(randn(1,ntrials).*tsigma); % Draws a random turn size from a gaussian distribution with a width of tsigma
+    N(i,:) = turn(i,:).*tsigma.*(round(rand(1,ntrials))*2-1).*randn(1,ntrials).^2; % Draws a random turn size from a gaussian distribution with a width of tsigma
+
     
     % Wind-directed turning
-    H = round(mod(heading(i,:),359))+1; % Returns heading from 0 to 359
-    downwind(i,:) = ws*kdown*D(H); % Drive towards downwind; scaled by windspeed
-    upwind(i,:) = -ws*kup*(D(H).*odorON(i,:)); % Drive towards upwind; scaled by windspeed
-    
-    % Cross-antennal turning
-    CL(i,:) = odorL(i,:)./(odorL(i,:)+beta+Aon(i,:));
-    CR(i,:) = odorR(i,:)./(odorR(i,:)+beta+Aon(i,:));
-    bil(i,:) = kbil * (CL(i,:) - CR(i,:));
+    if (ws>0)
+        H = round(mod(heading(i,:),359))+1; % Returns heading from 0 to 359
+        downwind(i,:) = kdown*D(H); % Drive towards downwind
+        upwind(i,:) = -kup*(D(H).*odorON(i,:)); % Drive towards upwind
+    end
 
     % Computes final heading and velocity
-    heading(i+1,:) = heading(i,:) + N(i,:) + downwind(i,:) + upwind(i,:) + bil(i,:); % sum turn signals to get heading
+    heading(i+1,:) = heading(i,:) + N(i,:) + downwind(i,:) + upwind(i,:); % sum turn signals to get heading
     v(i,:) = max(0, vbase*(1+vmodON*odorON(i,:)-vmodOFF*odorOFF(i,:)));
 
     % Calculate X and Y positions
@@ -389,7 +323,7 @@ odorOFF(end,:) = [];
 x(end,:) = []; y(end,:) = [];
 heading(end,:) = [];
 heading = heading-90;           % rotate h so upwind is 90 deg for display
-if strcmp(environment,'video')
+if strcmp(environment, 'video')
     t = (1:length(odorON))/plume.frame_rate;
 else
     t = (1:length(odorON))/50;
@@ -402,13 +336,12 @@ start = [x(1,:)', y(1,:)'];
 switch environment
     case {'Crimaldi','crimaldi','Gaussian','gaussian'} % only in certain environments
 
-    % Calculates a distance vector to (0,0), in XY units
+    
     angles = atan2(y,x);
     distances = y./sin(angles);
         
     for i = 1:ntrials                                                                          
-        found = find(distances(:,i) <= 2,1); % If distance gets lower than 2 cm defines success
-                                             % (units must match with X and Y coordinates' units)
+        found = find(distances(:,i) <= 2,1);
 %         found = find(pdist2([x(:,i),y(:,i)],[0,0])<=2,1);
         if ~isempty(found)
             success(i) = 1;
@@ -427,7 +360,7 @@ switch environment
 end
 
 
-% Fills output structure -----------------------------------
+% Fills output structure
 out.environment = environment;
 out.x = x;
 out.y = y;
@@ -445,7 +378,13 @@ switch environment
         out.successrate = [];
         out.latency = [];
 end
-% -----------------------------------------------------------
+
+out.params = struct('beta', beta, 'tau_Aon', tau_Aon, 'tau_Aoff', tau_Aoff, ...
+    'tau_ON', tau_ON, 'tau_OFF1', tau_OFF1, 'tau_OFF2', tau_OFF2, ...
+    'scaleON', scaleON, 'scaleOFF', scaleOFF, 'turnbase', turnbase, ...
+    'tsigma', tsigma, 'vbase', vbase, 'tmodON', tmodON, 'tmodOFF', tmodOFF, ...
+    'vmodON', vmodON, 'vmodOFF', vmodOFF, 'kup', kup, 'kdown', kdown);
+
 
 toc
 
@@ -466,13 +405,10 @@ if plotting>=1 % & (ntrials==1) % Plots the trajectory of the trial
     % plot frame, source and success area
 %     plot([-8 8 8 -8 -8],[-30 -30 0 0 -30],'k');
 %     plot(0,0,'.k','markersize',15);
-%     viscircles([0,0],2,'color','g');
+    viscircles([0,0],2,'color','g');
     
     % plot trajectories
     plot(x,y,'k','linewidth',2);
-    plot(x(1,:),y(1,:),'ko');
-    hold on; plot(xL,yL,'b');
-    hold on; plot(xR,yR,'r');
     xodor = x; yodor = y;
     xodor(find(odor<beta)) = nan;
     yodor(find(odor<beta)) = nan;
@@ -507,24 +443,16 @@ if plotting>=1 % & (ntrials==1) % Plots the trajectory of the trial
 %     xlim([-15 15]); ylim([-15 15]);
 %     xlim([-10 10]); ylim([-10 10]);
 
-figure; subplot(3,1,1); plot(odor,'k');
-subplot(3,1,2);plot(odorL,'b'); hold on; plot(odorR,'r');
-subplot(3,1,3); plot(bil);
-
 end
 
 if plotting>=2
     figure;
     set(gcf,'PaperPositionMode','auto');
     set(gcf,'Position',[44    50   329   613]);
-    if strcmp(environment,'video')
-        t = (1:length(odor))/plume.frame_rate;
-    else
-        t = [1:length(odor)]/50;
-        switch environment
-            case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
-                t = (1:length(odor))/15;
-        end
+    t = [1:length(odor)]/50;
+    switch environment
+        case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
+            t = (1:length(odor))/15;
     end
 	color = 'k';
 
@@ -557,11 +485,7 @@ if plotting>=2
     figure;
     set(gcf,'PaperPositionMode','auto');
     set(gcf,'Position',[375    50   329   613]);
-    if strcmp(environment,'video')
-        t = (1:length(odor))/plume.frame_rate;
-    else
-        t = [1:length(odor)]/50;
-    end
+    t = [1:length(odor)]/50;
 
     subplot(4,1,1);
     hold off; plot(t,turn,'k');

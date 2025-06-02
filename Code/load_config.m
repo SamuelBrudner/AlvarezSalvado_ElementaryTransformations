@@ -104,8 +104,19 @@ function config = convert_numeric_fields(config)
 % CONVERT_NUMERIC_FIELDS Convert string numbers to numeric
     fields = fieldnames(config);
     for i = 1:length(fields)
-        if ischar(config.(fields{i}))
-            num = str2double(config.(fields{i}));
+        if ischar(config.(fields{i})) || isstring(config.(fields{i}))
+            % Handle cases where YAML values have inline comments
+            % e.g., "3600  # Match Crimaldi duration"
+            str_val = char(config.(fields{i}));
+            
+            % Extract just the numeric part before any comment
+            numeric_part = regexp(str_val, '^\s*(\d+\.?\d*)\s*', 'tokens', 'once');
+            if ~isempty(numeric_part)
+                num = str2double(numeric_part{1});
+            else
+                num = str2double(str_val);
+            end
+            
             if ~isnan(num)
                 config.(fields{i}) = num;
             end

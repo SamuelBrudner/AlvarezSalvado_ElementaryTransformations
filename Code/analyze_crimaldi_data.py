@@ -2,7 +2,7 @@
 
 This module provides a function :func:`analyze_crimaldi_data` that loads the
 ``10302017_10cms_bounded.hdf5`` file and returns summary statistics of the
-``/dataset_1`` dataset. It can also be executed as a script to print the
+``/dataset2`` dataset. It can also be executed as a script to print the
 statistics in a human‑readable form. When extracting intensities with
 ``get_intensities_from_crimaldi`` the chosen dataset name is logged via
 ``loguru``.
@@ -33,12 +33,12 @@ except ImportError as exc:  # pragma: no cover - dependencies missing
 
 
 def analyze_crimaldi_data(path: str) -> Dict[str, float | dict]:
-    """Return basic statistics for the ``/dataset_1`` array.
+    """Return basic statistics for the ``/dataset2`` array.
 
     Parameters
     ----------
     path : str
-        Path to the HDF5 file containing ``/dataset_1``.
+        Path to the HDF5 file containing ``/dataset2``.
 
     Returns
     -------
@@ -47,7 +47,7 @@ def analyze_crimaldi_data(path: str) -> Dict[str, float | dict]:
         ``percentiles`` keys.
     """
     with h5py.File(path, "r") as f:
-        data = f["/dataset_1"][:]
+        data = f["/dataset2"][:]
 
     return {
         "min": float(data.min()),

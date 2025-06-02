@@ -78,7 +78,7 @@ end
 if isfield(cfg,'plume_metadata')
     % ------------ YAML metadata (pre-processed plume) --------------------
     plume = load_custom_plume(cfg.plume_metadata);
-    tl    = chooseTrialLength(cfg,size(plume.data,3));
+    tl    = chooseTrialLength(cfg,plume.dims(3));
     out   = model_fn(tl,'video',cfg.plotting,cfg.ntrials,plume,cfg);
 
 elseif isfield(cfg,'plume_video')
@@ -110,7 +110,7 @@ elseif isfield(cfg,'plume_video')
         % ~~~ load full movie into RAM as before ~~~
         plume = load_plume_video(cfg.plume_video, ...
                                  cfg.px_per_mm,cfg.frame_rate);
-        tl    = chooseTrialLength(cfg, size(plume.data,3));
+        tl    = chooseTrialLength(cfg, plume.dims(3));
         out   = model_fn(tl,'video',cfg.plotting,cfg.ntrials,plume,cfg);
     end
 

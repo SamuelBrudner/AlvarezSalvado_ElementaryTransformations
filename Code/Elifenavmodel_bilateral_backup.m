@@ -251,7 +251,7 @@ for i = 1:triallength
             
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[tind yind(it) xind(it)],[1 1 1])); % Draws odor concentration for the current position and time
                 odorL(i,it) = odor(i,it);       % left odor is just odor at the fly
             end
             
@@ -272,7 +272,7 @@ for i = 1:triallength
             withinR=setdiff([1:ntrials],out_of_plumeR);
             odorR(i,out_of_plumeR)=0;
             for it=withinR
-                odorR(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[xRind(it) yRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odorR(i,it)=max(0,h5read('data/10302017_10cms_bounded.hdf5','/dataset2',[tind yRind(it) xRind(it)],[1 1 1])); % Draws odor concentration for the current position and time
             end
             
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
@@ -289,16 +289,16 @@ for i = 1:triallength
             p(i,:) = odor(i,:);
 
         case {'video'}
-            tind = mod(i-1, plume.dims(3)) + 1;
+            tind = mod(i-1, size(plume.data,3)) + 1;
 
-            xind = round(10*x(i,:)*plume.px_per_mm) + round(plume.dims(1)/2);
+            xind = round(10*x(i,:)*plume.px_per_mm) + round(size(plume.data,2)/2);
             yind = round(-10*y(i,:)*plume.px_per_mm)+1;
             out_of_plume = union(union(find(xind<1),find(xind>size(plume.data,2))), ...
-                                 union(find(yind<1),find(yind>plume.dims(2))));
+                                 union(find(yind<1),find(yind>size(plume.data,1))));
             within = setdiff(1:ntrials,out_of_plume);
             odor(i,out_of_plume) = 0;
             for it = within
-                odor(i,it) = max(0,h5read(plume.filename,plume.dataset,[xind(it) yind(it) tind],[1 1 1]));
+                odor(i,it) = plume.data(yind(it), xind(it), tind);
             end
 
             xLind = round(10*xL(i,:)*plume.px_per_mm) + round(size(plume.data,2)/2);

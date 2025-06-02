@@ -32,7 +32,15 @@ end
 
 % Load the result file
 fprintf('Loading %s...\n', input_file);
-result = load(input_file);
+data = load(input_file);
+% Handle nested result structure
+if isfield(data, 'result')
+    result = data.result;
+elseif isfield(data, 'out')
+    result = data.out;
+else
+    result = data;
+end
 if isfield(result, 'out')
     result = result.out;
 end
