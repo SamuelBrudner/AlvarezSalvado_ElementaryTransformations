@@ -30,6 +30,32 @@ bash setup_env.sh --dev
 
 Currently this repository does not include automated tests, but the above environment script can be used to install any required dependencies.
 
+## Running simulations on SLURM
+
+Use `slurm_submit.sh` to generate a batch file from `slurm_job_template.slurm`. The
+script reads several environment variables, all of which have sensible defaults:
+
+- `AGENTS_PER_CONDITION` (default `1000`)
+- `AGENTS_PER_JOB` (default `10`)
+- `TRIAL_LENGTH` (default `5000`)
+- `ENVIRONMENT` (default `Crimaldi`)
+- `OUTPUT_DIR` (defaults to the current directory)
+- `PARTITION` (default `day`)
+- `TIME_LIMIT` (default `6:00:00`)
+- `MEM_PER_TASK` (default `64G`)
+- `MAX_CONCURRENT` (default `100`)
+- `EXP_NAME` (default `crimaldi`)
+
+If present, you may optionally run `bash setup_env.sh --dev` before submitting
+jobs to set up a conda environment.
+
+Example workflow:
+
+```bash
+bash slurm_submit.sh job.slurm
+sbatch job.slurm
+```
+
 ## License
 
 This project is released under the MIT License (see [LICENSE](LICENSE)).
