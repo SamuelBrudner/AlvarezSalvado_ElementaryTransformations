@@ -7,7 +7,22 @@ This repository accompanies the paper **"Elementary sensory-motor transformation
 - **Code/** – MATLAB scripts for analyzing behavior and running the navigation model. This folder also contains an `import functions feb2017` subfolder for reading binary tracking data produced with the Miniature Manhattan wind tunnels.
 - **Arena 4f/** – Laser cut design files (AI format) and instructions describing how to assemble the behavioral arena.
 - **WalkingArenaLoopLongerIRtime2/** – Arduino sketch for controlling arena lighting, odor valves and camera triggers.
-- **FlyTracker 3.6.vi**, **Get Frame Timestamp.vi**, **SelectBackground.vi** – LabVIEW VIs used for data acquisition and preprocessing.
+- **FlyTracker 3.6.vi**, **Get Frame Timestamp.vi**, **SelectBackground.vi** – LabVIEW VIs used for dSMOKE:
+  mean: 0.359
+  median: 0.498
+  p95: 0.502
+  p99: 0.502
+  min: 0.047
+  max: 0.506
+  count: 6768230400
+CRIM:
+  mean: 0.059
+  median: 0.038
+  p95: 0.190
+  p99: 0.325
+  min: -0.020
+  max: 1.291
+  count: 315705600ata acquisition and preprocessing.
 
 ## Quick start
 
