@@ -28,7 +28,7 @@ If your Codex environment includes a `setup_env.sh` script, run it with the `--d
 bash setup_env.sh --dev
 ```
 
-Currently this repository does not include automated tests, but the above environment script can be used to install any required dependencies.
+This repository includes a few automated tests under the `tests/` directory. If your Codex environment provides a `setup_env.sh` script, you can use it to create a conda environment with required dependencies before running the tests or MATLAB code.
 
 ## License
 
