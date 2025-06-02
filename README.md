@@ -43,7 +43,16 @@ If your Codex environment includes a `setup_env.sh` script, run it with the `--d
 bash setup_env.sh --dev
 ```
 
-Currently this repository does not include automated tests, but the above environment script can be used to install any required dependencies.
+This repository now includes a small pytest suite. After creating the development environment you can run the tests with:
+
+```bash
+pytest -q
+```
+
+The `slurm_submit.sh` helper script supports a `-h`/`--help` option that prints
+usage instructions and also logs the calculated array size and selected paths
+when invoked.
+
 
 ## License
 
