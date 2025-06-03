@@ -14,16 +14,58 @@ import scipy.io
 import matplotlib.pyplot as plt
 import sys
 import os
+try:
+    import h5py
+except ImportError:
+    print("Warning: h5py not installed. Cannot read MATLAB v7.3 files.")
+    h5py = None
 
 def load_results(filename='results/nav_results_0000.mat'):
-    """Load MATLAB results file"""
+    """Load MATLAB results file (handles both v5 and v7.3 formats)"""
     if not os.path.exists(filename):
         print(f"Error: {filename} not found")
         sys.exit(1)
     
-    # Load the .mat file
-    data = scipy.io.loadmat(filename, struct_as_record=False, squeeze_me=True)
-    return data['out']
+    # Try loading with scipy first (v5 format)
+    try:
+        data = scipy.io.loadmat(filename, struct_as_record=False, squeeze_me=True)
+        return data['out']
+    except NotImplementedError:
+        # Fall back to h5py for v7.3 files
+        print("Detected MATLAB v7.3 file, using h5py...")
+        import h5py
+        
+        # Custom object to mimic MATLAB struct
+        class Struct:
+            pass
+        
+        out = Struct()
+        
+        with h5py.File(filename, 'r') as f:
+            # Get the 'out' structure
+            out_group = f['out']
+            
+            # Load each field
+            for key in out_group.keys():
+                data = out_group[key]
+                if isinstance(data, h5py.Dataset):
+                    # Load the data
+                    value = data[()]
+                    
+                    # Handle different data types
+                    if value.dtype.type is np.bytes_:
+                        # String data - decode it
+                        if value.shape == ():
+                            value = value.decode('utf-8')
+                        else:
+                            value = ''.join(chr(c) for c in value)
+                    elif len(value.shape) > 1:
+                        # Multi-dimensional array - transpose for MATLAB compatibility
+                        value = value.T
+                    
+                    setattr(out, key, value)
+        
+        return out
 
 def analyze_results(out):
     """Analyze and print key metrics"""
