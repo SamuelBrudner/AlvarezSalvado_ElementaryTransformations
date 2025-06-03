@@ -1,0 +1,474 @@
+{
+  "test_metadata": {
+    "configuration_name": "test_normalization_config",
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "description": "Test configuration for data normalization pipeline validation with comprehensive test scenarios and validation criteria for scientific computing workflows. Supports cross-format compatibility testing between Crimaldi and custom plume datasets, numerical accuracy validation with >95% correlation requirements, and performance testing for <7.2 seconds per simulation targets.",
+    "compatible_formats": ["crimaldi", "custom_avi", "avi"],
+    "test_framework": "pytest",
+    "validation_requirements": [
+      "numerical_accuracy",
+      "cross_format_consistency", 
+      "performance_benchmarks",
+      "error_handling"
+    ],
+    "dependencies": ["opencv", "numpy", "scipy", "joblib", "pytest"],
+    "reference_config": "src/backend/config/default_normalization.json"
+  },
+  "test_scenarios": [
+    {
+      "scenario_name": "basic_crimaldi_validation",
+      "description": "Basic validation test for Crimaldi format processing with standard parameters",
+      "test_data_files": ["crimaldi_sample.avi"],
+      "expected_results": "reference_results/normalization_benchmark.npy",
+      "validation_criteria": {
+        "correlation_threshold": 0.95,
+        "numerical_tolerance": 1e-06,
+        "processing_time_limit": 7.2
+      }
+    },
+    {
+      "scenario_name": "basic_custom_validation", 
+      "description": "Basic validation test for custom AVI format processing with standard parameters",
+      "test_data_files": ["custom_sample.avi"],
+      "expected_results": "reference_results/normalization_benchmark.npy",
+      "validation_criteria": {
+        "correlation_threshold": 0.95,
+        "numerical_tolerance": 1e-06,
+        "processing_time_limit": 7.2
+      }
+    },
+    {
+      "scenario_name": "cross_format_compatibility",
+      "description": "Cross-format compatibility validation between Crimaldi and custom formats",
+      "test_data_files": ["crimaldi_sample.avi", "custom_sample.avi"],
+      "expected_results": "reference_results/analysis_benchmark.npy",
+      "validation_criteria": {
+        "cross_format_correlation": 0.9,
+        "spatial_accuracy_tolerance": 0.01,
+        "temporal_accuracy_tolerance": 0.001,
+        "intensity_accuracy_tolerance": 0.02
+      }
+    },
+    {
+      "scenario_name": "high_resolution_stress_test",
+      "description": "Stress test with high resolution data to validate memory management and performance",
+      "test_data_files": ["high_resolution_test_data"],
+      "validation_criteria": {
+        "memory_limit_mb": 2048,
+        "processing_time_limit": 15.0,
+        "quality_threshold": 0.95
+      }
+    },
+    {
+      "scenario_name": "error_handling_validation",
+      "description": "Error handling validation with corrupted data and invalid parameters",
+      "test_data_files": ["corrupted_sample.avi"],
+      "validation_criteria": {
+        "error_detection_rate": 1.0,
+        "graceful_degradation": true,
+        "recovery_success_rate": 0.8
+      }
+    },
+    {
+      "scenario_name": "performance_benchmark",
+      "description": "Performance benchmark validation for batch processing efficiency",
+      "test_data_files": ["batch_test_samples"],
+      "validation_criteria": {
+        "batch_completion_rate": 1.0,
+        "average_processing_time": 7.2,
+        "parallel_efficiency": 0.8
+      }
+    }
+  ],
+  "normalization_pipeline": {
+    "enabled": true,
+    "processing_order": [
+      "format_detection",
+      "arena_normalization", 
+      "pixel_resolution_normalization",
+      "temporal_normalization",
+      "intensity_calibration",
+      "validation"
+    ],
+    "parallel_processing": false,
+    "max_workers": 1,
+    "memory_limit_gb": 2,
+    "timeout_seconds": 300,
+    "checkpoint_interval": 50,
+    "error_handling_strategy": "fail_fast"
+  },
+  "arena_normalization": {
+    "enabled": true,
+    "target_arena_width_meters": 0.5,
+    "target_arena_height_meters": 0.5,
+    "scaling_method": "bilinear",
+    "preserve_aspect_ratio": true,
+    "boundary_detection": {
+      "method": "edge_detection",
+      "threshold": 0.1,
+      "morphological_operations": ["opening", "closing"],
+      "kernel_size": 5
+    },
+    "calibration_markers": {
+      "detection_enabled": false,
+      "marker_type": "circular",
+      "min_marker_size_pixels": 10,
+      "max_marker_size_pixels": 50
+    },
+    "validation": {
+      "accuracy_threshold": 0.01,
+      "reference_measurements": true,
+      "statistical_validation": true
+    }
+  },
+  "pixel_resolution_normalization": {
+    "enabled": true,
+    "target_resolution_x": 320,
+    "target_resolution_y": 240,
+    "resampling_algorithm": "bilinear",
+    "anti_aliasing": true,
+    "quality_preservation": {
+      "maintain_detail": true,
+      "edge_enhancement": false,
+      "noise_reduction": "gaussian",
+      "sharpening_factor": 0.0
+    },
+    "adaptive_scaling": {
+      "enabled": false,
+      "content_aware": false
+    },
+    "validation": {
+      "similarity_threshold": 0.95,
+      "feature_preservation_check": true,
+      "information_loss_tolerance": 0.05
+    }
+  },
+  "temporal_normalization": {
+    "enabled": true,
+    "target_fps": 25.0,
+    "interpolation_method": "linear",
+    "frame_alignment": "center",
+    "temporal_smoothing": false,
+    "synchronization": {
+      "method": "cross_correlation",
+      "reference_signal": "intensity_variance",
+      "alignment_tolerance": 0.1,
+      "drift_correction": false
+    },
+    "resampling_quality": {
+      "anti_aliasing_filter": true,
+      "filter_cutoff_ratio": 0.8,
+      "phase_preservation": true,
+      "temporal_coherence": true
+    },
+    "validation": {
+      "temporal_consistency_check": true,
+      "frequency_domain_validation": false,
+      "motion_preservation_threshold": 0.95
+    }
+  },
+  "intensity_calibration": {
+    "enabled": true,
+    "target_intensity_range": [0.0, 1.0],
+    "calibration_method": "min_max",
+    "background_subtraction": false,
+    "noise_reduction": "none",
+    "gamma_correction": 1.0,
+    "dynamic_range_optimization": {
+      "histogram_equalization": false,
+      "contrast_enhancement": "none",
+      "saturation_handling": "clip",
+      "outlier_removal": false
+    },
+    "spatial_calibration": {
+      "flat_field_correction": false,
+      "vignetting_correction": false,
+      "sensor_response_linearization": false
+    },
+    "temporal_stability": {
+      "drift_correction": false,
+      "baseline_tracking": false
+    },
+    "validation": {
+      "linearity_check": true,
+      "noise_characterization": false,
+      "dynamic_range_validation": true,
+      "calibration_accuracy_threshold": 0.02
+    }
+  },
+  "format_specific_settings": {
+    "crimaldi_format": {
+      "pixel_to_meter_ratio": 100.0,
+      "intensity_units": "concentration_ppm",
+      "coordinate_system": "cartesian",
+      "coordinate_origin": "bottom_left",
+      "time_units": "seconds",
+      "frame_rate_hz": 50.0,
+      "bit_depth": 16,
+      "color_space": "grayscale",
+      "compression": "none",
+      "metadata_fields": ["timestamp", "experimental_conditions"],
+      "validation_checksums": true
+    },
+    "custom_format": {
+      "pixel_to_meter_ratio": 150.0,
+      "intensity_units": "raw_sensor",
+      "coordinate_system": "cartesian",
+      "coordinate_origin": "top_left",
+      "time_units": "milliseconds",
+      "frame_rate_hz": 30.0,
+      "bit_depth": 8,
+      "color_space": "rgb",
+      "compression": "h264",
+      "auto_detect_parameters": true,
+      "calibration_required": false,
+      "metadata_extraction": ["codec_info", "recording_parameters"]
+    },
+    "avi_format": {
+      "codec_support": ["h264", "mjpeg"],
+      "container_validation": true,
+      "stream_analysis": false,
+      "frame_extraction_method": "opencv",
+      "metadata_preservation": false,
+      "error_recovery": "skip_corrupted_frames"
+    }
+  },
+  "cross_format_compatibility": {
+    "enabled": true,
+    "reference_format": "crimaldi",
+    "consistency_validation": true,
+    "format_conversion_matrix": {
+      "crimaldi_to_custom": {
+        "coordinate_transform": "flip_y",
+        "intensity_scaling": 255.0,
+        "time_conversion": 1000.0
+      },
+      "custom_to_crimaldi": {
+        "coordinate_transform": "flip_y",
+        "intensity_scaling": 0.00392157,
+        "time_conversion": 0.001
+      }
+    },
+    "validation_metrics": [
+      "spatial_correlation",
+      "temporal_correlation", 
+      "intensity_distribution"
+    ],
+    "tolerance_thresholds": {
+      "spatial_accuracy": 0.01,
+      "temporal_accuracy": 0.001,
+      "intensity_accuracy": 0.02
+    }
+  },
+  "quality_assurance": {
+    "enabled": true,
+    "validation_checks": [
+      "format_integrity",
+      "numerical_accuracy",
+      "physical_consistency"
+    ],
+    "accuracy_threshold": 1e-06,
+    "enable_checksum_validation": false,
+    "reference_comparison": true,
+    "statistical_validation": true,
+    "automated_testing": {
+      "unit_tests": true,
+      "integration_tests": true,
+      "regression_tests": false,
+      "performance_benchmarks": true
+    },
+    "error_detection": {
+      "outlier_detection": false,
+      "consistency_checks": true,
+      "boundary_validation": true
+    }
+  },
+  "performance_optimization": {
+    "memory_management": {
+      "memory_limit_mb": 1024,
+      "memory_mapping": false,
+      "garbage_collection": "conservative",
+      "buffer_size_mb": 64
+    },
+    "parallel_processing": {
+      "enabled": false,
+      "max_workers": 1,
+      "chunk_size": "small",
+      "load_balancing": "static",
+      "thread_safety": true
+    },
+    "caching": {
+      "cache_intermediate_results": false,
+      "cache_directory": "cache/test_normalization",
+      "cache_size_limit_gb": 1,
+      "cache_expiry_hours": 1,
+      "compression": "none"
+    },
+    "processing_timeout_seconds": 300,
+    "progress_reporting": {
+      "enabled": true,
+      "update_interval_seconds": 1,
+      "detailed_logging": true,
+      "performance_metrics": true
+    }
+  },
+  "output_configuration": {
+    "output_format": "numpy_array",
+    "compression": "none",
+    "precision": "float64",
+    "metadata_inclusion": true,
+    "file_naming": {
+      "timestamp_format": "%Y%m%d_%H%M%S",
+      "include_format_identifier": true,
+      "include_normalization_parameters": false,
+      "suffix": "_test_normalized"
+    },
+    "directory_structure": {
+      "base_directory": "test_output/normalized",
+      "format_subdirectories": false,
+      "date_subdirectories": false,
+      "backup_copies": 0
+    },
+    "validation_output": {
+      "generate_reports": true,
+      "include_visualizations": false,
+      "statistical_summaries": true,
+      "comparison_plots": false
+    }
+  },
+  "logging_configuration": {
+    "log_level": "DEBUG",
+    "log_file": "logs/test_normalization.log",
+    "log_rotation": {
+      "max_size_mb": 10,
+      "backup_count": 2,
+      "rotation_interval": "daily"
+    },
+    "structured_logging": true,
+    "performance_logging": true,
+    "error_tracking": {
+      "detailed_stack_traces": true,
+      "error_categorization": true,
+      "recovery_suggestions": true
+    }
+  },
+  "experimental_features": {
+    "machine_learning_enhancement": {
+      "enabled": false
+    },
+    "adaptive_algorithms": {
+      "enabled": false
+    },
+    "real_time_processing": {
+      "enabled": false
+    }
+  },
+  "test_validation_criteria": {
+    "numerical_accuracy": {
+      "correlation_threshold": 0.95,
+      "numerical_tolerance": 1e-06,
+      "reproducibility_tolerance": 1e-10,
+      "statistical_significance": 0.05
+    },
+    "performance_requirements": {
+      "max_processing_time_seconds": 7.2,
+      "memory_limit_mb": 2048,
+      "batch_completion_rate": 1.0,
+      "parallel_efficiency_threshold": 0.8
+    },
+    "cross_format_compatibility": {
+      "spatial_correlation_threshold": 0.9,
+      "temporal_correlation_threshold": 0.9,
+      "intensity_correlation_threshold": 0.9,
+      "conversion_accuracy_tolerance": 0.01
+    },
+    "error_handling": {
+      "error_detection_rate": 1.0,
+      "graceful_degradation_success": true,
+      "recovery_success_rate": 0.8,
+      "fail_fast_validation": true
+    },
+    "quality_assurance": {
+      "format_integrity_check": true,
+      "data_consistency_validation": true,
+      "reference_comparison_accuracy": 0.95,
+      "statistical_validation_significance": 0.05
+    }
+  },
+  "test_data_specifications": {
+    "crimaldi_test_data": {
+      "file_path": "test_fixtures/crimaldi_sample.avi",
+      "format_type": "crimaldi",
+      "dimensions": [320, 240],
+      "frame_count": 100,
+      "frame_rate": 50.0,
+      "bit_depth": 16,
+      "color_space": "grayscale",
+      "expected_processing_time": 5.0
+    },
+    "custom_test_data": {
+      "file_path": "test_fixtures/custom_sample.avi",
+      "format_type": "custom",
+      "dimensions": [640, 480],
+      "frame_count": 75,
+      "frame_rate": 30.0,
+      "bit_depth": 8,
+      "color_space": "rgb",
+      "expected_processing_time": 6.0
+    },
+    "reference_benchmark_data": {
+      "normalization_benchmark": "test_fixtures/reference_results/normalization_benchmark.npy",
+      "simulation_benchmark": "test_fixtures/reference_results/simulation_benchmark.npy",
+      "analysis_benchmark": "test_fixtures/reference_results/analysis_benchmark.npy"
+    }
+  },
+  "test_environment_configuration": {
+    "random_seed": 42,
+    "deterministic_processing": true,
+    "isolated_environment": true,
+    "temporary_directory_cleanup": true,
+    "resource_monitoring": true,
+    "performance_profiling": true,
+    "validation_caching": false,
+    "error_injection_testing": true
+  },
+  "integration_test_scenarios": [
+    {
+      "scenario_name": "end_to_end_normalization",
+      "description": "Complete end-to-end normalization pipeline test with validation",
+      "input_files": ["crimaldi_sample.avi", "custom_sample.avi"],
+      "expected_outputs": ["normalized_crimaldi.npy", "normalized_custom.npy"],
+      "validation_steps": [
+        "format_validation",
+        "parameter_validation",
+        "quality_validation",
+        "compatibility_validation"
+      ]
+    },
+    {
+      "scenario_name": "batch_processing_validation",
+      "description": "Batch processing validation with multiple files and formats",
+      "input_files": ["batch_test_samples"],
+      "expected_outputs": ["batch_normalized_results"],
+      "validation_steps": [
+        "batch_completion",
+        "performance_validation",
+        "consistency_validation"
+      ]
+    },
+    {
+      "scenario_name": "error_recovery_testing",
+      "description": "Error recovery and graceful degradation testing",
+      "input_files": ["corrupted_sample.avi", "invalid_format.avi"],
+      "expected_outputs": ["error_reports", "recovery_logs"],
+      "validation_steps": [
+        "error_detection",
+        "recovery_validation",
+        "logging_validation"
+      ]
+    }
+  ]
+}
