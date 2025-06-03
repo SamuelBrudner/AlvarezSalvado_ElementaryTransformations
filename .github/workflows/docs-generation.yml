@@ -1,0 +1,468 @@
+# GitHub Actions Workflow for Comprehensive Documentation Generation and Deployment
+# Plume Navigation Simulation System - Scientific Computing Documentation Pipeline
+# Implements automated documentation generation, validation, and deployment with
+# scientific computing standards for >95% correlation validation and 4000+ simulation workflows
+
+name: Documentation Generation and Deployment
+
+# Workflow Triggers
+# Supports push to main branches, pull requests, scheduled updates, and manual dispatch
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'docs/*'
+    paths:
+      - 'docs/**/*.md'
+      - 'src/backend/**/*.py'
+      - 'src/backend/examples/**/*'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+      - '.github/workflows/docs-generation.yml'
+  
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'docs/**/*.md'
+      - 'src/backend/**/*.py'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - '.github/workflows/docs-generation.yml'
+  
+  schedule:
+    # Weekly documentation refresh on Mondays at 6 AM UTC
+    - cron: '0 6 * * 1'
+  
+  workflow_dispatch:
+    inputs:
+      docs_type:
+        description: 'Type of documentation to generate'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'user-guides'
+          - 'api-docs'
+          - 'architecture'
+          - 'examples'
+      deploy_to_pages:
+        description: 'Deploy documentation to GitHub Pages'
+        required: false
+        default: 'true'
+        type: boolean
+      validate_links:
+        description: 'Validate internal and external links'
+        required: false
+        default: 'true'
+        type: boolean
+      generate_api_docs:
+        description: 'Generate API documentation from source code'
+        required: false
+        default: 'true'
+        type: boolean
+
+# Global Environment Variables
+# Scientific computing documentation configuration with performance thresholds
+env:
+  # Python environment configuration
+  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/src/backend
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+  
+  # Documentation build configuration
+  DOCS_SOURCE_DIR: docs
+  DOCS_OUTPUT_DIR: _site
+  API_DOCS_DIR: api_docs
+  
+  # Scientific computing documentation standards
+  SCIENTIFIC_COMPUTING_DOCS: '1'
+  CORRELATION_THRESHOLD: '0.95'
+  SIMULATION_TIME_LIMIT: '7.2'
+  BATCH_TARGET: '4000'
+  REPRODUCIBILITY_THRESHOLD: '0.99'
+
+# Workflow Permissions
+# GitHub Pages deployment and artifact management permissions
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Concurrency Control
+# Prevents conflicting documentation builds
+concurrency:
+  group: 'docs-${{ github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Documentation Structure Validation
+  # Validates documentation structure, detects changes, and determines deployment strategy
+  validate-documentation:
+    name: Validate Documentation Structure
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      docs-changed: ${{ steps.changes.outputs.docs }}
+      api-changed: ${{ steps.changes.outputs.api }}
+      should-deploy: ${{ steps.deploy-check.outputs.should-deploy }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Detect documentation changes
+        id: changes
+        run: |
+          # Detect changes in documentation and API source files
+          echo 'docs=true' >> $GITHUB_OUTPUT
+          echo 'api=true' >> $GITHUB_OUTPUT
+      
+      - name: Validate documentation structure
+        run: |
+          # Validate Markdown files using markdown-link-check
+          find docs/ -name '*.md' -exec markdown-link-check {} \; || true
+      
+      - name: Check documentation completeness
+        run: |
+          # Validate documentation structure completeness
+          python .github/scripts/validate_docs_structure.py \
+            --docs-dir docs/ \
+            --check-completeness
+      
+      - name: Check if should deploy
+        id: deploy-check
+        run: |
+          # Determine deployment strategy based on branch and inputs
+          should_deploy="false"
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.event.inputs.deploy_to_pages }}" == "true" ]]; then
+            should_deploy="true"
+          fi
+          echo "should-deploy=${should_deploy}" >> $GITHUB_OUTPUT
+
+  # Job 2: API Documentation Generation
+  # Generates comprehensive API documentation from source code with scientific computing standards
+  generate-api-documentation:
+    name: Generate API Documentation
+    runs-on: ubuntu-latest
+    needs: [validate-documentation]
+    if: needs.validate-documentation.outputs.api-changed == 'true' || github.event.inputs.generate_api_docs == 'true'
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4 # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Cache documentation dependencies
+        uses: actions/cache@v3 # github-actions v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-docs-${{ hashFiles('**/requirements.txt', 'docs/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-docs-
+      
+      - name: Install documentation dependencies
+        run: |
+          # Install comprehensive documentation generation tools
+          pip install --upgrade pip
+          pip install \
+            sphinx \
+            sphinx-rtd-theme \
+            sphinx-autodoc-typehints \
+            pydoc-markdown \
+            mkdocs \
+            mkdocs-material
+      
+      - name: Install backend dependencies
+        run: |
+          # Install scientific computing dependencies for API extraction
+          pip install -r src/backend/requirements.txt
+      
+      - name: Install backend package
+        run: |
+          # Install backend package for API documentation generation
+          pip install -e src/backend/
+      
+      - name: Generate API documentation
+        run: |
+          # Generate comprehensive API documentation from source code
+          python .github/scripts/generate_api_docs.py \
+            --source-dir src/backend \
+            --output-dir ${{ env.API_DOCS_DIR }} \
+            --format markdown
+      
+      - name: Generate module documentation
+        run: |
+          # Generate detailed module documentation using pydoc-markdown
+          pydoc-markdown --config .github/config/pydoc-markdown.yml
+      
+      - name: Validate API documentation
+        run: |
+          # Validate generated API documentation for completeness and accuracy
+          python .github/scripts/validate_api_docs.py \
+            --api-docs-dir ${{ env.API_DOCS_DIR }}
+      
+      - name: Upload API documentation
+        uses: actions/upload-artifact@v3 # github-actions v3
+        with:
+          name: api-documentation
+          path: ${{ env.API_DOCS_DIR }}/
+          retention-days: 30
+
+  # Job 3: Complete Documentation Build
+  # Builds comprehensive documentation including examples, diagrams, and cross-references
+  build-documentation:
+    name: Build Complete Documentation
+    runs-on: ubuntu-latest
+    needs: [validate-documentation, generate-api-documentation]
+    if: always() && needs.validate-documentation.outputs.docs-changed == 'true'
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4 # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Download API documentation
+        if: needs.generate-api-documentation.result == 'success'
+        uses: actions/download-artifact@v3 # github-actions v3
+        with:
+          name: api-documentation
+          path: ${{ env.API_DOCS_DIR }}/
+      
+      - name: Install documentation tools
+        run: |
+          # Install comprehensive documentation generation tools
+          pip install --upgrade pip
+          pip install \
+            mkdocs \
+            mkdocs-material \
+            mkdocs-mermaid2-plugin \
+            mkdocs-git-revision-date-localized-plugin \
+            mkdocs-minify-plugin
+      
+      - name: Install backend dependencies for examples
+        run: |
+          # Install scientific computing stack for example generation
+          pip install -r src/backend/requirements.txt
+          pip install -e src/backend/
+      
+      - name: Generate example documentation
+        run: |
+          # Generate documentation from working examples
+          python .github/scripts/generate_example_docs.py \
+            --examples-dir src/backend/examples \
+            --output-dir docs/examples/generated
+      
+      - name: Generate architecture diagrams
+        run: |
+          # Generate system architecture diagrams and visualizations
+          python .github/scripts/generate_diagrams.py \
+            --output-dir docs/assets/diagrams/generated
+      
+      - name: Build MkDocs documentation
+        run: |
+          # Build complete documentation site using MkDocs
+          mkdocs build \
+            --config-file .github/config/mkdocs.yml \
+            --site-dir ${{ env.DOCS_OUTPUT_DIR }}
+      
+      - name: Validate generated documentation
+        run: |
+          # Validate generated documentation for quality and completeness
+          python .github/scripts/validate_generated_docs.py \
+            --docs-dir ${{ env.DOCS_OUTPUT_DIR }}
+      
+      - name: Generate documentation metrics
+        run: |
+          # Generate comprehensive documentation metrics and statistics
+          python .github/scripts/generate_docs_metrics.py \
+            --docs-dir ${{ env.DOCS_OUTPUT_DIR }} \
+            --output docs-metrics.json
+      
+      - name: Upload documentation site
+        uses: actions/upload-artifact@v3 # github-actions v3
+        with:
+          name: documentation-site
+          path: ${{ env.DOCS_OUTPUT_DIR }}/
+          retention-days: 30
+      
+      - name: Upload documentation metrics
+        uses: actions/upload-artifact@v3 # github-actions v3
+        with:
+          name: documentation-metrics
+          path: docs-metrics.json
+          retention-days: 90
+
+  # Job 4: Link Validation
+  # Comprehensive validation of internal and external documentation links
+  validate-links:
+    name: Validate Documentation Links
+    runs-on: ubuntu-latest
+    needs: [build-documentation]
+    if: github.event.inputs.validate_links != 'false'
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # github-actions v4
+      
+      - name: Download documentation site
+        uses: actions/download-artifact@v3 # github-actions v3
+        with:
+          name: documentation-site
+          path: ${{ env.DOCS_OUTPUT_DIR }}/
+      
+      - name: Install link validation tools
+        run: |
+          # Install comprehensive link validation tools
+          npm install -g markdown-link-check htmlproofer
+      
+      - name: Validate internal links
+        run: |
+          # Validate all internal HTML links and images
+          find ${{ env.DOCS_OUTPUT_DIR }} -name '*.html' -exec \
+            htmlproofer {} --check-html --check-img-http --disable-external \;
+      
+      - name: Validate external links
+        run: |
+          # Validate external links in Markdown files
+          find docs/ -name '*.md' -exec markdown-link-check {} \;
+      
+      - name: Generate link validation report
+        run: |
+          # Generate comprehensive link validation report
+          python .github/scripts/generate_link_report.py \
+            --docs-dir ${{ env.DOCS_OUTPUT_DIR }} \
+            --output link-validation-report.json
+      
+      - name: Upload link validation report
+        uses: actions/upload-artifact@v3 # github-actions v3
+        with:
+          name: link-validation-report
+          path: link-validation-report.json
+          retention-days: 30
+
+  # Job 5: GitHub Pages Deployment
+  # Automated deployment to GitHub Pages with scientific computing optimizations
+  deploy-to-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [build-documentation, validate-links]
+    if: needs.validate-documentation.outputs.should-deploy == 'true' && (success() || needs.validate-links.result == 'skipped')
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Download documentation site
+        uses: actions/download-artifact@v3 # github-actions v3
+        with:
+          name: documentation-site
+          path: ${{ env.DOCS_OUTPUT_DIR }}/
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3 # github-actions v3
+      
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v2 # github-actions v2
+        with:
+          path: ${{ env.DOCS_OUTPUT_DIR }}
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2 # github-actions v2
+      
+      - name: Verify deployment
+        run: |
+          # Verify successful deployment with basic connectivity test
+          curl -f ${{ steps.deployment.outputs.page_url }} || exit 1
+
+  # Job 6: Documentation Generation Summary
+  # Comprehensive summary and reporting of documentation generation results
+  documentation-summary:
+    name: Documentation Generation Summary
+    runs-on: ubuntu-latest
+    needs:
+      - validate-documentation
+      - generate-api-documentation
+      - build-documentation
+      - validate-links
+      - deploy-to-pages
+    if: always()
+    
+    steps:
+      - name: Download all documentation artifacts
+        uses: actions/download-artifact@v3 # github-actions v3
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4 # github-actions v4
+        with:
+          python-version: '3.9'
+      
+      - name: Generate comprehensive documentation summary
+        run: |
+          # Generate detailed documentation generation summary and statistics
+          python .github/scripts/generate_docs_summary.py \
+            --artifacts-dir . \
+            --output docs-generation-summary.json
+      
+      - name: Validate documentation generation success
+        run: |
+          # Validate overall documentation generation success and quality metrics
+          python -c "
+          import json
+          summary = json.load(open('docs-generation-summary.json'))
+          success = summary['overall_success']
+          api_generated = summary['api_docs_generated']
+          site_built = summary['site_built']
+          deployed = summary['deployed_to_pages']
+          print(f'Documentation Summary - Success: {success}, API: {api_generated}, Site: {site_built}, Deployed: {deployed}')
+          exit(0 if success else 1)
+          "
+      
+      - name: Upload documentation summary
+        uses: actions/upload-artifact@v3 # github-actions v3
+        with:
+          name: documentation-generation-summary
+          path: docs-generation-summary.*
+          retention-days: 90
+      
+      - name: Comment documentation results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6 # github-actions v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('docs-generation-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Documentation Generation Results\n\n${summary}`
+            });

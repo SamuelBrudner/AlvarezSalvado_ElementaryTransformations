@@ -1,0 +1,461 @@
+# =============================================================================
+# Docker Compose Orchestration Configuration for Scientific Computing Plume Navigation Simulation System
+# =============================================================================
+# Docker Compose orchestration configuration implementing comprehensive multi-service containerized 
+# deployment with service dependencies, resource management, volume orchestration, network configuration, 
+# and monitoring integration. Optimized for batch processing of 4000+ simulations within 8-hour targets 
+# with scientific computing performance requirements, cross-format video processing capabilities, and 
+# production-ready infrastructure supporting >95% correlation accuracy and robust error handling.
+#
+# This configuration implements container orchestration with multi-service deployment, resource allocation, 
+# performance optimization, data persistence, monitoring integration, security hardening, and scientific 
+# computing excellence for research reproducibility and production deployment scalability.
+#
+# Key Features:
+# - Multi-Service Container Orchestration with comprehensive dependency management
+# - Resource Management and Performance Optimization for scientific computing workloads
+# - Volume Orchestration for data persistence, cache management, and audit trail preservation
+# - Network Configuration with service discovery and inter-service communication
+# - Monitoring and Observability Infrastructure with real-time progress tracking
+# - Security Hardening with non-root execution and minimal attack surface
+# - Scientific Computing Excellence with >95% correlation accuracy requirements
+# - Cross-Format Video Processing supporting Crimaldi and custom plume data formats
+# - Production-Ready Infrastructure with comprehensive error handling and recovery
+# - Container Lifecycle Management with health monitoring and graceful shutdown
+# =============================================================================
+
+# Docker Compose version for feature compatibility and orchestration capabilities
+version: '3.8'
+
+# Global configuration and environment variables for consistent service deployment
+x-common-variables: &common-variables
+  # Core application environment configuration
+  PLUME_SIMULATION_ENV: production
+  LOG_LEVEL: INFO
+  PYTHONPATH: /app/src:/app/src/backend
+  PYTHONUNBUFFERED: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  
+  # Scientific computing optimization environment variables
+  OMP_NUM_THREADS: '4'
+  OPENBLAS_NUM_THREADS: '4'
+  MKL_NUM_THREADS: '4'
+  NUMEXPR_NUM_THREADS: '4'
+  
+  # Container-specific configuration
+  PLUME_CONTAINER_MODE: production
+  PLUME_APP_DIR: /app
+  PLUME_LOG_LEVEL: INFO
+  
+  # Performance and resource management
+  MALLOC_TRIM_THRESHOLD_: '100000'
+  MALLOC_MMAP_THRESHOLD_: '1000000'
+  MALLOC_ARENA_MAX: '4'
+
+# Common service configuration for consistent deployment patterns
+x-common-service: &common-service
+  # Container runtime configuration
+  init: true
+  tty: false
+  stdin_open: false
+  restart: unless-stopped
+  
+  # Security hardening configuration
+  user: "1000:1000"
+  read_only: false
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  cap_add:
+    - SETUID
+    - SETGID
+  
+  # Network and DNS configuration
+  networks:
+    - plume-network
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+  dns_search:
+    - plume.local
+  
+  # Logging configuration for comprehensive audit trails
+  logging:
+    driver: json-file
+    options:
+      max-size: "100m"
+      max-file: "10"
+      compress: "true"
+      labels: "service,environment,version"
+
+# Service definitions for multi-container scientific computing deployment
+services:
+  # =============================================================================
+  # Plume Simulation Application Service - Main Scientific Computing Workload
+  # =============================================================================
+  plume-simulation-app:
+    <<: *common-service
+    container_name: plume-simulation-app
+    hostname: plume-app
+    
+    # Container build configuration with multi-stage optimization
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        PYTHON_VERSION: '3.11'
+        BUILD_ENV: production
+        OPTIMIZATION_LEVEL: high
+      cache_from:
+        - plume-simulation:latest
+      labels:
+        maintainer: "Plume Simulation Team"
+        version: "1.0.0"
+        description: "Scientific computing environment for plume navigation simulation"
+        environment: production
+    
+    # Container working directory and entrypoint configuration
+    working_dir: /app
+    entrypoint: ["/app/entrypoint.sh"]
+    command: ["python", "-m", "src.backend.cli", "batch-simulation"]
+    
+    # Environment variables for scientific computing optimization
+    environment:
+      <<: *common-variables
+      SIMULATION_MODE: batch
+      MAX_SIMULATIONS: '4000'
+      PARALLEL_WORKERS: '8'
+      MEMORY_LIMIT_GB: '16'
+      VALIDATION_ENABLED: 'true'
+      CACHE_ENABLED: 'true'
+      MONITORING_ENABLED: 'true'
+    
+    # Resource limits for high-performance scientific computing
+    deploy:
+      resources:
+        limits:
+          memory: 16g
+          cpus: '8'
+        reservations:
+          memory: 8g
+          cpus: '4'
+    
+    # Memory and shared memory configuration for scientific workloads
+    mem_limit: 16g
+    memswap_limit: 18g
+    cpus: 8
+    cpu_shares: 1024
+    shm_size: 2g
+    
+    # Process and file descriptor limits for batch processing
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 32768
+        hard: 32768
+      memlock:
+        soft: -1
+        hard: -1
+    
+    # Container security configuration
+    oom_kill_disable: false
+    oom_score_adj: 0
+    privileged: false
+    
+    # Temporary filesystem configuration for security
+    tmpfs:
+      - /tmp:noexec,nosuid,size=1g
+    
+    # Volume mounts for data persistence and configuration
+    volumes:
+      # Data input and processing volumes
+      - type: volume
+        source: plume-data
+        target: /app/data
+        read_only: false
+        volume:
+          nocopy: false
+      
+      # Results and output volumes with optimized consistency
+      - type: volume
+        source: plume-results
+        target: /app/results
+        read_only: false
+        consistency: delegated
+      
+      # Cache volumes for performance optimization
+      - type: volume
+        source: plume-cache
+        target: /app/cache
+        read_only: false
+        consistency: cached
+      
+      # Logging volumes for audit trails
+      - type: volume
+        source: plume-logs
+        target: /app/logs
+        read_only: false
+        consistency: delegated
+      
+      # Configuration volumes (read-only for security)
+      - type: bind
+        source: ../config
+        target: /app/config
+        read_only: true
+        consistency: cached
+    
+    # Network configuration and port exposure
+    expose:
+      - "8080"
+    # No external ports exposed for security
+    
+    # Health check configuration for monitoring integration
+    healthcheck:
+      test: ["CMD", "/app/entrypoint.sh", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      disable: false
+    
+    # Service dependencies for proper startup sequencing
+    depends_on:
+      plume-monitoring:
+        condition: service_healthy
+    
+    # Container labels for identification and management
+    labels:
+      service.name: "plume-simulation-app"
+      service.version: "1.0.0"
+      service.type: "scientific-computing"
+      service.role: "primary-application"
+      environment: "production"
+      component: "simulation-engine"
+      performance.target_time: "7.2s"
+      performance.max_simulations: "4000"
+      performance.correlation_accuracy: ">95%"
+
+  # =============================================================================
+  # Plume Monitoring Service - Observability and Performance Tracking
+  # =============================================================================
+  plume-monitoring:
+    <<: *common-service
+    container_name: plume-monitoring
+    hostname: plume-monitor
+    
+    # Container build configuration for monitoring service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: application
+      args:
+        PYTHON_VERSION: '3.11'
+        BUILD_ENV: monitoring
+        OPTIMIZATION_LEVEL: medium
+    
+    # Container working directory and entrypoint configuration
+    working_dir: /app
+    entrypoint: ["/app/entrypoint.sh"]
+    command: ["python", "-m", "src.backend.monitoring", "start"]
+    
+    # Environment variables for monitoring service configuration
+    environment:
+      <<: *common-variables
+      MONITORING_MODE: comprehensive
+      METRICS_INTERVAL: '30'
+      ALERT_ENABLED: 'true'
+      PERFORMANCE_TRACKING: 'true'
+      RESOURCE_MONITORING: 'true'
+    
+    # Resource limits optimized for monitoring workload
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '2'
+        reservations:
+          memory: 1g
+          cpus: '1'
+    
+    # Memory and CPU configuration for monitoring service
+    mem_limit: 2g
+    memswap_limit: 2.5g
+    cpus: 2
+    cpu_shares: 512
+    shm_size: 256m
+    
+    # Additional security capabilities for system monitoring
+    cap_add:
+      - SYS_PTRACE
+      - DAC_READ_SEARCH
+    
+    # Volume mounts for monitoring data and system access
+    volumes:
+      # Monitoring data and metrics storage
+      - type: volume
+        source: plume-monitoring-data
+        target: /app/monitoring
+        read_only: false
+        consistency: cached
+      
+      # Shared logging volume for log analysis
+      - type: volume
+        source: plume-logs
+        target: /app/logs
+        read_only: false
+        consistency: delegated
+      
+      # Host system access for monitoring (read-only)
+      - type: bind
+        source: /proc
+        target: /host/proc
+        read_only: true
+        consistency: cached
+      
+      - type: bind
+        source: /sys
+        target: /host/sys
+        read_only: true
+        consistency: cached
+    
+    # Network configuration and monitoring port exposure
+    ports:
+      - "8081:8081"
+    expose:
+      - "8081"
+    
+    # Health check configuration optimized for monitoring service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import psutil; print('Monitoring healthy')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      disable: false
+    
+    # Container labels for monitoring service identification
+    labels:
+      service.name: "plume-monitoring"
+      service.version: "1.0.0"
+      service.type: "monitoring"
+      service.role: "observability"
+      environment: "production"
+      component: "monitoring-system"
+      monitoring.type: "comprehensive"
+      monitoring.metrics_interval: "30s"
+
+# =============================================================================
+# Volume Definitions for Data Persistence and Performance Optimization
+# =============================================================================
+volumes:
+  # Input plume video data storage with bind mount configuration
+  plume-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PLUME_DATA_PATH:-./data}
+    labels:
+      purpose: "Input plume video data storage"
+      environment: "production"
+      backup_required: "true"
+      data_classification: "research_data"
+      retention_policy: "project_based"
+  
+  # Simulation results and analysis output storage
+  plume-results:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PLUME_RESULTS_PATH:-./results}
+    labels:
+      purpose: "Simulation results and analysis output"
+      environment: "production"
+      backup_required: "true"
+      data_classification: "research_results"
+      retention_policy: "long_term"
+  
+  # Normalized data and processing cache for performance optimization
+  plume-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PLUME_CACHE_PATH:-./cache}
+    labels:
+      purpose: "Normalized data and processing cache"
+      environment: "production"
+      backup_required: "false"
+      data_classification: "temporary_cache"
+      retention_policy: "short_term"
+  
+  # Application logs and audit trails for compliance
+  plume-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PLUME_LOGS_PATH:-./logs}
+    labels:
+      purpose: "Application logs and audit trails"
+      environment: "production"
+      backup_required: "true"
+      data_classification: "audit_logs"
+      retention_policy: "compliance_required"
+  
+  # Monitoring metrics and performance data storage
+  plume-monitoring-data:
+    driver: local
+    labels:
+      purpose: "Monitoring metrics and performance data"
+      environment: "production"
+      backup_required: "false"
+      data_classification: "monitoring_data"
+      retention_policy: "operational"
+
+# =============================================================================
+# Network Configuration for Service Communication and Isolation
+# =============================================================================
+networks:
+  # Isolated network for plume simulation services
+  plume-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: plume-br0
+      com.docker.network.driver.mtu: '1500'
+      com.docker.network.bridge.enable_icc: 'true'
+      com.docker.network.bridge.enable_ip_masquerade: 'true'
+    
+    # IP address management configuration
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+          ip_range: 172.20.1.0/24
+    
+    # Network labels for identification and management
+    labels:
+      purpose: "Internal communication network for plume simulation services"
+      environment: "production"
+      network_type: "isolated_bridge"
+      security_level: "internal_only"
+
+# =============================================================================
+# Configuration Extensions and Overrides for Development and Testing
+# =============================================================================
+# Note: Additional compose files can extend this configuration:
+# - docker-compose.override.yml (automatically loaded)
+# - docker-compose.dev.yml (development environment)
+# - docker-compose.test.yml (testing environment)
+# - docker-compose.prod.yml (production optimizations)
+#
+# Usage examples:
+# Development: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Testing: docker-compose -f docker-compose.yml -f docker-compose.test.yml up
+# Production: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up

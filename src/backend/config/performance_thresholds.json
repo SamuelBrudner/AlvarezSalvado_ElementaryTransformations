@@ -1,0 +1,286 @@
+{
+  "simulation_performance": {
+    "description": "Performance thresholds for individual simulation execution and batch processing operations",
+    "target_simulation_time_seconds": 7.2,
+    "max_simulation_time_seconds": 30.0,
+    "critical_simulation_time_seconds": 15.0,
+    "warning_simulation_time_seconds": 10.0,
+    "batch_completion_target_hours": 8.0,
+    "batch_completion_warning_hours": 7.0,
+    "batch_completion_critical_hours": 7.5,
+    "throughput_target_simulations_per_hour": 500,
+    "throughput_warning_simulations_per_hour": 400,
+    "throughput_critical_simulations_per_hour": 300,
+    "algorithm_convergence_timeout_seconds": 25.0,
+    "normalization_time_percentage_max": 10.0,
+    "analysis_time_percentage_max": 5.0,
+    "parallel_efficiency_target": 0.8,
+    "parallel_efficiency_warning": 0.6,
+    "parallel_efficiency_critical": 0.4
+  },
+  "resource_utilization": {
+    "description": "Resource utilization thresholds for memory, CPU, disk, and I/O monitoring",
+    "memory": {
+      "max_usage_gb": 8.0,
+      "warning_threshold_gb": 6.4,
+      "critical_threshold_gb": 7.5,
+      "per_simulation_limit_mb": 1024,
+      "memory_leak_detection_threshold_mb": 100,
+      "garbage_collection_trigger_threshold": 0.8
+    },
+    "cpu": {
+      "max_utilization_percent": 95.0,
+      "warning_threshold_percent": 85.0,
+      "critical_threshold_percent": 90.0,
+      "target_utilization_percent": 80.0,
+      "load_average_warning": 8.0,
+      "load_average_critical": 12.0,
+      "context_switch_rate_warning": 10000,
+      "context_switch_rate_critical": 20000
+    },
+    "disk": {
+      "max_usage_gb": 10.0,
+      "warning_threshold_gb": 8.0,
+      "critical_threshold_gb": 9.0,
+      "io_wait_warning_percent": 20.0,
+      "io_wait_critical_percent": 40.0,
+      "read_throughput_warning_mbps": 50.0,
+      "write_throughput_warning_mbps": 30.0,
+      "temporary_files_limit_gb": 2.0
+    },
+    "network": {
+      "bandwidth_warning_mbps": 100.0,
+      "bandwidth_critical_mbps": 200.0,
+      "latency_warning_ms": 100.0,
+      "latency_critical_ms": 500.0,
+      "packet_loss_warning_percent": 1.0,
+      "packet_loss_critical_percent": 5.0
+    }
+  },
+  "quality_assurance": {
+    "description": "Quality assurance thresholds for accuracy, reproducibility, and error rates",
+    "accuracy_requirements": {
+      "correlation_threshold_minimum": 0.95,
+      "correlation_warning_threshold": 0.97,
+      "correlation_target": 0.99,
+      "numerical_precision_tolerance": 1e-12,
+      "statistical_significance_level": 0.05,
+      "confidence_interval_minimum": 0.95
+    },
+    "reproducibility_requirements": {
+      "reproducibility_coefficient_minimum": 0.99,
+      "reproducibility_warning_threshold": 0.995,
+      "reproducibility_target": 0.999,
+      "cross_platform_consistency_threshold": 0.98,
+      "parameter_sensitivity_threshold": 0.05,
+      "variance_component_threshold": 0.01
+    },
+    "error_rate_thresholds": {
+      "simulation_failure_rate_max_percent": 1.0,
+      "simulation_failure_rate_warning_percent": 0.5,
+      "data_processing_error_rate_max_percent": 1.0,
+      "cross_format_compatibility_error_rate_max_percent": 0.5,
+      "validation_error_rate_max_percent": 0.1,
+      "algorithm_divergence_rate_max_percent": 2.0
+    },
+    "data_validation": {
+      "format_compatibility_success_rate_min": 0.99,
+      "normalization_quality_threshold": 0.95,
+      "calibration_accuracy_threshold": 0.98,
+      "intensity_unit_conversion_accuracy": 0.999,
+      "temporal_alignment_accuracy_threshold": 0.99
+    }
+  },
+  "monitoring_and_alerting": {
+    "description": "Monitoring intervals, alert conditions, and escalation policies",
+    "monitoring_intervals": {
+      "continuous_monitoring_seconds": 30.0,
+      "detailed_profiling_seconds": 10.0,
+      "resource_sampling_seconds": 5.0,
+      "performance_metrics_update_seconds": 15.0,
+      "batch_progress_update_seconds": 60.0,
+      "health_check_interval_seconds": 120.0
+    },
+    "alert_conditions": {
+      "performance_degradation_threshold_percent": 10.0,
+      "resource_exhaustion_warning_percent": 80.0,
+      "resource_exhaustion_critical_percent": 90.0,
+      "batch_failure_alert_threshold_percent": 5.0,
+      "error_rate_spike_threshold_percent": 200.0,
+      "response_time_degradation_threshold_percent": 50.0
+    },
+    "escalation_policies": {
+      "alert_escalation_timeout_minutes": 15.0,
+      "critical_alert_immediate_escalation": true,
+      "alert_suppression_window_minutes": 5.0,
+      "max_alert_frequency_per_hour": 10,
+      "notification_retry_attempts": 3,
+      "notification_timeout_seconds": 30.0
+    },
+    "alert_severity_mapping": {
+      "critical": [
+        "resource_exhaustion_critical",
+        "batch_failure",
+        "system_unavailable"
+      ],
+      "high": [
+        "performance_degradation",
+        "resource_exhaustion_warning",
+        "error_rate_spike"
+      ],
+      "medium": [
+        "threshold_violation",
+        "quality_degradation",
+        "configuration_warning"
+      ],
+      "low": [
+        "informational",
+        "maintenance_required",
+        "optimization_opportunity"
+      ],
+      "info": [
+        "status_update",
+        "completion_notification",
+        "statistics_summary"
+      ]
+    }
+  },
+  "batch_processing": {
+    "description": "Batch processing specific thresholds and performance requirements",
+    "batch_size_limits": {
+      "max_batch_size": 4000,
+      "optimal_batch_size": 1000,
+      "min_batch_size": 100,
+      "chunk_size_per_worker": 50,
+      "memory_per_batch_gb": 2.0
+    },
+    "completion_requirements": {
+      "target_completion_rate_percent": 100.0,
+      "minimum_acceptable_completion_rate_percent": 95.0,
+      "warning_completion_rate_percent": 98.0,
+      "partial_completion_threshold_percent": 80.0,
+      "retry_threshold_percent": 90.0
+    },
+    "progress_tracking": {
+      "checkpoint_interval_simulations": 50,
+      "progress_report_interval_percent": 10.0,
+      "estimated_time_accuracy_threshold": 0.9,
+      "throughput_calculation_window_minutes": 30.0,
+      "trend_analysis_window_hours": 2.0
+    },
+    "failure_handling": {
+      "max_retry_attempts": 3,
+      "retry_delay_seconds": 10.0,
+      "exponential_backoff_factor": 2.0,
+      "circuit_breaker_failure_threshold": 10,
+      "circuit_breaker_timeout_minutes": 5.0,
+      "graceful_degradation_threshold_percent": 20.0
+    }
+  },
+  "scientific_computing": {
+    "description": "Scientific computing specific requirements and validation thresholds",
+    "numerical_stability": {
+      "floating_point_precision": "float64",
+      "numerical_tolerance": 1e-15,
+      "convergence_tolerance": 1e-08,
+      "iteration_limit": 10000,
+      "condition_number_threshold": 1e12,
+      "matrix_rank_tolerance": 1e-10
+    },
+    "algorithm_validation": {
+      "reference_implementation_correlation_min": 0.95,
+      "cross_algorithm_consistency_threshold": 0.9,
+      "parameter_sensitivity_analysis_threshold": 0.05,
+      "robustness_test_pass_rate_min": 0.95,
+      "benchmark_performance_tolerance": 0.1
+    },
+    "data_integrity": {
+      "checksum_validation_enabled": true,
+      "data_corruption_detection_threshold": 0.001,
+      "missing_data_tolerance_percent": 0.1,
+      "outlier_detection_threshold": 3.0,
+      "data_consistency_check_frequency": "per_batch"
+    },
+    "reproducibility_validation": {
+      "seed_management_enabled": true,
+      "deterministic_execution_required": true,
+      "cross_platform_validation_enabled": true,
+      "version_compatibility_tracking": true,
+      "audit_trail_completeness_required": true,
+      "result_archival_enabled": true
+    }
+  },
+  "optimization_targets": {
+    "description": "Performance optimization targets and improvement goals",
+    "throughput_optimization": {
+      "target_improvement_percent": 20.0,
+      "parallel_scaling_efficiency_target": 0.85,
+      "cache_hit_rate_target": 0.9,
+      "memory_allocation_efficiency_target": 0.95,
+      "io_optimization_target_percent": 30.0
+    },
+    "latency_optimization": {
+      "simulation_startup_time_target_ms": 100.0,
+      "algorithm_initialization_time_target_ms": 50.0,
+      "data_loading_time_target_ms": 200.0,
+      "result_serialization_time_target_ms": 100.0,
+      "cleanup_time_target_ms": 50.0
+    },
+    "resource_optimization": {
+      "memory_fragmentation_target_percent": 5.0,
+      "cpu_idle_time_target_percent": 10.0,
+      "disk_utilization_efficiency_target": 0.8,
+      "network_bandwidth_utilization_target": 0.7,
+      "power_efficiency_target": "high_performance"
+    }
+  },
+  "compliance_requirements": {
+    "description": "Compliance and regulatory requirements for scientific computing",
+    "data_governance": {
+      "data_retention_policy_days": 365,
+      "audit_log_retention_days": 1095,
+      "access_control_validation_required": true,
+      "data_lineage_tracking_enabled": true,
+      "privacy_protection_enabled": false
+    },
+    "quality_standards": {
+      "iso_compliance_level": "research_grade",
+      "validation_documentation_required": true,
+      "peer_review_process_enabled": false,
+      "statistical_validation_required": true,
+      "methodology_documentation_required": true
+    },
+    "reporting_requirements": {
+      "performance_report_frequency": "per_batch",
+      "quality_metrics_reporting_enabled": true,
+      "exception_reporting_required": true,
+      "trend_analysis_reporting_enabled": true,
+      "compliance_dashboard_enabled": false
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "configuration_type": "performance_thresholds",
+    "system_compatibility": [
+      "linux",
+      "windows",
+      "macos"
+    ],
+    "dependencies": [
+      "performance_metrics.py",
+      "alert_system.py",
+      "resource_monitor.py"
+    ],
+    "validation_schema": "performance_thresholds_schema.json",
+    "documentation": "docs/user_guides/performance_monitoring.md",
+    "related_configurations": [
+      "default_simulation.json",
+      "default_analysis.json",
+      "default_normalization.json",
+      "logging_config.json"
+    ]
+  }
+}

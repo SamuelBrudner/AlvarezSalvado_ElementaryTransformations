@@ -1,0 +1,277 @@
+# =============================================================================
+# Test Directory Git Ignore Configuration
+# Plume Navigation Simulation System - Scientific Testing Environment
+# =============================================================================
+# Version: 1.0.0
+# Purpose: Optimized for plume navigation simulation testing
+# Focus: Scientific reproducibility with >0.99 reproducibility coefficient
+# Coverage: Supports >95% code coverage requirements
+# Performance: Handles <7.2 seconds per simulation validation
+# Frameworks: Pytest integration with cross-format compatibility
+# Formats: Crimaldi and custom video format test workflows
+# =============================================================================
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PYTEST EXECUTION AND CACHE ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Pytest-specific artifacts and cache files that should not be version controlled
+# Impact: Prevents version control of pytest execution artifacts and compiled Python files
+
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+.cache/
+cache/
+pytest_cache/
+.hypothesis/
+hypothesis_cache/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST COVERAGE REPORTS AND ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Test coverage analysis artifacts for >95% coverage validation
+# Impact: Excludes coverage reports while preserving test code for coverage analysis
+
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+.nyc_output/
+coverage/
+test-results/
+test_output/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERFORMANCE TESTING AND PROFILING ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Performance testing and benchmarking artifacts for <7.2 seconds validation
+# Impact: Excludes performance data while preserving benchmark configurations
+
+benchmarks/histograms/
+benchmarks/results/
+*.prof
+*.profile
+performance_logs/
+profiling_data/
+memory_profiles/
+timing_data/
+benchmark_output/
+performance_results/
+resource_usage.log
+cpu_profile.log
+memory_usage.log
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST EXECUTION OUTPUTS AND TEMPORARY FILES
+# ═══════════════════════════════════════════════════════════════════════════
+# Test execution outputs and temporary files for clean test environment
+
+test_temp/
+tmp/
+temp/
+.tmp/
+.temp/
+test-output/
+test_results/
+*.test
+*.result
+test_artifacts/
+execution_logs/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# MOCK DATA AND GENERATED TEST ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Generated mock data and synthetic test datasets
+# Impact: Excludes generated test data while preserving mock implementations
+
+mock_data/
+generated_test_data/
+synthetic_plumes/
+test_videos/
+mock_outputs/
+generated_configs/
+temp_fixtures/
+dynamic_test_data/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PARALLEL TESTING ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Parallel testing artifacts for batch processing support
+
+.tox/
+.nox/
+parallel_test_output/
+worker_*.log
+process_*.log
+thread_*.log
+multiprocessing_temp/
+xdist_cache/
+parallel_cache/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# QUALITY ASSURANCE AND LINTING ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Static analysis and code quality artifacts
+
+.mypy_cache/
+.flake8_cache/
+.black_cache/
+lint_reports/
+quality_reports/
+static_analysis/
+code_quality_output/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST EXECUTION LOGS AND DEBUGGING FILES
+# ═══════════════════════════════════════════════════════════════════════════
+# Test execution logs and debugging files for comprehensive error tracking
+
+*.log
+logs/
+.logs/
+log/
+*.out
+*.err
+test_logs/
+debug_logs/
+error_logs/
+simulation_test_logs/
+analysis_test_logs/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPORARY FILES CREATED DURING TESTING
+# ═══════════════════════════════════════════════════════════════════════════
+# Generic temporary files and backup files generated during test execution
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.save
+*~
+*.orig
+*.rej
+test_backup/
+recovery_test/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# VIDEO PROCESSING TEST ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Video processing test artifacts for Crimaldi and custom format testing
+# Impact: Supports cross-format compatibility testing workflows
+
+processed_test_videos/
+normalized_test_videos/
+temp_test_frames/
+extracted_test_frames/
+*.frame
+video_test_cache/
+*.avi.tmp
+*.mp4.tmp
+format_conversion_temp/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NUMERICAL COMPUTATION TEST ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Numerical computation test artifacts for >95% correlation validation
+
+*.npy.tmp
+*.npz.tmp
+computation_test_cache/
+algorithm_test_cache/
+optimization_test_temp/
+numerical_test_output/
+array_test_cache/
+matrix_test_cache/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# STATISTICAL ANALYSIS TEST ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Statistical analysis test artifacts for scientific validation
+
+stats_test_temp/
+correlation_test_cache/
+regression_test_output/
+statistical_test_plots/
+analysis_test_cache/
+validation_test_output/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SIMULATION TEST EXECUTION ARTIFACTS
+# ═══════════════════════════════════════════════════════════════════════════
+# Simulation test execution artifacts for 4000+ batch processing validation
+
+simulation_test_temp/
+sim_test_output/
+algorithm_test_results/
+batch_test_results/
+test_execution_logs/
+mock_simulation_output/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DEVELOPMENT ENVIRONMENT AND IDE FILES
+# ═══════════════════════════════════════════════════════════════════════════
+# Development environment and IDE specific files for cross-platform compatibility
+
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+.project
+.settings/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ESSENTIAL TEST FILES EXPLICITLY PRESERVED (NOT IGNORED)
+# ═══════════════════════════════════════════════════════════════════════════
+# Critical preservation patterns for reproducible scientific testing workflows
+# These files are essential for maintaining >0.99 reproducibility coefficient
+
+# Test fixtures and reference data
+!test_fixtures/
+!test_fixtures/**/*.avi
+!test_fixtures/**/*.json
+!test_fixtures/**/*.npy
+!test_fixtures/config/
+!test_fixtures/reference_results/
+
+# Mock implementations and utilities
+!mocks/
+!mocks/**/*.py
+!utils/
+!utils/**/*.py
+
+# Test implementations
+!unit/
+!unit/**/*.py
+!integration/
+!integration/**/*.py
+!performance/
+!performance/**/*.py
+
+# Essential configuration files
+!conftest.py
+!pytest.ini
+!requirements.txt
+!setup.py
+!README.md
+!__init__.py
+
+# ═══════════════════════════════════════════════════════════════════════════
+# USAGE GUIDELINES AND VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════
+# Pattern Precedence: More specific test patterns override general patterns
+# Negation Syntax: Use ! prefix to explicitly include test files
+# Directory Handling: Trailing slash (/) indicates directory-only patterns
+# Wildcard Usage: * for any characters, ? for single character, ** for recursive
+# Testing Patterns: Use 'git check-ignore -v <test_file>' to validate behavior
+# 
+# Maintenance: Review with each pytest or testing framework update
+# Validation: Test patterns across Windows, Linux, and macOS environments
+# Performance: Monitor test execution performance impact of pattern changes
+# ═══════════════════════════════════════════════════════════════════════════

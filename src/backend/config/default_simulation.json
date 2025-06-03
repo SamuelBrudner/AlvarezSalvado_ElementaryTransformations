@@ -1,0 +1,353 @@
+{
+  "simulation_engine": {
+    "enabled": true,
+    "max_simulations": 4000,
+    "target_completion_time_hours": 8.0,
+    "target_time_per_simulation_seconds": 7.2,
+    "execution_mode": "batch",
+    "parallel_processing": {
+      "enabled": true,
+      "max_workers": 8,
+      "worker_allocation_strategy": "dynamic",
+      "load_balancing": "least_loaded",
+      "task_distribution": "adaptive_chunking",
+      "chunk_size": 50,
+      "thread_safety": true,
+      "memory_per_worker_gb": 1.0
+    },
+    "serial_processing": {
+      "data_dependent_tasks": [
+        "normalization_validation",
+        "cross_simulation_analysis",
+        "result_aggregation",
+        "checkpoint_operations"
+      ],
+      "checkpoint_operations": [
+        "progress_saving",
+        "intermediate_result_storage",
+        "batch_state_management"
+      ],
+      "resource_cleanup": [
+        "memory_deallocation",
+        "cache_management",
+        "temporary_file_cleanup"
+      ]
+    },
+    "timeout_configuration": {
+      "simulation_timeout_seconds": 30.0,
+      "batch_timeout_hours": 8.0,
+      "algorithm_execution_timeout_seconds": 25.0,
+      "resource_allocation_timeout_seconds": 10.0
+    }
+  },
+  "algorithm_configuration": {
+    "supported_algorithms": [
+      "infotaxis",
+      "casting",
+      "gradient_following",
+      "plume_tracking",
+      "hybrid_strategies",
+      "reference_implementation"
+    ],
+    "default_algorithm": "infotaxis",
+    "algorithm_parameters": {
+      "infotaxis": {
+        "entropy_threshold": 0.01,
+        "search_radius_meters": 1.0,
+        "step_size_meters": 0.01,
+        "max_steps": 10000,
+        "information_gain_weight": 1.0,
+        "exploration_factor": 0.1
+      },
+      "casting": {
+        "cast_width_meters": 0.5,
+        "cast_frequency_hz": 2.0,
+        "upwind_velocity_mps": 0.1,
+        "crosswind_velocity_mps": 0.05,
+        "detection_threshold": 0.001,
+        "max_cast_cycles": 100
+      },
+      "gradient_following": {
+        "gradient_estimation_method": "central_difference",
+        "step_size_adaptive": true,
+        "initial_step_size_meters": 0.01,
+        "gradient_threshold": 1e-08,
+        "momentum_factor": 0.9,
+        "learning_rate": 0.01
+      },
+      "plume_tracking": {
+        "tracking_algorithm": "particle_filter",
+        "particle_count": 1000,
+        "resampling_threshold": 0.5,
+        "motion_model": "brownian",
+        "observation_noise_variance": 0.01,
+        "process_noise_variance": 0.001
+      },
+      "hybrid_strategies": {
+        "strategy_switching_criteria": [
+          "plume_contact_loss",
+          "search_time_threshold"
+        ],
+        "primary_strategy": "infotaxis",
+        "fallback_strategy": "casting",
+        "switching_threshold": 0.1,
+        "strategy_weights": {
+          "infotaxis": 0.6,
+          "casting": 0.3,
+          "gradient_following": 0.1,
+          "plume_tracking": 0.0
+        }
+      }
+    },
+    "algorithm_validation": {
+      "parameter_bounds_checking": true,
+      "convergence_criteria_validation": true,
+      "numerical_stability_checks": true,
+      "performance_baseline_comparison": true
+    }
+  },
+  "simulation_parameters": {
+    "environment_settings": {
+      "arena_size_meters": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "source_location": {
+        "x": 0.8,
+        "y": 0.5
+      },
+      "agent_start_location": {
+        "x": 0.1,
+        "y": 0.5
+      },
+      "wind_conditions": {
+        "mean_velocity_mps": 0.2,
+        "turbulence_intensity": 0.1,
+        "direction_degrees": 0.0
+      },
+      "plume_characteristics": {
+        "diffusion_coefficient": 0.001,
+        "source_strength": 1.0,
+        "background_concentration": 0.0,
+        "intermittency_factor": 0.8
+      }
+    },
+    "agent_properties": {
+      "sensor_range_meters": 0.01,
+      "sensor_sensitivity": 0.001,
+      "sensor_noise_variance": 0.0001,
+      "movement_speed_mps": 0.05,
+      "turning_rate_rad_per_sec": 3.14159,
+      "decision_frequency_hz": 10.0
+    },
+    "termination_criteria": {
+      "max_simulation_time_seconds": 300.0,
+      "source_detection_threshold_meters": 0.05,
+      "success_criteria": "source_localization",
+      "failure_criteria": [
+        "timeout",
+        "boundary_exit",
+        "algorithm_divergence"
+      ],
+      "early_termination_enabled": true
+    }
+  },
+  "batch_execution": {
+    "batch_size": 100,
+    "batch_scheduling": "fifo",
+    "inter_batch_delay_seconds": 0.0,
+    "batch_retry_policy": {
+      "max_retries": 3,
+      "retry_delay_seconds": 10.0,
+      "exponential_backoff": true,
+      "retry_on_failure_types": [
+        "timeout",
+        "resource_exhaustion",
+        "transient_error"
+      ]
+    },
+    "progress_monitoring": {
+      "enabled": true,
+      "update_interval_seconds": 30.0,
+      "detailed_logging": true,
+      "real_time_metrics": [
+        "completion_rate",
+        "average_time_per_simulation",
+        "resource_utilization",
+        "error_rate"
+      ],
+      "progress_checkpoints": [
+        10,
+        25,
+        50,
+        75,
+        90,
+        100
+      ]
+    },
+    "resource_management": {
+      "memory_limit_gb": 8.0,
+      "cpu_utilization_target": 0.8,
+      "disk_space_threshold_gb": 10.0,
+      "automatic_cleanup": true,
+      "resource_monitoring_interval_seconds": 60.0
+    }
+  },
+  "data_management": {
+    "input_data_validation": {
+      "format_verification": true,
+      "normalization_status_check": true,
+      "data_integrity_validation": true,
+      "calibration_parameter_verification": true
+    },
+    "intermediate_data_handling": {
+      "cache_simulation_states": true,
+      "cache_directory": "cache/simulation",
+      "cache_size_limit_gb": 5.0,
+      "cache_compression": "lz4",
+      "cache_expiry_hours": 24.0
+    },
+    "result_collection": {
+      "output_directory": "results/simulation",
+      "result_format": "hdf5",
+      "compression": "gzip",
+      "metadata_inclusion": true,
+      "trajectory_sampling_rate_hz": 20.0,
+      "performance_metrics_collection": true
+    }
+  },
+  "error_handling": {
+    "error_detection": {
+      "algorithm_divergence_detection": true,
+      "numerical_instability_monitoring": true,
+      "resource_exhaustion_detection": true,
+      "timeout_monitoring": true
+    },
+    "error_recovery": {
+      "automatic_retry": true,
+      "graceful_degradation": true,
+      "partial_batch_completion": true,
+      "checkpoint_recovery": true
+    },
+    "error_reporting": {
+      "detailed_error_logs": true,
+      "error_categorization": true,
+      "failure_analysis": true,
+      "recovery_recommendations": true
+    }
+  },
+  "performance_optimization": {
+    "memory_optimization": {
+      "memory_mapping": true,
+      "garbage_collection_strategy": "generational",
+      "object_pooling": true,
+      "lazy_loading": true
+    },
+    "computational_optimization": {
+      "vectorized_operations": true,
+      "just_in_time_compilation": false,
+      "algorithm_specific_optimizations": true,
+      "numerical_precision": "float64"
+    },
+    "io_optimization": {
+      "asynchronous_io": true,
+      "buffer_size_mb": 64.0,
+      "read_ahead_enabled": true,
+      "write_batching": true
+    }
+  },
+  "quality_assurance": {
+    "validation_checks": {
+      "algorithm_implementation_validation": true,
+      "parameter_consistency_checks": true,
+      "numerical_accuracy_validation": true,
+      "result_reproducibility_checks": true
+    },
+    "benchmarking": {
+      "reference_algorithm_comparison": true,
+      "performance_baseline_validation": true,
+      "cross_platform_consistency_checks": true,
+      "statistical_validation": true
+    },
+    "testing_integration": {
+      "unit_test_execution": false,
+      "integration_test_validation": true,
+      "performance_regression_detection": true,
+      "automated_quality_gates": true
+    }
+  },
+  "logging_configuration": {
+    "log_level": "INFO",
+    "log_file": "logs/simulation.log",
+    "structured_logging": true,
+    "performance_logging": true,
+    "algorithm_execution_logging": true,
+    "resource_usage_logging": true,
+    "log_rotation": {
+      "max_size_mb": 100,
+      "backup_count": 5,
+      "rotation_interval": "daily"
+    }
+  },
+  "integration_settings": {
+    "normalization_pipeline_integration": {
+      "require_normalized_data": true,
+      "validation_against_normalization_config": true,
+      "cross_format_compatibility_checks": true
+    },
+    "analysis_pipeline_integration": {
+      "automatic_analysis_trigger": true,
+      "result_format_compatibility": true,
+      "metrics_alignment": true
+    },
+    "external_tool_integration": {
+      "statistical_analysis_packages": [
+        "scipy",
+        "statsmodels"
+      ],
+      "visualization_libraries": [
+        "matplotlib",
+        "seaborn"
+      ],
+      "numerical_computation_frameworks": [
+        "numpy",
+        "numba"
+      ]
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "compatible_algorithms": [
+      "infotaxis",
+      "casting",
+      "gradient_following",
+      "plume_tracking",
+      "hybrid_strategies",
+      "reference_implementation"
+    ],
+    "performance_requirements": {
+      "max_simulation_time_seconds": 7.2,
+      "batch_completion_time_hours": 8.0,
+      "correlation_threshold": 0.95,
+      "reproducibility_threshold": 0.99,
+      "max_simulation_count": 4000
+    },
+    "dependencies": [
+      "numpy",
+      "scipy",
+      "joblib",
+      "h5py"
+    ],
+    "configuration_dependencies": [
+      "simulation_schema.json",
+      "default_normalization.json",
+      "default_analysis.json",
+      "performance_thresholds.json",
+      "logging_config.json"
+    ],
+    "documentation": "docs/user_guides/running_simulations.md"
+  }
+}

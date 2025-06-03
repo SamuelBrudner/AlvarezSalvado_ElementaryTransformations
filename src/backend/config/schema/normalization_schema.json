@@ -1,0 +1,1749 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plume-simulation.org/schemas/normalization-config.json",
+  "title": "Data Normalization Configuration Schema",
+  "description": "Schema for validating data normalization configuration parameters for automated normalization and calibration of plume recordings across different physical scales, formats, and experimental conditions",
+  "type": "object",
+  "required": [
+    "normalization_pipeline",
+    "arena_normalization",
+    "pixel_resolution_normalization",
+    "temporal_normalization",
+    "intensity_calibration",
+    "format_specific_settings",
+    "cross_format_compatibility",
+    "quality_assurance",
+    "performance_optimization",
+    "output_configuration"
+  ],
+  "properties": {
+    "normalization_pipeline": {
+      "type": "object",
+      "description": "Core normalization pipeline configuration and execution parameters",
+      "required": [
+        "enabled",
+        "processing_order",
+        "parallel_processing",
+        "max_workers",
+        "memory_limit_gb",
+        "timeout_seconds",
+        "error_handling_strategy"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the normalization pipeline processing"
+        },
+        "processing_order": {
+          "type": "array",
+          "description": "Order of normalization processing stages",
+          "items": {
+            "type": "string",
+            "enum": [
+              "format_detection",
+              "arena_normalization",
+              "pixel_resolution_normalization",
+              "temporal_normalization",
+              "intensity_calibration",
+              "validation",
+              "cross_format_validation"
+            ]
+          },
+          "minItems": 3,
+          "uniqueItems": true
+        },
+        "parallel_processing": {
+          "type": "boolean",
+          "description": "Enable parallel processing for independent normalization tasks"
+        },
+        "max_workers": {
+          "type": "integer",
+          "description": "Maximum number of parallel worker processes",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "memory_limit_gb": {
+          "type": "number",
+          "description": "Memory limit in gigabytes for normalization operations",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "description": "Maximum execution time for normalization pipeline",
+          "minimum": 60,
+          "maximum": 7200
+        },
+        "checkpoint_interval": {
+          "type": "integer",
+          "description": "Interval for creating normalization checkpoints (frames)",
+          "minimum": 10,
+          "maximum": 1000
+        },
+        "error_handling_strategy": {
+          "type": "string",
+          "description": "Strategy for handling normalization errors",
+          "enum": [
+            "fail_fast",
+            "graceful_degradation",
+            "continue_on_error",
+            "retry_with_fallback"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "arena_normalization": {
+      "type": "object",
+      "description": "Arena size normalization configuration for physical scale standardization",
+      "required": [
+        "enabled",
+        "target_arena_width_meters",
+        "target_arena_height_meters",
+        "scaling_method",
+        "preserve_aspect_ratio"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable arena size normalization"
+        },
+        "target_arena_width_meters": {
+          "type": "number",
+          "description": "Target arena width in meters for normalization",
+          "minimum": 0.1,
+          "maximum": 100.0
+        },
+        "target_arena_height_meters": {
+          "type": "number",
+          "description": "Target arena height in meters for normalization",
+          "minimum": 0.1,
+          "maximum": 100.0
+        },
+        "scaling_method": {
+          "type": "string",
+          "description": "Scaling algorithm for arena size normalization",
+          "enum": [
+            "bilinear",
+            "bicubic",
+            "lanczos",
+            "nearest",
+            "area"
+          ]
+        },
+        "preserve_aspect_ratio": {
+          "type": "boolean",
+          "description": "Preserve aspect ratio during arena scaling"
+        },
+        "boundary_detection": {
+          "type": "object",
+          "description": "Arena boundary detection configuration",
+          "properties": {
+            "method": {
+              "type": "string",
+              "description": "Boundary detection method",
+              "enum": [
+                "edge_detection",
+                "contour_detection",
+                "template_matching",
+                "manual_specification"
+              ]
+            },
+            "threshold": {
+              "type": "number",
+              "description": "Detection threshold for boundary identification",
+              "minimum": 0.01,
+              "maximum": 1.0
+            },
+            "morphological_operations": {
+              "type": "array",
+              "description": "Morphological operations for boundary refinement",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "opening",
+                  "closing",
+                  "erosion",
+                  "dilation",
+                  "gradient"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "kernel_size": {
+              "type": "integer",
+              "description": "Kernel size for morphological operations",
+              "minimum": 3,
+              "maximum": 15
+            }
+          },
+          "additionalProperties": false
+        },
+        "calibration_markers": {
+          "type": "object",
+          "description": "Calibration marker detection and processing",
+          "properties": {
+            "detection_enabled": {
+              "type": "boolean",
+              "description": "Enable calibration marker detection"
+            },
+            "marker_type": {
+              "type": "string",
+              "description": "Type of calibration markers",
+              "enum": [
+                "circular",
+                "square",
+                "cross",
+                "aruco",
+                "custom"
+              ]
+            },
+            "min_marker_size_pixels": {
+              "type": "integer",
+              "description": "Minimum marker size in pixels",
+              "minimum": 5,
+              "maximum": 500
+            },
+            "max_marker_size_pixels": {
+              "type": "integer",
+              "description": "Maximum marker size in pixels",
+              "minimum": 10,
+              "maximum": 1000
+            },
+            "marker_color_range": {
+              "type": "array",
+              "description": "Color range for marker detection [min, max]",
+              "items": {
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation": {
+          "type": "object",
+          "description": "Arena normalization validation configuration",
+          "properties": {
+            "accuracy_threshold": {
+              "type": "number",
+              "description": "Accuracy threshold for arena normalization validation",
+              "minimum": 0.001,
+              "maximum": 0.1
+            },
+            "reference_measurements": {
+              "type": "boolean",
+              "description": "Use reference measurements for validation"
+            },
+            "statistical_validation": {
+              "type": "boolean",
+              "description": "Enable statistical validation of normalization results"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "pixel_resolution_normalization": {
+      "type": "object",
+      "description": "Pixel resolution normalization configuration for spatial standardization",
+      "required": [
+        "enabled",
+        "target_resolution_x",
+        "target_resolution_y",
+        "resampling_algorithm",
+        "anti_aliasing"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable pixel resolution normalization"
+        },
+        "target_resolution_x": {
+          "type": "integer",
+          "description": "Target horizontal resolution in pixels",
+          "minimum": 64,
+          "maximum": 4096
+        },
+        "target_resolution_y": {
+          "type": "integer",
+          "description": "Target vertical resolution in pixels",
+          "minimum": 64,
+          "maximum": 4096
+        },
+        "resampling_algorithm": {
+          "type": "string",
+          "description": "Resampling algorithm for resolution normalization",
+          "enum": [
+            "bilinear",
+            "bicubic",
+            "lanczos",
+            "nearest",
+            "area",
+            "cubic"
+          ]
+        },
+        "anti_aliasing": {
+          "type": "boolean",
+          "description": "Enable anti-aliasing during resampling"
+        },
+        "quality_preservation": {
+          "type": "object",
+          "description": "Quality preservation settings for resolution normalization",
+          "properties": {
+            "maintain_detail": {
+              "type": "boolean",
+              "description": "Maintain fine detail during resampling"
+            },
+            "edge_enhancement": {
+              "type": "boolean",
+              "description": "Enable edge enhancement"
+            },
+            "noise_reduction": {
+              "type": "string",
+              "description": "Noise reduction method",
+              "enum": [
+                "none",
+                "gaussian",
+                "bilateral",
+                "median",
+                "wiener"
+              ]
+            },
+            "sharpening_factor": {
+              "type": "number",
+              "description": "Sharpening factor for detail enhancement",
+              "minimum": 0.0,
+              "maximum": 2.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "adaptive_scaling": {
+          "type": "object",
+          "description": "Adaptive scaling configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable adaptive scaling based on content"
+            },
+            "content_aware": {
+              "type": "boolean",
+              "description": "Enable content-aware scaling"
+            },
+            "feature_preservation": {
+              "type": "array",
+              "description": "Features to preserve during adaptive scaling",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "edges",
+                  "gradients",
+                  "textures",
+                  "corners",
+                  "blobs"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "quality_metric": {
+              "type": "string",
+              "description": "Quality metric for adaptive scaling",
+              "enum": [
+                "ssim",
+                "psnr",
+                "mse",
+                "mae",
+                "lpips"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation": {
+          "type": "object",
+          "description": "Resolution normalization validation configuration",
+          "properties": {
+            "similarity_threshold": {
+              "type": "number",
+              "description": "Similarity threshold for validation (SSIM)",
+              "minimum": 0.8,
+              "maximum": 1.0
+            },
+            "feature_preservation_check": {
+              "type": "boolean",
+              "description": "Check feature preservation during normalization"
+            },
+            "information_loss_tolerance": {
+              "type": "number",
+              "description": "Acceptable information loss tolerance",
+              "minimum": 0.0,
+              "maximum": 0.2
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "temporal_normalization": {
+      "type": "object",
+      "description": "Temporal sampling rate normalization configuration",
+      "required": [
+        "enabled",
+        "target_fps",
+        "interpolation_method",
+        "frame_alignment"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable temporal normalization"
+        },
+        "target_fps": {
+          "type": "number",
+          "description": "Target frame rate in frames per second",
+          "minimum": 1.0,
+          "maximum": 1000.0
+        },
+        "interpolation_method": {
+          "type": "string",
+          "description": "Temporal interpolation method",
+          "enum": [
+            "linear",
+            "cubic",
+            "spline",
+            "nearest",
+            "polynomial"
+          ]
+        },
+        "frame_alignment": {
+          "type": "string",
+          "description": "Frame alignment strategy",
+          "enum": [
+            "center",
+            "start",
+            "end",
+            "adaptive"
+          ]
+        },
+        "temporal_smoothing": {
+          "type": "boolean",
+          "description": "Enable temporal smoothing"
+        },
+        "synchronization": {
+          "type": "object",
+          "description": "Temporal synchronization configuration",
+          "properties": {
+            "method": {
+              "type": "string",
+              "description": "Synchronization method",
+              "enum": [
+                "cross_correlation",
+                "phase_correlation",
+                "optical_flow",
+                "feature_matching"
+              ]
+            },
+            "reference_signal": {
+              "type": "string",
+              "description": "Reference signal for synchronization",
+              "enum": [
+                "intensity_variance",
+                "motion_energy",
+                "gradient_magnitude",
+                "entropy"
+              ]
+            },
+            "alignment_tolerance": {
+              "type": "number",
+              "description": "Alignment tolerance for synchronization",
+              "minimum": 0.01,
+              "maximum": 1.0
+            },
+            "drift_correction": {
+              "type": "boolean",
+              "description": "Enable temporal drift correction"
+            }
+          },
+          "additionalProperties": false
+        },
+        "resampling_quality": {
+          "type": "object",
+          "description": "Temporal resampling quality configuration",
+          "properties": {
+            "anti_aliasing_filter": {
+              "type": "boolean",
+              "description": "Enable anti-aliasing filter for temporal resampling"
+            },
+            "filter_cutoff_ratio": {
+              "type": "number",
+              "description": "Filter cutoff ratio for anti-aliasing",
+              "minimum": 0.1,
+              "maximum": 1.0
+            },
+            "phase_preservation": {
+              "type": "boolean",
+              "description": "Preserve phase information during resampling"
+            },
+            "temporal_coherence": {
+              "type": "boolean",
+              "description": "Maintain temporal coherence"
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation": {
+          "type": "object",
+          "description": "Temporal normalization validation configuration",
+          "properties": {
+            "temporal_consistency_check": {
+              "type": "boolean",
+              "description": "Check temporal consistency after normalization"
+            },
+            "frequency_domain_validation": {
+              "type": "boolean",
+              "description": "Validate in frequency domain"
+            },
+            "motion_preservation_threshold": {
+              "type": "number",
+              "description": "Motion preservation threshold",
+              "minimum": 0.8,
+              "maximum": 1.0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "intensity_calibration": {
+      "type": "object",
+      "description": "Intensity unit calibration and normalization configuration",
+      "required": [
+        "enabled",
+        "target_intensity_range",
+        "calibration_method"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable intensity calibration"
+        },
+        "target_intensity_range": {
+          "type": "array",
+          "description": "Target intensity range [min, max]",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "calibration_method": {
+          "type": "string",
+          "description": "Intensity calibration method",
+          "enum": [
+            "min_max",
+            "z_score",
+            "robust_scaling",
+            "quantile_uniform",
+            "power_transform"
+          ]
+        },
+        "background_subtraction": {
+          "type": "boolean",
+          "description": "Enable background subtraction"
+        },
+        "noise_reduction": {
+          "type": "string",
+          "description": "Noise reduction method for intensity calibration",
+          "enum": [
+            "none",
+            "gaussian",
+            "bilateral",
+            "median",
+            "wiener",
+            "non_local_means"
+          ]
+        },
+        "gamma_correction": {
+          "type": "number",
+          "description": "Gamma correction factor",
+          "minimum": 0.1,
+          "maximum": 3.0
+        },
+        "dynamic_range_optimization": {
+          "type": "object",
+          "description": "Dynamic range optimization configuration",
+          "properties": {
+            "histogram_equalization": {
+              "type": "boolean",
+              "description": "Enable histogram equalization"
+            },
+            "contrast_enhancement": {
+              "type": "string",
+              "description": "Contrast enhancement method",
+              "enum": [
+                "none",
+                "clahe",
+                "adaptive_histogram",
+                "linear_stretch"
+              ]
+            },
+            "saturation_handling": {
+              "type": "string",
+              "description": "Saturation handling strategy",
+              "enum": [
+                "clip",
+                "scale",
+                "compress",
+                "ignore"
+              ]
+            },
+            "outlier_removal": {
+              "type": "boolean",
+              "description": "Enable outlier removal"
+            },
+            "outlier_threshold": {
+              "type": "number",
+              "description": "Outlier detection threshold (standard deviations)",
+              "minimum": 1.0,
+              "maximum": 5.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "spatial_calibration": {
+          "type": "object",
+          "description": "Spatial calibration configuration",
+          "properties": {
+            "flat_field_correction": {
+              "type": "boolean",
+              "description": "Enable flat field correction"
+            },
+            "vignetting_correction": {
+              "type": "boolean",
+              "description": "Enable vignetting correction"
+            },
+            "sensor_response_linearization": {
+              "type": "boolean",
+              "description": "Enable sensor response linearization"
+            },
+            "cross_talk_correction": {
+              "type": "boolean",
+              "description": "Enable cross-talk correction"
+            }
+          },
+          "additionalProperties": false
+        },
+        "temporal_stability": {
+          "type": "object",
+          "description": "Temporal stability configuration",
+          "properties": {
+            "drift_correction": {
+              "type": "boolean",
+              "description": "Enable temporal drift correction"
+            },
+            "baseline_tracking": {
+              "type": "boolean",
+              "description": "Enable baseline tracking"
+            },
+            "stability_window_frames": {
+              "type": "integer",
+              "description": "Window size for stability analysis",
+              "minimum": 10,
+              "maximum": 1000
+            },
+            "correction_method": {
+              "type": "string",
+              "description": "Drift correction method",
+              "enum": [
+                "linear_detrend",
+                "polynomial_detrend",
+                "moving_average",
+                "kalman_filter"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation": {
+          "type": "object",
+          "description": "Intensity calibration validation configuration",
+          "properties": {
+            "linearity_check": {
+              "type": "boolean",
+              "description": "Check calibration linearity"
+            },
+            "noise_characterization": {
+              "type": "boolean",
+              "description": "Characterize noise properties"
+            },
+            "dynamic_range_validation": {
+              "type": "boolean",
+              "description": "Validate dynamic range preservation"
+            },
+            "calibration_accuracy_threshold": {
+              "type": "number",
+              "description": "Calibration accuracy threshold",
+              "minimum": 0.001,
+              "maximum": 0.1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "format_specific_settings": {
+      "type": "object",
+      "description": "Format-specific configuration settings for different plume data formats",
+      "required": [
+        "crimaldi_format",
+        "custom_format",
+        "avi_format"
+      ],
+      "properties": {
+        "crimaldi_format": {
+          "type": "object",
+          "description": "Crimaldi dataset format specific settings",
+          "required": [
+            "pixel_to_meter_ratio",
+            "intensity_units",
+            "coordinate_system",
+            "time_units",
+            "frame_rate_hz"
+          ],
+          "properties": {
+            "pixel_to_meter_ratio": {
+              "type": "number",
+              "description": "Pixel to meter conversion ratio",
+              "minimum": 1.0,
+              "maximum": 10000.0
+            },
+            "intensity_units": {
+              "type": "string",
+              "description": "Intensity measurement units",
+              "enum": [
+                "concentration_ppm",
+                "concentration_ppb",
+                "concentration_mg_m3",
+                "raw_sensor",
+                "normalized"
+              ]
+            },
+            "coordinate_system": {
+              "type": "string",
+              "description": "Coordinate system convention",
+              "enum": [
+                "cartesian",
+                "image",
+                "screen",
+                "world"
+              ]
+            },
+            "coordinate_origin": {
+              "type": "string",
+              "description": "Coordinate system origin",
+              "enum": [
+                "bottom_left",
+                "top_left",
+                "center",
+                "bottom_right",
+                "top_right"
+              ]
+            },
+            "time_units": {
+              "type": "string",
+              "description": "Time measurement units",
+              "enum": [
+                "seconds",
+                "milliseconds",
+                "microseconds",
+                "frames"
+              ]
+            },
+            "frame_rate_hz": {
+              "type": "number",
+              "description": "Frame rate in Hz",
+              "minimum": 1.0,
+              "maximum": 1000.0
+            },
+            "bit_depth": {
+              "type": "integer",
+              "description": "Bit depth for intensity values",
+              "enum": [
+                8,
+                16,
+                32,
+                64
+              ]
+            },
+            "color_space": {
+              "type": "string",
+              "description": "Color space format",
+              "enum": [
+                "grayscale",
+                "rgb",
+                "bgr",
+                "hsv",
+                "lab"
+              ]
+            },
+            "compression": {
+              "type": "string",
+              "description": "Compression format",
+              "enum": [
+                "none",
+                "lossless",
+                "jpeg",
+                "png",
+                "tiff"
+              ]
+            },
+            "metadata_fields": {
+              "type": "array",
+              "description": "Required metadata fields",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "timestamp",
+                  "experimental_conditions",
+                  "calibration_data",
+                  "sensor_parameters",
+                  "environmental_conditions"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "validation_checksums": {
+              "type": "boolean",
+              "description": "Enable validation checksums"
+            }
+          },
+          "additionalProperties": false
+        },
+        "custom_format": {
+          "type": "object",
+          "description": "Custom dataset format specific settings",
+          "required": [
+            "pixel_to_meter_ratio",
+            "intensity_units",
+            "coordinate_system",
+            "time_units",
+            "frame_rate_hz"
+          ],
+          "properties": {
+            "pixel_to_meter_ratio": {
+              "type": "number",
+              "description": "Pixel to meter conversion ratio",
+              "minimum": 1.0,
+              "maximum": 10000.0
+            },
+            "intensity_units": {
+              "type": "string",
+              "description": "Intensity measurement units",
+              "enum": [
+                "raw_sensor",
+                "normalized",
+                "concentration_ppm",
+                "concentration_ppb",
+                "voltage",
+                "current"
+              ]
+            },
+            "coordinate_system": {
+              "type": "string",
+              "description": "Coordinate system convention",
+              "enum": [
+                "image",
+                "cartesian",
+                "screen",
+                "world"
+              ]
+            },
+            "coordinate_origin": {
+              "type": "string",
+              "description": "Coordinate system origin",
+              "enum": [
+                "top_left",
+                "bottom_left",
+                "center",
+                "top_right",
+                "bottom_right"
+              ]
+            },
+            "time_units": {
+              "type": "string",
+              "description": "Time measurement units",
+              "enum": [
+                "milliseconds",
+                "seconds",
+                "microseconds",
+                "frames"
+              ]
+            },
+            "frame_rate_hz": {
+              "type": "number",
+              "description": "Frame rate in Hz",
+              "minimum": 1.0,
+              "maximum": 1000.0
+            },
+            "bit_depth": {
+              "type": "integer",
+              "description": "Bit depth for intensity values",
+              "enum": [
+                8,
+                16,
+                24,
+                32
+              ]
+            },
+            "color_space": {
+              "type": "string",
+              "description": "Color space format",
+              "enum": [
+                "rgb",
+                "bgr",
+                "grayscale",
+                "hsv",
+                "yuv"
+              ]
+            },
+            "compression": {
+              "type": "string",
+              "description": "Compression format",
+              "enum": [
+                "h264",
+                "h265",
+                "mjpeg",
+                "mpeg4",
+                "none"
+              ]
+            },
+            "auto_detect_parameters": {
+              "type": "boolean",
+              "description": "Automatically detect format parameters"
+            },
+            "calibration_required": {
+              "type": "boolean",
+              "description": "Require manual calibration for custom datasets"
+            },
+            "metadata_extraction": {
+              "type": "array",
+              "description": "Metadata fields to extract",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codec_info",
+                  "recording_parameters",
+                  "timestamp",
+                  "camera_settings",
+                  "environmental_data"
+                ]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "avi_format": {
+          "type": "object",
+          "description": "AVI format specific settings",
+          "required": [
+            "codec_support",
+            "container_validation",
+            "frame_extraction_method"
+          ],
+          "properties": {
+            "codec_support": {
+              "type": "array",
+              "description": "Supported video codecs",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "h264",
+                  "h265",
+                  "mjpeg",
+                  "mpeg4",
+                  "xvid",
+                  "uncompressed"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "container_validation": {
+              "type": "boolean",
+              "description": "Enable AVI container validation"
+            },
+            "stream_analysis": {
+              "type": "boolean",
+              "description": "Enable video stream analysis"
+            },
+            "frame_extraction_method": {
+              "type": "string",
+              "description": "Method for frame extraction",
+              "enum": [
+                "opencv",
+                "ffmpeg",
+                "imageio",
+                "pillow"
+              ]
+            },
+            "metadata_preservation": {
+              "type": "boolean",
+              "description": "Preserve metadata during processing"
+            },
+            "error_recovery": {
+              "type": "string",
+              "description": "Error recovery strategy for corrupted frames",
+              "enum": [
+                "skip_corrupted_frames",
+                "interpolate_missing",
+                "fail_on_error",
+                "best_effort"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cross_format_compatibility": {
+      "type": "object",
+      "description": "Cross-format compatibility and conversion configuration",
+      "required": [
+        "enabled",
+        "reference_format",
+        "consistency_validation"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable cross-format compatibility processing"
+        },
+        "reference_format": {
+          "type": "string",
+          "description": "Reference format for compatibility validation",
+          "enum": [
+            "crimaldi",
+            "custom",
+            "avi"
+          ]
+        },
+        "consistency_validation": {
+          "type": "boolean",
+          "description": "Enable consistency validation across formats"
+        },
+        "format_conversion_matrix": {
+          "type": "object",
+          "description": "Format conversion transformation matrix",
+          "properties": {
+            "crimaldi_to_custom": {
+              "type": "object",
+              "description": "Crimaldi to custom format conversion",
+              "properties": {
+                "coordinate_transform": {
+                  "type": "string",
+                  "description": "Coordinate transformation",
+                  "enum": [
+                    "flip_y",
+                    "flip_x",
+                    "rotate_90",
+                    "rotate_180",
+                    "rotate_270",
+                    "identity"
+                  ]
+                },
+                "intensity_scaling": {
+                  "type": "number",
+                  "description": "Intensity scaling factor",
+                  "minimum": 0.001,
+                  "maximum": 1000.0
+                },
+                "time_conversion": {
+                  "type": "number",
+                  "description": "Time unit conversion factor",
+                  "minimum": 0.001,
+                  "maximum": 1000000.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "custom_to_crimaldi": {
+              "type": "object",
+              "description": "Custom to Crimaldi format conversion",
+              "properties": {
+                "coordinate_transform": {
+                  "type": "string",
+                  "description": "Coordinate transformation",
+                  "enum": [
+                    "flip_y",
+                    "flip_x",
+                    "rotate_90",
+                    "rotate_180",
+                    "rotate_270",
+                    "identity"
+                  ]
+                },
+                "intensity_scaling": {
+                  "type": "number",
+                  "description": "Intensity scaling factor",
+                  "minimum": 0.001,
+                  "maximum": 1000.0
+                },
+                "time_conversion": {
+                  "type": "number",
+                  "description": "Time unit conversion factor",
+                  "minimum": 0.001,
+                  "maximum": 1000000.0
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation_metrics": {
+          "type": "array",
+          "description": "Metrics for cross-format validation",
+          "items": {
+            "type": "string",
+            "enum": [
+              "spatial_correlation",
+              "temporal_correlation",
+              "intensity_distribution",
+              "feature_preservation",
+              "statistical_consistency"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "tolerance_thresholds": {
+          "type": "object",
+          "description": "Tolerance thresholds for cross-format validation",
+          "properties": {
+            "spatial_accuracy": {
+              "type": "number",
+              "description": "Spatial accuracy tolerance",
+              "minimum": 0.001,
+              "maximum": 0.1
+            },
+            "temporal_accuracy": {
+              "type": "number",
+              "description": "Temporal accuracy tolerance",
+              "minimum": 0.0001,
+              "maximum": 0.01
+            },
+            "intensity_accuracy": {
+              "type": "number",
+              "description": "Intensity accuracy tolerance",
+              "minimum": 0.001,
+              "maximum": 0.1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "quality_assurance": {
+      "type": "object",
+      "description": "Quality assurance and validation configuration",
+      "required": [
+        "enabled",
+        "validation_checks",
+        "accuracy_threshold"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable quality assurance checks"
+        },
+        "validation_checks": {
+          "type": "array",
+          "description": "Types of validation checks to perform",
+          "items": {
+            "type": "string",
+            "enum": [
+              "format_integrity",
+              "numerical_accuracy",
+              "physical_consistency",
+              "statistical_properties",
+              "temporal_consistency",
+              "spatial_consistency"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "accuracy_threshold": {
+          "type": "number",
+          "description": "Numerical accuracy threshold for validation",
+          "minimum": 1e-12,
+          "maximum": 0.001
+        },
+        "enable_checksum_validation": {
+          "type": "boolean",
+          "description": "Enable checksum validation for data integrity"
+        },
+        "reference_comparison": {
+          "type": "boolean",
+          "description": "Compare results against reference implementations"
+        },
+        "statistical_validation": {
+          "type": "boolean",
+          "description": "Enable statistical validation of normalization results"
+        },
+        "automated_testing": {
+          "type": "object",
+          "description": "Automated testing configuration",
+          "properties": {
+            "unit_tests": {
+              "type": "boolean",
+              "description": "Enable unit testing during normalization"
+            },
+            "integration_tests": {
+              "type": "boolean",
+              "description": "Enable integration testing"
+            },
+            "regression_tests": {
+              "type": "boolean",
+              "description": "Enable regression testing against previous results"
+            },
+            "performance_benchmarks": {
+              "type": "boolean",
+              "description": "Enable performance benchmarking"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error_detection": {
+          "type": "object",
+          "description": "Error detection configuration",
+          "properties": {
+            "outlier_detection": {
+              "type": "boolean",
+              "description": "Enable outlier detection in normalization results"
+            },
+            "anomaly_threshold": {
+              "type": "number",
+              "description": "Threshold for anomaly detection",
+              "minimum": 1.0,
+              "maximum": 5.0
+            },
+            "consistency_checks": {
+              "type": "boolean",
+              "description": "Enable consistency checks across normalization stages"
+            },
+            "boundary_validation": {
+              "type": "boolean",
+              "description": "Validate normalization results against expected boundaries"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "performance_optimization": {
+      "type": "object",
+      "description": "Performance optimization and resource management settings",
+      "required": [
+        "memory_management",
+        "parallel_processing",
+        "caching"
+      ],
+      "properties": {
+        "memory_management": {
+          "type": "object",
+          "description": "Memory management configuration",
+          "required": [
+            "memory_limit_mb",
+            "memory_mapping",
+            "garbage_collection"
+          ],
+          "properties": {
+            "memory_limit_mb": {
+              "type": "integer",
+              "description": "Memory limit in megabytes",
+              "minimum": 512,
+              "maximum": 65536
+            },
+            "memory_mapping": {
+              "type": "boolean",
+              "description": "Enable memory mapping for large video files"
+            },
+            "garbage_collection": {
+              "type": "string",
+              "description": "Garbage collection strategy",
+              "enum": [
+                "automatic",
+                "aggressive",
+                "conservative",
+                "manual"
+              ]
+            },
+            "buffer_size_mb": {
+              "type": "integer",
+              "description": "Buffer size in megabytes",
+              "minimum": 16,
+              "maximum": 2048
+            }
+          },
+          "additionalProperties": false
+        },
+        "parallel_processing": {
+          "type": "object",
+          "description": "Parallel processing optimization",
+          "required": [
+            "enabled",
+            "max_workers",
+            "chunk_size"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable parallel processing"
+            },
+            "max_workers": {
+              "type": "integer",
+              "description": "Maximum number of worker processes",
+              "minimum": 1,
+              "maximum": 32
+            },
+            "chunk_size": {
+              "type": "string",
+              "description": "Chunk size for parallel processing",
+              "enum": [
+                "auto",
+                "small",
+                "medium",
+                "large"
+              ]
+            },
+            "load_balancing": {
+              "type": "string",
+              "description": "Load balancing strategy",
+              "enum": [
+                "dynamic",
+                "static",
+                "adaptive"
+              ]
+            },
+            "thread_safety": {
+              "type": "boolean",
+              "description": "Ensure thread safety for parallel operations"
+            }
+          },
+          "additionalProperties": false
+        },
+        "caching": {
+          "type": "object",
+          "description": "Caching configuration for performance optimization",
+          "required": [
+            "cache_intermediate_results",
+            "cache_directory",
+            "cache_size_limit_gb"
+          ],
+          "properties": {
+            "cache_intermediate_results": {
+              "type": "boolean",
+              "description": "Cache intermediate normalization results"
+            },
+            "cache_directory": {
+              "type": "string",
+              "description": "Directory for cache storage",
+              "pattern": "^[a-zA-Z0-9_/.-]+$"
+            },
+            "cache_size_limit_gb": {
+              "type": "number",
+              "description": "Cache size limit in gigabytes",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cache_expiry_hours": {
+              "type": "integer",
+              "description": "Cache expiry time in hours",
+              "minimum": 1,
+              "maximum": 168
+            },
+            "compression": {
+              "type": "string",
+              "description": "Cache compression method",
+              "enum": [
+                "lz4",
+                "gzip",
+                "bzip2",
+                "none"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "processing_timeout_seconds": {
+          "type": "integer",
+          "description": "Maximum processing timeout in seconds",
+          "minimum": 60,
+          "maximum": 7200
+        },
+        "progress_reporting": {
+          "type": "object",
+          "description": "Progress reporting configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable progress reporting"
+            },
+            "update_interval_seconds": {
+              "type": "integer",
+              "description": "Progress update interval in seconds",
+              "minimum": 1,
+              "maximum": 60
+            },
+            "detailed_logging": {
+              "type": "boolean",
+              "description": "Enable detailed progress logging"
+            },
+            "performance_metrics": {
+              "type": "boolean",
+              "description": "Include performance metrics in progress reports"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "output_configuration": {
+      "type": "object",
+      "description": "Output formatting and file management configuration",
+      "required": [
+        "output_format",
+        "compression",
+        "precision",
+        "file_naming",
+        "directory_structure"
+      ],
+      "properties": {
+        "output_format": {
+          "type": "string",
+          "description": "Output format for normalized data",
+          "enum": [
+            "numpy_array",
+            "hdf5",
+            "netcdf",
+            "zarr",
+            "pickle"
+          ]
+        },
+        "compression": {
+          "type": "string",
+          "description": "Compression method for output files",
+          "enum": [
+            "gzip",
+            "lz4",
+            "bzip2",
+            "zstd",
+            "none"
+          ]
+        },
+        "precision": {
+          "type": "string",
+          "description": "Numerical precision for output data",
+          "enum": [
+            "float32",
+            "float64",
+            "int16",
+            "int32",
+            "uint8",
+            "uint16"
+          ]
+        },
+        "metadata_inclusion": {
+          "type": "boolean",
+          "description": "Include metadata in output files"
+        },
+        "file_naming": {
+          "type": "object",
+          "description": "File naming conventions",
+          "required": [
+            "timestamp_format",
+            "include_format_identifier",
+            "suffix"
+          ],
+          "properties": {
+            "timestamp_format": {
+              "type": "string",
+              "description": "Timestamp format for file names",
+              "pattern": "^%[YmdHMS_-]+$"
+            },
+            "include_format_identifier": {
+              "type": "boolean",
+              "description": "Include format identifier in file names"
+            },
+            "include_normalization_parameters": {
+              "type": "boolean",
+              "description": "Include normalization parameters in file names"
+            },
+            "suffix": {
+              "type": "string",
+              "description": "File name suffix",
+              "pattern": "^[a-zA-Z0-9_-]+$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "directory_structure": {
+          "type": "object",
+          "description": "Output directory structure configuration",
+          "required": [
+            "base_directory",
+            "format_subdirectories"
+          ],
+          "properties": {
+            "base_directory": {
+              "type": "string",
+              "description": "Base directory for normalized data output",
+              "pattern": "^[a-zA-Z0-9_/.-]+$"
+            },
+            "format_subdirectories": {
+              "type": "boolean",
+              "description": "Create subdirectories for different formats"
+            },
+            "date_subdirectories": {
+              "type": "boolean",
+              "description": "Create date-based subdirectories"
+            },
+            "backup_copies": {
+              "type": "integer",
+              "description": "Number of backup copies to maintain",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation_output": {
+          "type": "object",
+          "description": "Validation output configuration",
+          "properties": {
+            "generate_reports": {
+              "type": "boolean",
+              "description": "Generate validation reports"
+            },
+            "include_visualizations": {
+              "type": "boolean",
+              "description": "Include visualizations in validation output"
+            },
+            "statistical_summaries": {
+              "type": "boolean",
+              "description": "Generate statistical summaries"
+            },
+            "comparison_plots": {
+              "type": "boolean",
+              "description": "Generate comparison plots"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "logging_configuration": {
+      "type": "object",
+      "description": "Logging and monitoring configuration",
+      "properties": {
+        "log_level": {
+          "type": "string",
+          "description": "Logging level for normalization operations",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL"
+          ]
+        },
+        "log_file": {
+          "type": "string",
+          "description": "Log file path for normalization logs",
+          "pattern": "^[a-zA-Z0-9_/.-]+\\.log$"
+        },
+        "log_rotation": {
+          "type": "object",
+          "description": "Log rotation configuration",
+          "properties": {
+            "max_size_mb": {
+              "type": "integer",
+              "description": "Maximum log file size in MB",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "backup_count": {
+              "type": "integer",
+              "description": "Number of backup log files",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "rotation_interval": {
+              "type": "string",
+              "description": "Log rotation interval",
+              "enum": [
+                "hourly",
+                "daily",
+                "weekly",
+                "monthly"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "structured_logging": {
+          "type": "boolean",
+          "description": "Enable structured logging format"
+        },
+        "performance_logging": {
+          "type": "boolean",
+          "description": "Enable performance metrics logging"
+        },
+        "error_tracking": {
+          "type": "object",
+          "description": "Error tracking configuration",
+          "properties": {
+            "detailed_stack_traces": {
+              "type": "boolean",
+              "description": "Include detailed stack traces in error logs"
+            },
+            "error_categorization": {
+              "type": "boolean",
+              "description": "Categorize errors by type and severity"
+            },
+            "recovery_suggestions": {
+              "type": "boolean",
+              "description": "Include recovery suggestions in error messages"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "experimental_features": {
+      "type": "object",
+      "description": "Experimental and advanced feature configuration",
+      "properties": {
+        "machine_learning_enhancement": {
+          "type": "object",
+          "description": "Machine learning enhancement features",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable ML-based normalization enhancements"
+            },
+            "model_path": {
+              "type": "string",
+              "description": "Path to ML model for enhancement",
+              "pattern": "^[a-zA-Z0-9_/.-]+\\.(pkl|h5|onnx|pt)$"
+            },
+            "feature_extraction": {
+              "type": "array",
+              "description": "Features to extract for ML enhancement",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "spatial_features",
+                  "temporal_features",
+                  "intensity_features",
+                  "texture_features"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "training_data_path": {
+              "type": "string",
+              "description": "Path to training data for ML models",
+              "pattern": "^[a-zA-Z0-9_/.-]+$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "adaptive_algorithms": {
+          "type": "object",
+          "description": "Adaptive algorithm configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable adaptive normalization algorithms"
+            },
+            "adaptation_criteria": {
+              "type": "array",
+              "description": "Criteria for algorithm adaptation",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "data_quality",
+                  "noise_level",
+                  "format_characteristics",
+                  "processing_performance"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "learning_rate": {
+              "type": "number",
+              "description": "Learning rate for adaptive algorithms",
+              "minimum": 0.001,
+              "maximum": 1.0
+            },
+            "convergence_threshold": {
+              "type": "number",
+              "description": "Convergence threshold for adaptive algorithms",
+              "minimum": 1e-10,
+              "maximum": 0.01
+            }
+          },
+          "additionalProperties": false
+        },
+        "real_time_processing": {
+          "type": "object",
+          "description": "Real-time processing capabilities",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable real-time normalization mode"
+            },
+            "streaming_buffer_size": {
+              "type": "integer",
+              "description": "Buffer size for streaming data",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "latency_target_ms": {
+              "type": "number",
+              "description": "Target latency in milliseconds",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "quality_vs_speed_tradeoff": {
+              "type": "number",
+              "description": "Quality vs speed tradeoff factor",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

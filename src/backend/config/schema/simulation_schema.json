@@ -1,0 +1,1573 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plume-simulation.org/schemas/simulation-config.json",
+  "title": "Simulation Configuration Schema",
+  "description": "Schema for validating simulation configuration parameters for batch execution of 4000+ plume navigation algorithm simulations with comprehensive performance optimization, resource management, and scientific reproducibility standards",
+  "type": "object",
+  "required": [
+    "simulation_engine",
+    "algorithm_configuration",
+    "simulation_parameters",
+    "batch_execution",
+    "data_management",
+    "error_handling",
+    "performance_optimization",
+    "quality_assurance",
+    "logging_configuration",
+    "integration_settings"
+  ],
+  "properties": {
+    "simulation_engine": {
+      "type": "object",
+      "description": "Core simulation engine configuration and execution parameters",
+      "required": [
+        "enabled",
+        "max_simulations",
+        "target_completion_time_hours",
+        "target_time_per_simulation_seconds",
+        "execution_mode",
+        "parallel_processing",
+        "serial_processing",
+        "timeout_configuration"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the simulation engine processing"
+        },
+        "max_simulations": {
+          "type": "integer",
+          "description": "Maximum number of simulations in batch (4000+ requirement)",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "target_completion_time_hours": {
+          "type": "number",
+          "description": "Target completion time for batch processing in hours",
+          "minimum": 1.0,
+          "maximum": 24.0
+        },
+        "target_time_per_simulation_seconds": {
+          "type": "number",
+          "description": "Target time per simulation in seconds (<7.2s requirement)",
+          "minimum": 1.0,
+          "maximum": 30.0
+        },
+        "execution_mode": {
+          "type": "string",
+          "description": "Simulation execution mode",
+          "enum": ["batch", "interactive", "streaming", "distributed"]
+        },
+        "parallel_processing": {
+          "type": "object",
+          "description": "Parallel processing configuration for independent simulation tasks",
+          "required": [
+            "enabled",
+            "max_workers",
+            "worker_allocation_strategy",
+            "load_balancing",
+            "task_distribution",
+            "chunk_size",
+            "thread_safety",
+            "memory_per_worker_gb"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable parallel processing for simulation execution"
+            },
+            "max_workers": {
+              "type": "integer",
+              "description": "Maximum number of parallel worker processes",
+              "minimum": 1,
+              "maximum": 32
+            },
+            "worker_allocation_strategy": {
+              "type": "string",
+              "description": "Strategy for allocating workers to simulation tasks",
+              "enum": ["dynamic", "static", "adaptive", "load_based"]
+            },
+            "load_balancing": {
+              "type": "string",
+              "description": "Load balancing strategy for parallel execution",
+              "enum": ["round_robin", "least_loaded", "weighted", "adaptive"]
+            },
+            "task_distribution": {
+              "type": "string",
+              "description": "Task distribution method for parallel processing",
+              "enum": ["chunked", "adaptive_chunking", "work_stealing", "queue_based"]
+            },
+            "chunk_size": {
+              "type": "integer",
+              "description": "Number of simulations per processing chunk",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "thread_safety": {
+              "type": "boolean",
+              "description": "Ensure thread safety for parallel operations"
+            },
+            "memory_per_worker_gb": {
+              "type": "number",
+              "description": "Memory allocation per worker in gigabytes",
+              "minimum": 0.5,
+              "maximum": 16.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "serial_processing": {
+          "type": "object",
+          "description": "Serial processing configuration for data-dependent tasks",
+          "required": [
+            "data_dependent_tasks",
+            "checkpoint_operations",
+            "resource_cleanup"
+          ],
+          "properties": {
+            "data_dependent_tasks": {
+              "type": "array",
+              "description": "Tasks that must be executed serially due to data dependencies",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "normalization_validation",
+                  "cross_simulation_analysis",
+                  "result_aggregation",
+                  "checkpoint_operations",
+                  "resource_allocation",
+                  "batch_initialization",
+                  "final_cleanup"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "checkpoint_operations": {
+              "type": "array",
+              "description": "Checkpoint operations that require serial execution",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "progress_saving",
+                  "intermediate_result_storage",
+                  "batch_state_management",
+                  "resource_state_preservation",
+                  "audit_trail_updates"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "resource_cleanup": {
+              "type": "array",
+              "description": "Resource cleanup operations requiring serial execution",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "memory_deallocation",
+                  "cache_management",
+                  "temporary_file_cleanup",
+                  "algorithm_state_cleanup",
+                  "logging_finalization"
+                ]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "timeout_configuration": {
+          "type": "object",
+          "description": "Timeout configuration for simulation operations",
+          "required": [
+            "simulation_timeout_seconds",
+            "batch_timeout_hours",
+            "algorithm_execution_timeout_seconds",
+            "resource_allocation_timeout_seconds"
+          ],
+          "properties": {
+            "simulation_timeout_seconds": {
+              "type": "number",
+              "description": "Maximum execution time for individual simulation",
+              "minimum": 10.0,
+              "maximum": 600.0
+            },
+            "batch_timeout_hours": {
+              "type": "number",
+              "description": "Maximum execution time for batch processing",
+              "minimum": 1.0,
+              "maximum": 24.0
+            },
+            "algorithm_execution_timeout_seconds": {
+              "type": "number",
+              "description": "Maximum execution time for algorithm execution",
+              "minimum": 5.0,
+              "maximum": 300.0
+            },
+            "resource_allocation_timeout_seconds": {
+              "type": "number",
+              "description": "Maximum time for resource allocation operations",
+              "minimum": 1.0,
+              "maximum": 60.0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "algorithm_configuration": {
+      "type": "object",
+      "description": "Navigation algorithm configuration and parameter management",
+      "required": [
+        "supported_algorithms",
+        "default_algorithm",
+        "algorithm_parameters",
+        "algorithm_validation"
+      ],
+      "properties": {
+        "supported_algorithms": {
+          "type": "array",
+          "description": "List of supported navigation algorithms",
+          "items": {
+            "type": "string",
+            "enum": [
+              "infotaxis",
+              "casting",
+              "gradient_following",
+              "plume_tracking",
+              "hybrid_strategies",
+              "reference_implementation"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "default_algorithm": {
+          "type": "string",
+          "description": "Default algorithm for simulation execution",
+          "enum": [
+            "infotaxis",
+            "casting",
+            "gradient_following",
+            "plume_tracking",
+            "hybrid_strategies",
+            "reference_implementation"
+          ]
+        },
+        "algorithm_parameters": {
+          "type": "object",
+          "description": "Algorithm-specific parameter configurations",
+          "properties": {
+            "infotaxis": {
+              "type": "object",
+              "description": "Infotaxis algorithm parameters",
+              "properties": {
+                "entropy_threshold": {
+                  "type": "number",
+                  "description": "Entropy threshold for information gain calculation",
+                  "minimum": 0.001,
+                  "maximum": 1.0
+                },
+                "search_radius_meters": {
+                  "type": "number",
+                  "description": "Search radius in meters",
+                  "minimum": 0.01,
+                  "maximum": 10.0
+                },
+                "step_size_meters": {
+                  "type": "number",
+                  "description": "Step size in meters",
+                  "minimum": 0.001,
+                  "maximum": 1.0
+                },
+                "max_steps": {
+                  "type": "integer",
+                  "description": "Maximum number of algorithm steps",
+                  "minimum": 100,
+                  "maximum": 100000
+                },
+                "information_gain_weight": {
+                  "type": "number",
+                  "description": "Weight for information gain in decision making",
+                  "minimum": 0.0,
+                  "maximum": 10.0
+                },
+                "exploration_factor": {
+                  "type": "number",
+                  "description": "Exploration vs exploitation factor",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "casting": {
+              "type": "object",
+              "description": "Casting algorithm parameters",
+              "properties": {
+                "cast_width_meters": {
+                  "type": "number",
+                  "description": "Width of casting pattern in meters",
+                  "minimum": 0.1,
+                  "maximum": 5.0
+                },
+                "cast_frequency_hz": {
+                  "type": "number",
+                  "description": "Frequency of casting behavior in Hz",
+                  "minimum": 0.1,
+                  "maximum": 10.0
+                },
+                "upwind_velocity_mps": {
+                  "type": "number",
+                  "description": "Upwind velocity in meters per second",
+                  "minimum": 0.01,
+                  "maximum": 1.0
+                },
+                "crosswind_velocity_mps": {
+                  "type": "number",
+                  "description": "Crosswind velocity in meters per second",
+                  "minimum": 0.01,
+                  "maximum": 1.0
+                },
+                "detection_threshold": {
+                  "type": "number",
+                  "description": "Plume detection threshold",
+                  "minimum": 0.0001,
+                  "maximum": 1.0
+                },
+                "max_cast_cycles": {
+                  "type": "integer",
+                  "description": "Maximum number of casting cycles",
+                  "minimum": 10,
+                  "maximum": 1000
+                }
+              },
+              "additionalProperties": false
+            },
+            "gradient_following": {
+              "type": "object",
+              "description": "Gradient following algorithm parameters",
+              "properties": {
+                "gradient_estimation_method": {
+                  "type": "string",
+                  "description": "Method for gradient estimation",
+                  "enum": [
+                    "central_difference",
+                    "forward_difference",
+                    "backward_difference",
+                    "finite_element"
+                  ]
+                },
+                "step_size_adaptive": {
+                  "type": "boolean",
+                  "description": "Enable adaptive step size"
+                },
+                "initial_step_size_meters": {
+                  "type": "number",
+                  "description": "Initial step size in meters",
+                  "minimum": 0.001,
+                  "maximum": 1.0
+                },
+                "gradient_threshold": {
+                  "type": "number",
+                  "description": "Gradient magnitude threshold",
+                  "minimum": 1e-10,
+                  "maximum": 1.0
+                },
+                "momentum_factor": {
+                  "type": "number",
+                  "description": "Momentum factor for gradient following",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                },
+                "learning_rate": {
+                  "type": "number",
+                  "description": "Learning rate for gradient updates",
+                  "minimum": 0.001,
+                  "maximum": 1.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "plume_tracking": {
+              "type": "object",
+              "description": "Plume tracking algorithm parameters",
+              "properties": {
+                "tracking_algorithm": {
+                  "type": "string",
+                  "description": "Tracking algorithm type",
+                  "enum": [
+                    "particle_filter",
+                    "kalman_filter",
+                    "extended_kalman",
+                    "unscented_kalman"
+                  ]
+                },
+                "particle_count": {
+                  "type": "integer",
+                  "description": "Number of particles for particle filter",
+                  "minimum": 100,
+                  "maximum": 10000
+                },
+                "resampling_threshold": {
+                  "type": "number",
+                  "description": "Threshold for particle resampling",
+                  "minimum": 0.1,
+                  "maximum": 1.0
+                },
+                "motion_model": {
+                  "type": "string",
+                  "description": "Motion model for tracking",
+                  "enum": [
+                    "brownian",
+                    "constant_velocity",
+                    "constant_acceleration",
+                    "random_walk"
+                  ]
+                },
+                "observation_noise_variance": {
+                  "type": "number",
+                  "description": "Observation noise variance",
+                  "minimum": 0.0001,
+                  "maximum": 1.0
+                },
+                "process_noise_variance": {
+                  "type": "number",
+                  "description": "Process noise variance",
+                  "minimum": 0.0001,
+                  "maximum": 1.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "hybrid_strategies": {
+              "type": "object",
+              "description": "Hybrid strategy algorithm parameters",
+              "properties": {
+                "strategy_switching_criteria": {
+                  "type": "array",
+                  "description": "Criteria for switching between strategies",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plume_contact_loss",
+                      "search_time_threshold",
+                      "information_gain_threshold",
+                      "convergence_stagnation"
+                    ]
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                },
+                "primary_strategy": {
+                  "type": "string",
+                  "description": "Primary navigation strategy",
+                  "enum": [
+                    "infotaxis",
+                    "casting",
+                    "gradient_following",
+                    "plume_tracking"
+                  ]
+                },
+                "fallback_strategy": {
+                  "type": "string",
+                  "description": "Fallback navigation strategy",
+                  "enum": [
+                    "infotaxis",
+                    "casting",
+                    "gradient_following",
+                    "plume_tracking"
+                  ]
+                },
+                "switching_threshold": {
+                  "type": "number",
+                  "description": "Threshold for strategy switching",
+                  "minimum": 0.01,
+                  "maximum": 1.0
+                },
+                "strategy_weights": {
+                  "type": "object",
+                  "description": "Weights for different strategies in hybrid approach",
+                  "properties": {
+                    "infotaxis": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "casting": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "gradient_following": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "plume_tracking": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "algorithm_validation": {
+          "type": "object",
+          "description": "Algorithm validation configuration",
+          "required": [
+            "parameter_bounds_checking",
+            "convergence_criteria_validation",
+            "numerical_stability_checks",
+            "performance_baseline_comparison"
+          ],
+          "properties": {
+            "parameter_bounds_checking": {
+              "type": "boolean",
+              "description": "Enable parameter bounds checking"
+            },
+            "convergence_criteria_validation": {
+              "type": "boolean",
+              "description": "Enable convergence criteria validation"
+            },
+            "numerical_stability_checks": {
+              "type": "boolean",
+              "description": "Enable numerical stability checks"
+            },
+            "performance_baseline_comparison": {
+              "type": "boolean",
+              "description": "Enable performance baseline comparison"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "simulation_parameters": {
+      "type": "object",
+      "description": "Simulation environment and agent configuration parameters",
+      "required": [
+        "environment_settings",
+        "agent_properties",
+        "termination_criteria"
+      ],
+      "properties": {
+        "environment_settings": {
+          "type": "object",
+          "description": "Environment configuration for simulation",
+          "required": [
+            "arena_size_meters",
+            "source_location",
+            "agent_start_location",
+            "wind_conditions",
+            "plume_characteristics"
+          ],
+          "properties": {
+            "arena_size_meters": {
+              "type": "object",
+              "description": "Arena dimensions in meters",
+              "required": ["width", "height"],
+              "properties": {
+                "width": {
+                  "type": "number",
+                  "description": "Arena width in meters",
+                  "minimum": 0.1,
+                  "maximum": 100.0
+                },
+                "height": {
+                  "type": "number",
+                  "description": "Arena height in meters",
+                  "minimum": 0.1,
+                  "maximum": 100.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "source_location": {
+              "type": "object",
+              "description": "Source location coordinates",
+              "required": ["x", "y"],
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "description": "X coordinate of source",
+                  "minimum": 0.0,
+                  "maximum": 100.0
+                },
+                "y": {
+                  "type": "number",
+                  "description": "Y coordinate of source",
+                  "minimum": 0.0,
+                  "maximum": 100.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "agent_start_location": {
+              "type": "object",
+              "description": "Agent starting location coordinates",
+              "required": ["x", "y"],
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "description": "X coordinate of agent start",
+                  "minimum": 0.0,
+                  "maximum": 100.0
+                },
+                "y": {
+                  "type": "number",
+                  "description": "Y coordinate of agent start",
+                  "minimum": 0.0,
+                  "maximum": 100.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "wind_conditions": {
+              "type": "object",
+              "description": "Wind condition parameters",
+              "required": [
+                "mean_velocity_mps",
+                "turbulence_intensity",
+                "direction_degrees"
+              ],
+              "properties": {
+                "mean_velocity_mps": {
+                  "type": "number",
+                  "description": "Mean wind velocity in meters per second",
+                  "minimum": 0.01,
+                  "maximum": 10.0
+                },
+                "turbulence_intensity": {
+                  "type": "number",
+                  "description": "Turbulence intensity factor",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                },
+                "direction_degrees": {
+                  "type": "number",
+                  "description": "Wind direction in degrees",
+                  "minimum": 0.0,
+                  "maximum": 360.0
+                }
+              },
+              "additionalProperties": false
+            },
+            "plume_characteristics": {
+              "type": "object",
+              "description": "Plume characteristic parameters",
+              "required": [
+                "diffusion_coefficient",
+                "source_strength",
+                "background_concentration",
+                "intermittency_factor"
+              ],
+              "properties": {
+                "diffusion_coefficient": {
+                  "type": "number",
+                  "description": "Diffusion coefficient for plume spreading",
+                  "minimum": 0.0001,
+                  "maximum": 1.0
+                },
+                "source_strength": {
+                  "type": "number",
+                  "description": "Source emission strength",
+                  "minimum": 0.1,
+                  "maximum": 100.0
+                },
+                "background_concentration": {
+                  "type": "number",
+                  "description": "Background concentration level",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                },
+                "intermittency_factor": {
+                  "type": "number",
+                  "description": "Plume intermittency factor",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "agent_properties": {
+          "type": "object",
+          "description": "Agent sensor and movement properties",
+          "required": [
+            "sensor_range_meters",
+            "sensor_sensitivity",
+            "sensor_noise_variance",
+            "movement_speed_mps",
+            "turning_rate_rad_per_sec",
+            "decision_frequency_hz"
+          ],
+          "properties": {
+            "sensor_range_meters": {
+              "type": "number",
+              "description": "Sensor detection range in meters",
+              "minimum": 0.001,
+              "maximum": 10.0
+            },
+            "sensor_sensitivity": {
+              "type": "number",
+              "description": "Sensor sensitivity threshold",
+              "minimum": 0.0001,
+              "maximum": 1.0
+            },
+            "sensor_noise_variance": {
+              "type": "number",
+              "description": "Sensor noise variance",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "movement_speed_mps": {
+              "type": "number",
+              "description": "Agent movement speed in meters per second",
+              "minimum": 0.001,
+              "maximum": 10.0
+            },
+            "turning_rate_rad_per_sec": {
+              "type": "number",
+              "description": "Agent turning rate in radians per second",
+              "minimum": 0.1,
+              "maximum": 10.0
+            },
+            "decision_frequency_hz": {
+              "type": "number",
+              "description": "Decision making frequency in Hz",
+              "minimum": 0.1,
+              "maximum": 100.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "termination_criteria": {
+          "type": "object",
+          "description": "Simulation termination criteria",
+          "required": [
+            "max_simulation_time_seconds",
+            "source_detection_threshold_meters",
+            "success_criteria",
+            "failure_criteria",
+            "early_termination_enabled"
+          ],
+          "properties": {
+            "max_simulation_time_seconds": {
+              "type": "number",
+              "description": "Maximum simulation time in seconds",
+              "minimum": 10.0,
+              "maximum": 3600.0
+            },
+            "source_detection_threshold_meters": {
+              "type": "number",
+              "description": "Distance threshold for successful source detection",
+              "minimum": 0.001,
+              "maximum": 10.0
+            },
+            "success_criteria": {
+              "type": "string",
+              "description": "Criteria for simulation success",
+              "enum": [
+                "source_localization",
+                "target_reached",
+                "threshold_detection",
+                "time_based"
+              ]
+            },
+            "failure_criteria": {
+              "type": "array",
+              "description": "Criteria for simulation failure",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "timeout",
+                  "boundary_exit",
+                  "algorithm_divergence",
+                  "resource_exhaustion",
+                  "numerical_instability"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "early_termination_enabled": {
+              "type": "boolean",
+              "description": "Enable early termination on success"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "batch_execution": {
+      "type": "object",
+      "description": "Batch execution configuration for 4000+ simulation processing",
+      "required": [
+        "batch_size",
+        "batch_scheduling",
+        "inter_batch_delay_seconds",
+        "batch_retry_policy",
+        "progress_monitoring",
+        "resource_management"
+      ],
+      "properties": {
+        "batch_size": {
+          "type": "integer",
+          "description": "Number of simulations per batch",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "batch_scheduling": {
+          "type": "string",
+          "description": "Batch scheduling strategy",
+          "enum": ["fifo", "priority", "load_balanced", "adaptive"]
+        },
+        "inter_batch_delay_seconds": {
+          "type": "number",
+          "description": "Delay between batch executions in seconds",
+          "minimum": 0.0,
+          "maximum": 300.0
+        },
+        "batch_retry_policy": {
+          "type": "object",
+          "description": "Retry policy for failed batches",
+          "required": [
+            "max_retries",
+            "retry_delay_seconds",
+            "exponential_backoff",
+            "retry_on_failure_types"
+          ],
+          "properties": {
+            "max_retries": {
+              "type": "integer",
+              "description": "Maximum number of retry attempts",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "retry_delay_seconds": {
+              "type": "number",
+              "description": "Delay between retry attempts",
+              "minimum": 1.0,
+              "maximum": 300.0
+            },
+            "exponential_backoff": {
+              "type": "boolean",
+              "description": "Enable exponential backoff for retries"
+            },
+            "retry_on_failure_types": {
+              "type": "array",
+              "description": "Failure types that trigger retry",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "timeout",
+                  "resource_exhaustion",
+                  "transient_error",
+                  "network_error",
+                  "temporary_failure"
+                ]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "progress_monitoring": {
+          "type": "object",
+          "description": "Progress monitoring configuration for batch execution",
+          "required": [
+            "enabled",
+            "update_interval_seconds",
+            "detailed_logging",
+            "real_time_metrics",
+            "progress_checkpoints"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable progress monitoring"
+            },
+            "update_interval_seconds": {
+              "type": "number",
+              "description": "Progress update interval in seconds",
+              "minimum": 1.0,
+              "maximum": 300.0
+            },
+            "detailed_logging": {
+              "type": "boolean",
+              "description": "Enable detailed progress logging"
+            },
+            "real_time_metrics": {
+              "type": "array",
+              "description": "Real-time metrics to track",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "completion_rate",
+                  "average_time_per_simulation",
+                  "resource_utilization",
+                  "error_rate",
+                  "throughput",
+                  "memory_usage"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "progress_checkpoints": {
+              "type": "array",
+              "description": "Progress checkpoint percentages",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "resource_management": {
+          "type": "object",
+          "description": "Resource management for batch execution",
+          "required": [
+            "memory_limit_gb",
+            "cpu_utilization_target",
+            "disk_space_threshold_gb",
+            "automatic_cleanup",
+            "resource_monitoring_interval_seconds"
+          ],
+          "properties": {
+            "memory_limit_gb": {
+              "type": "number",
+              "description": "Memory limit for batch execution in gigabytes",
+              "minimum": 1.0,
+              "maximum": 64.0
+            },
+            "cpu_utilization_target": {
+              "type": "number",
+              "description": "Target CPU utilization (0.0 to 1.0)",
+              "minimum": 0.1,
+              "maximum": 1.0
+            },
+            "disk_space_threshold_gb": {
+              "type": "number",
+              "description": "Minimum disk space threshold in gigabytes",
+              "minimum": 1.0,
+              "maximum": 1000.0
+            },
+            "automatic_cleanup": {
+              "type": "boolean",
+              "description": "Enable automatic resource cleanup"
+            },
+            "resource_monitoring_interval_seconds": {
+              "type": "number",
+              "description": "Resource monitoring interval in seconds",
+              "minimum": 5.0,
+              "maximum": 300.0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "data_management": {
+      "type": "object",
+      "description": "Data management configuration for simulation input and output",
+      "required": [
+        "input_data_validation",
+        "intermediate_data_handling",
+        "result_collection"
+      ],
+      "properties": {
+        "input_data_validation": {
+          "type": "object",
+          "description": "Input data validation configuration",
+          "required": [
+            "format_verification",
+            "normalization_status_check",
+            "data_integrity_validation",
+            "calibration_parameter_verification"
+          ],
+          "properties": {
+            "format_verification": {
+              "type": "boolean",
+              "description": "Enable input format verification"
+            },
+            "normalization_status_check": {
+              "type": "boolean",
+              "description": "Check normalization status of input data"
+            },
+            "data_integrity_validation": {
+              "type": "boolean",
+              "description": "Enable data integrity validation"
+            },
+            "calibration_parameter_verification": {
+              "type": "boolean",
+              "description": "Verify calibration parameters"
+            }
+          },
+          "additionalProperties": false
+        },
+        "intermediate_data_handling": {
+          "type": "object",
+          "description": "Intermediate data handling configuration",
+          "required": [
+            "cache_simulation_states",
+            "cache_directory",
+            "cache_size_limit_gb",
+            "cache_compression",
+            "cache_expiry_hours"
+          ],
+          "properties": {
+            "cache_simulation_states": {
+              "type": "boolean",
+              "description": "Enable caching of simulation states"
+            },
+            "cache_directory": {
+              "type": "string",
+              "description": "Directory for cache storage",
+              "pattern": "^[a-zA-Z0-9_/.-]+$"
+            },
+            "cache_size_limit_gb": {
+              "type": "number",
+              "description": "Cache size limit in gigabytes",
+              "minimum": 1.0,
+              "maximum": 100.0
+            },
+            "cache_compression": {
+              "type": "string",
+              "description": "Cache compression method",
+              "enum": ["lz4", "gzip", "bzip2", "zstd", "none"]
+            },
+            "cache_expiry_hours": {
+              "type": "number",
+              "description": "Cache expiry time in hours",
+              "minimum": 1.0,
+              "maximum": 168.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "result_collection": {
+          "type": "object",
+          "description": "Result collection configuration",
+          "required": [
+            "output_directory",
+            "result_format",
+            "compression",
+            "metadata_inclusion",
+            "trajectory_sampling_rate_hz",
+            "performance_metrics_collection"
+          ],
+          "properties": {
+            "output_directory": {
+              "type": "string",
+              "description": "Directory for simulation results",
+              "pattern": "^[a-zA-Z0-9_/.-]+$"
+            },
+            "result_format": {
+              "type": "string",
+              "description": "Format for result storage",
+              "enum": ["hdf5", "netcdf", "pickle", "json", "csv"]
+            },
+            "compression": {
+              "type": "string",
+              "description": "Compression method for results",
+              "enum": ["gzip", "lz4", "bzip2", "zstd", "none"]
+            },
+            "metadata_inclusion": {
+              "type": "boolean",
+              "description": "Include metadata in results"
+            },
+            "trajectory_sampling_rate_hz": {
+              "type": "number",
+              "description": "Trajectory sampling rate in Hz",
+              "minimum": 1.0,
+              "maximum": 1000.0
+            },
+            "performance_metrics_collection": {
+              "type": "boolean",
+              "description": "Enable performance metrics collection"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "error_handling": {
+      "type": "object",
+      "description": "Error handling and recovery configuration",
+      "required": ["error_detection", "error_recovery", "error_reporting"],
+      "properties": {
+        "error_detection": {
+          "type": "object",
+          "description": "Error detection configuration",
+          "required": [
+            "algorithm_divergence_detection",
+            "numerical_instability_monitoring",
+            "resource_exhaustion_detection",
+            "timeout_monitoring"
+          ],
+          "properties": {
+            "algorithm_divergence_detection": {
+              "type": "boolean",
+              "description": "Enable algorithm divergence detection"
+            },
+            "numerical_instability_monitoring": {
+              "type": "boolean",
+              "description": "Enable numerical instability monitoring"
+            },
+            "resource_exhaustion_detection": {
+              "type": "boolean",
+              "description": "Enable resource exhaustion detection"
+            },
+            "timeout_monitoring": {
+              "type": "boolean",
+              "description": "Enable timeout monitoring"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error_recovery": {
+          "type": "object",
+          "description": "Error recovery configuration",
+          "required": [
+            "automatic_retry",
+            "graceful_degradation",
+            "partial_batch_completion",
+            "checkpoint_recovery"
+          ],
+          "properties": {
+            "automatic_retry": {
+              "type": "boolean",
+              "description": "Enable automatic retry on recoverable errors"
+            },
+            "graceful_degradation": {
+              "type": "boolean",
+              "description": "Enable graceful degradation on errors"
+            },
+            "partial_batch_completion": {
+              "type": "boolean",
+              "description": "Allow partial batch completion"
+            },
+            "checkpoint_recovery": {
+              "type": "boolean",
+              "description": "Enable checkpoint-based recovery"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error_reporting": {
+          "type": "object",
+          "description": "Error reporting configuration",
+          "required": [
+            "detailed_error_logs",
+            "error_categorization",
+            "failure_analysis",
+            "recovery_recommendations"
+          ],
+          "properties": {
+            "detailed_error_logs": {
+              "type": "boolean",
+              "description": "Enable detailed error logging"
+            },
+            "error_categorization": {
+              "type": "boolean",
+              "description": "Enable error categorization"
+            },
+            "failure_analysis": {
+              "type": "boolean",
+              "description": "Enable failure analysis"
+            },
+            "recovery_recommendations": {
+              "type": "boolean",
+              "description": "Include recovery recommendations in error reports"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "performance_optimization": {
+      "type": "object",
+      "description": "Performance optimization configuration",
+      "required": [
+        "memory_optimization",
+        "computational_optimization",
+        "io_optimization"
+      ],
+      "properties": {
+        "memory_optimization": {
+          "type": "object",
+          "description": "Memory optimization configuration",
+          "required": [
+            "memory_mapping",
+            "garbage_collection_strategy",
+            "object_pooling",
+            "lazy_loading"
+          ],
+          "properties": {
+            "memory_mapping": {
+              "type": "boolean",
+              "description": "Enable memory mapping for large data"
+            },
+            "garbage_collection_strategy": {
+              "type": "string",
+              "description": "Garbage collection strategy",
+              "enum": ["generational", "incremental", "concurrent", "parallel"]
+            },
+            "object_pooling": {
+              "type": "boolean",
+              "description": "Enable object pooling"
+            },
+            "lazy_loading": {
+              "type": "boolean",
+              "description": "Enable lazy loading of data"
+            }
+          },
+          "additionalProperties": false
+        },
+        "computational_optimization": {
+          "type": "object",
+          "description": "Computational optimization configuration",
+          "required": [
+            "vectorized_operations",
+            "just_in_time_compilation",
+            "algorithm_specific_optimizations",
+            "numerical_precision"
+          ],
+          "properties": {
+            "vectorized_operations": {
+              "type": "boolean",
+              "description": "Enable vectorized operations"
+            },
+            "just_in_time_compilation": {
+              "type": "boolean",
+              "description": "Enable JIT compilation"
+            },
+            "algorithm_specific_optimizations": {
+              "type": "boolean",
+              "description": "Enable algorithm-specific optimizations"
+            },
+            "numerical_precision": {
+              "type": "string",
+              "description": "Numerical precision setting",
+              "enum": ["float32", "float64", "extended"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "io_optimization": {
+          "type": "object",
+          "description": "I/O optimization configuration",
+          "required": [
+            "asynchronous_io",
+            "buffer_size_mb",
+            "read_ahead_enabled",
+            "write_batching"
+          ],
+          "properties": {
+            "asynchronous_io": {
+              "type": "boolean",
+              "description": "Enable asynchronous I/O operations"
+            },
+            "buffer_size_mb": {
+              "type": "number",
+              "description": "I/O buffer size in megabytes",
+              "minimum": 1.0,
+              "maximum": 1024.0
+            },
+            "read_ahead_enabled": {
+              "type": "boolean",
+              "description": "Enable read-ahead optimization"
+            },
+            "write_batching": {
+              "type": "boolean",
+              "description": "Enable write batching"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "quality_assurance": {
+      "type": "object",
+      "description": "Quality assurance and validation configuration",
+      "required": ["validation_checks", "benchmarking", "testing_integration"],
+      "properties": {
+        "validation_checks": {
+          "type": "object",
+          "description": "Validation checks configuration",
+          "required": [
+            "algorithm_implementation_validation",
+            "parameter_consistency_checks",
+            "numerical_accuracy_validation",
+            "result_reproducibility_checks"
+          ],
+          "properties": {
+            "algorithm_implementation_validation": {
+              "type": "boolean",
+              "description": "Enable algorithm implementation validation"
+            },
+            "parameter_consistency_checks": {
+              "type": "boolean",
+              "description": "Enable parameter consistency checks"
+            },
+            "numerical_accuracy_validation": {
+              "type": "boolean",
+              "description": "Enable numerical accuracy validation"
+            },
+            "result_reproducibility_checks": {
+              "type": "boolean",
+              "description": "Enable result reproducibility checks"
+            }
+          },
+          "additionalProperties": false
+        },
+        "benchmarking": {
+          "type": "object",
+          "description": "Benchmarking configuration",
+          "required": [
+            "reference_algorithm_comparison",
+            "performance_baseline_validation",
+            "cross_platform_consistency_checks",
+            "statistical_validation"
+          ],
+          "properties": {
+            "reference_algorithm_comparison": {
+              "type": "boolean",
+              "description": "Enable reference algorithm comparison"
+            },
+            "performance_baseline_validation": {
+              "type": "boolean",
+              "description": "Enable performance baseline validation"
+            },
+            "cross_platform_consistency_checks": {
+              "type": "boolean",
+              "description": "Enable cross-platform consistency checks"
+            },
+            "statistical_validation": {
+              "type": "boolean",
+              "description": "Enable statistical validation"
+            }
+          },
+          "additionalProperties": false
+        },
+        "testing_integration": {
+          "type": "object",
+          "description": "Testing integration configuration",
+          "required": [
+            "unit_test_execution",
+            "integration_test_validation",
+            "performance_regression_detection",
+            "automated_quality_gates"
+          ],
+          "properties": {
+            "unit_test_execution": {
+              "type": "boolean",
+              "description": "Enable unit test execution during simulation"
+            },
+            "integration_test_validation": {
+              "type": "boolean",
+              "description": "Enable integration test validation"
+            },
+            "performance_regression_detection": {
+              "type": "boolean",
+              "description": "Enable performance regression detection"
+            },
+            "automated_quality_gates": {
+              "type": "boolean",
+              "description": "Enable automated quality gates"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "logging_configuration": {
+      "type": "object",
+      "description": "Logging and monitoring configuration",
+      "required": [
+        "log_level",
+        "log_file",
+        "structured_logging",
+        "performance_logging",
+        "algorithm_execution_logging",
+        "resource_usage_logging",
+        "log_rotation"
+      ],
+      "properties": {
+        "log_level": {
+          "type": "string",
+          "description": "Logging level for simulation operations",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        },
+        "log_file": {
+          "type": "string",
+          "description": "Log file path for simulation logs",
+          "pattern": "^[a-zA-Z0-9_/.-]+\\.log$"
+        },
+        "structured_logging": {
+          "type": "boolean",
+          "description": "Enable structured logging format"
+        },
+        "performance_logging": {
+          "type": "boolean",
+          "description": "Enable performance metrics logging"
+        },
+        "algorithm_execution_logging": {
+          "type": "boolean",
+          "description": "Enable algorithm execution logging"
+        },
+        "resource_usage_logging": {
+          "type": "boolean",
+          "description": "Enable resource usage logging"
+        },
+        "log_rotation": {
+          "type": "object",
+          "description": "Log rotation configuration",
+          "required": ["max_size_mb", "backup_count", "rotation_interval"],
+          "properties": {
+            "max_size_mb": {
+              "type": "integer",
+              "description": "Maximum log file size in MB",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "backup_count": {
+              "type": "integer",
+              "description": "Number of backup log files",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "rotation_interval": {
+              "type": "string",
+              "description": "Log rotation interval",
+              "enum": ["hourly", "daily", "weekly", "monthly"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "integration_settings": {
+      "type": "object",
+      "description": "Integration settings with other pipeline components",
+      "required": [
+        "normalization_pipeline_integration",
+        "analysis_pipeline_integration",
+        "external_tool_integration"
+      ],
+      "properties": {
+        "normalization_pipeline_integration": {
+          "type": "object",
+          "description": "Integration with normalization pipeline",
+          "required": [
+            "require_normalized_data",
+            "validation_against_normalization_config",
+            "cross_format_compatibility_checks"
+          ],
+          "properties": {
+            "require_normalized_data": {
+              "type": "boolean",
+              "description": "Require normalized data for simulation"
+            },
+            "validation_against_normalization_config": {
+              "type": "boolean",
+              "description": "Validate against normalization configuration"
+            },
+            "cross_format_compatibility_checks": {
+              "type": "boolean",
+              "description": "Enable cross-format compatibility checks"
+            }
+          },
+          "additionalProperties": false
+        },
+        "analysis_pipeline_integration": {
+          "type": "object",
+          "description": "Integration with analysis pipeline",
+          "required": [
+            "automatic_analysis_trigger",
+            "result_format_compatibility",
+            "metrics_alignment"
+          ],
+          "properties": {
+            "automatic_analysis_trigger": {
+              "type": "boolean",
+              "description": "Automatically trigger analysis after simulation"
+            },
+            "result_format_compatibility": {
+              "type": "boolean",
+              "description": "Ensure result format compatibility"
+            },
+            "metrics_alignment": {
+              "type": "boolean",
+              "description": "Align metrics with analysis requirements"
+            }
+          },
+          "additionalProperties": false
+        },
+        "external_tool_integration": {
+          "type": "object",
+          "description": "Integration with external tools and libraries",
+          "required": [
+            "statistical_analysis_packages",
+            "visualization_libraries",
+            "numerical_computation_frameworks"
+          ],
+          "properties": {
+            "statistical_analysis_packages": {
+              "type": "array",
+              "description": "Statistical analysis packages to integrate",
+              "items": {
+                "type": "string",
+                "enum": ["scipy", "statsmodels", "scikit-learn", "pandas"]
+              },
+              "uniqueItems": true
+            },
+            "visualization_libraries": {
+              "type": "array",
+              "description": "Visualization libraries for result display",
+              "items": {
+                "type": "string",
+                "enum": ["matplotlib", "seaborn", "plotly", "bokeh"]
+              },
+              "uniqueItems": true
+            },
+            "numerical_computation_frameworks": {
+              "type": "array",
+              "description": "Numerical computation frameworks",
+              "items": {
+                "type": "string",
+                "enum": ["numpy", "numba", "cupy", "jax"]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

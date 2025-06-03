@@ -1,0 +1,365 @@
+{
+  "normalization_pipeline": {
+    "enabled": true,
+    "processing_order": [
+      "format_detection",
+      "arena_normalization",
+      "pixel_resolution_normalization",
+      "temporal_normalization",
+      "intensity_calibration",
+      "validation"
+    ],
+    "parallel_processing": true,
+    "max_workers": 8,
+    "memory_limit_gb": 8,
+    "timeout_seconds": 1800,
+    "checkpoint_interval": 100,
+    "error_handling_strategy": "fail_fast"
+  },
+  "arena_normalization": {
+    "enabled": true,
+    "target_arena_width_meters": 1.0,
+    "target_arena_height_meters": 1.0,
+    "scaling_method": "bicubic",
+    "preserve_aspect_ratio": true,
+    "boundary_detection": {
+      "method": "edge_detection",
+      "threshold": 0.1,
+      "morphological_operations": [
+        "opening",
+        "closing"
+      ],
+      "kernel_size": 5
+    },
+    "calibration_markers": {
+      "detection_enabled": true,
+      "marker_type": "circular",
+      "min_marker_size_pixels": 10,
+      "max_marker_size_pixels": 100,
+      "marker_color_range": [
+        0.0,
+        0.3
+      ]
+    },
+    "validation": {
+      "accuracy_threshold": 0.01,
+      "reference_measurements": true,
+      "statistical_validation": true
+    }
+  },
+  "pixel_resolution_normalization": {
+    "enabled": true,
+    "target_resolution_x": 640,
+    "target_resolution_y": 480,
+    "resampling_algorithm": "lanczos",
+    "anti_aliasing": true,
+    "quality_preservation": {
+      "maintain_detail": true,
+      "edge_enhancement": false,
+      "noise_reduction": "gaussian",
+      "sharpening_factor": 0.0
+    },
+    "adaptive_scaling": {
+      "enabled": false,
+      "content_aware": false,
+      "feature_preservation": [
+        "edges",
+        "gradients"
+      ],
+      "quality_metric": "ssim"
+    },
+    "validation": {
+      "similarity_threshold": 0.95,
+      "feature_preservation_check": true,
+      "information_loss_tolerance": 0.05
+    }
+  },
+  "temporal_normalization": {
+    "enabled": true,
+    "target_fps": 30.0,
+    "interpolation_method": "cubic",
+    "frame_alignment": "center",
+    "temporal_smoothing": false,
+    "synchronization": {
+      "method": "cross_correlation",
+      "reference_signal": "intensity_variance",
+      "alignment_tolerance": 0.1,
+      "drift_correction": true
+    },
+    "resampling_quality": {
+      "anti_aliasing_filter": true,
+      "filter_cutoff_ratio": 0.8,
+      "phase_preservation": true,
+      "temporal_coherence": true
+    },
+    "validation": {
+      "temporal_consistency_check": true,
+      "frequency_domain_validation": true,
+      "motion_preservation_threshold": 0.95
+    }
+  },
+  "intensity_calibration": {
+    "enabled": true,
+    "target_intensity_range": [
+      0.0,
+      1.0
+    ],
+    "calibration_method": "min_max",
+    "background_subtraction": false,
+    "noise_reduction": "gaussian",
+    "gamma_correction": 1.0,
+    "dynamic_range_optimization": {
+      "histogram_equalization": false,
+      "contrast_enhancement": "none",
+      "saturation_handling": "clip",
+      "outlier_removal": true,
+      "outlier_threshold": 3.0
+    },
+    "spatial_calibration": {
+      "flat_field_correction": false,
+      "vignetting_correction": false,
+      "sensor_response_linearization": false,
+      "cross_talk_correction": false
+    },
+    "temporal_stability": {
+      "drift_correction": true,
+      "baseline_tracking": true,
+      "stability_window_frames": 100,
+      "correction_method": "polynomial_detrend"
+    },
+    "validation": {
+      "linearity_check": true,
+      "noise_characterization": true,
+      "dynamic_range_validation": true,
+      "calibration_accuracy_threshold": 0.02
+    }
+  },
+  "format_specific_settings": {
+    "crimaldi_format": {
+      "pixel_to_meter_ratio": 100.0,
+      "intensity_units": "concentration_ppm",
+      "coordinate_system": "cartesian",
+      "coordinate_origin": "bottom_left",
+      "time_units": "seconds",
+      "frame_rate_hz": 50.0,
+      "bit_depth": 16,
+      "color_space": "grayscale",
+      "compression": "lossless",
+      "metadata_fields": [
+        "timestamp",
+        "experimental_conditions",
+        "calibration_data"
+      ],
+      "validation_checksums": true
+    },
+    "custom_format": {
+      "pixel_to_meter_ratio": 150.0,
+      "intensity_units": "raw_sensor",
+      "coordinate_system": "image",
+      "coordinate_origin": "top_left",
+      "time_units": "milliseconds",
+      "frame_rate_hz": 30.0,
+      "bit_depth": 8,
+      "color_space": "rgb",
+      "compression": "h264",
+      "auto_detect_parameters": true,
+      "calibration_required": true,
+      "metadata_extraction": [
+        "codec_info",
+        "recording_parameters",
+        "timestamp"
+      ]
+    },
+    "avi_format": {
+      "codec_support": [
+        "h264",
+        "mjpeg",
+        "uncompressed"
+      ],
+      "container_validation": true,
+      "stream_analysis": true,
+      "frame_extraction_method": "opencv",
+      "metadata_preservation": true,
+      "error_recovery": "skip_corrupted_frames"
+    }
+  },
+  "cross_format_compatibility": {
+    "enabled": true,
+    "reference_format": "crimaldi",
+    "consistency_validation": true,
+    "format_conversion_matrix": {
+      "crimaldi_to_custom": {
+        "coordinate_transform": "flip_y",
+        "intensity_scaling": 1.0,
+        "time_conversion": 1000.0
+      },
+      "custom_to_crimaldi": {
+        "coordinate_transform": "flip_y",
+        "intensity_scaling": 1.0,
+        "time_conversion": 0.001
+      }
+    },
+    "validation_metrics": [
+      "spatial_correlation",
+      "temporal_correlation",
+      "intensity_distribution",
+      "feature_preservation"
+    ],
+    "tolerance_thresholds": {
+      "spatial_accuracy": 0.01,
+      "temporal_accuracy": 0.001,
+      "intensity_accuracy": 0.02
+    }
+  },
+  "quality_assurance": {
+    "enabled": true,
+    "validation_checks": [
+      "format_integrity",
+      "numerical_accuracy",
+      "physical_consistency",
+      "statistical_properties",
+      "temporal_consistency",
+      "spatial_consistency"
+    ],
+    "accuracy_threshold": 1e-06,
+    "enable_checksum_validation": true,
+    "reference_comparison": true,
+    "statistical_validation": true,
+    "automated_testing": {
+      "unit_tests": false,
+      "integration_tests": false,
+      "regression_tests": true,
+      "performance_benchmarks": true
+    },
+    "error_detection": {
+      "outlier_detection": true,
+      "anomaly_threshold": 3.0,
+      "consistency_checks": true,
+      "boundary_validation": true
+    }
+  },
+  "performance_optimization": {
+    "memory_management": {
+      "memory_limit_mb": 8192,
+      "memory_mapping": true,
+      "garbage_collection": "automatic",
+      "buffer_size_mb": 512
+    },
+    "parallel_processing": {
+      "enabled": true,
+      "max_workers": 8,
+      "chunk_size": "auto",
+      "load_balancing": "dynamic",
+      "thread_safety": true
+    },
+    "caching": {
+      "cache_intermediate_results": true,
+      "cache_directory": "cache/normalization",
+      "cache_size_limit_gb": 5,
+      "cache_expiry_hours": 24,
+      "compression": "lz4"
+    },
+    "processing_timeout_seconds": 1800,
+    "progress_reporting": {
+      "enabled": true,
+      "update_interval_seconds": 10,
+      "detailed_logging": true,
+      "performance_metrics": true
+    }
+  },
+  "output_configuration": {
+    "output_format": "numpy_array",
+    "compression": "gzip",
+    "precision": "float64",
+    "metadata_inclusion": true,
+    "file_naming": {
+      "timestamp_format": "%Y%m%d_%H%M%S",
+      "include_format_identifier": true,
+      "include_normalization_parameters": true,
+      "suffix": "normalized"
+    },
+    "directory_structure": {
+      "base_directory": "data/normalized",
+      "format_subdirectories": true,
+      "date_subdirectories": false,
+      "backup_copies": 1
+    },
+    "validation_output": {
+      "generate_reports": true,
+      "include_visualizations": false,
+      "statistical_summaries": true,
+      "comparison_plots": false
+    }
+  },
+  "logging_configuration": {
+    "log_level": "INFO",
+    "log_file": "logs/normalization.log",
+    "log_rotation": {
+      "max_size_mb": 100,
+      "backup_count": 5,
+      "rotation_interval": "daily"
+    },
+    "structured_logging": true,
+    "performance_logging": true,
+    "error_tracking": {
+      "detailed_stack_traces": true,
+      "error_categorization": true,
+      "recovery_suggestions": true
+    }
+  },
+  "experimental_features": {
+    "machine_learning_enhancement": {
+      "enabled": false,
+      "model_path": "",
+      "feature_extraction": [],
+      "training_data_path": ""
+    },
+    "adaptive_algorithms": {
+      "enabled": false,
+      "adaptation_criteria": [],
+      "learning_rate": 0.01,
+      "convergence_threshold": 1e-06
+    },
+    "real_time_processing": {
+      "enabled": false,
+      "streaming_buffer_size": 10,
+      "latency_target_ms": 100,
+      "quality_vs_speed_tradeoff": 0.8
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "compatible_formats": [
+      "crimaldi",
+      "custom",
+      "avi",
+      "mp4"
+    ],
+    "supported_algorithms": [
+      "edge_detection",
+      "bicubic_scaling",
+      "lanczos_resampling",
+      "cubic_interpolation"
+    ],
+    "performance_requirements": {
+      "processing_time_percentage": 10,
+      "correlation_threshold": 0.95,
+      "memory_usage_limit_gb": 8,
+      "parallel_efficiency_target": 0.8
+    },
+    "dependencies": [
+      "numpy",
+      "opencv-python",
+      "scipy",
+      "joblib"
+    ],
+    "configuration_dependencies": [
+      "normalization_schema.json",
+      "scientific_constants.py"
+    ],
+    "documentation": "docs/user_guides/data_preparation.md"
+  }
+}

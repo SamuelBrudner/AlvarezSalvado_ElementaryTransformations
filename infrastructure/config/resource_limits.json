@@ -1,0 +1,527 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "configuration_type": "resource_limits",
+    "system_name": "plume_navigation_simulation",
+    "target_environments": [
+      "development",
+      "testing", 
+      "production",
+      "scientific_computing"
+    ],
+    "compatibility_level": "cross_platform",
+    "validation_required": true,
+    "integration_dependencies": [
+      "infrastructure/config/environment.json",
+      "infrastructure/config/logging_profiles.json",
+      "src/backend/config/performance_thresholds.json",
+      "src/backend/utils/memory_management.py",
+      "src/backend/utils/parallel_processing.py"
+    ],
+    "resource_management_strategy": "environment_aware_with_dynamic_optimization"
+  },
+  "environment_limits": {
+    "development": {
+      "environment_name": "development",
+      "description": "Development environment resource limits optimized for algorithm development and debugging",
+      "memory_limits": {
+        "max_total_memory_gb": 4.0,
+        "warning_threshold_gb": 3.2,
+        "critical_threshold_gb": 3.8,
+        "per_simulation_limit_mb": 512,
+        "cache_memory_limit_gb": 1.0,
+        "memory_pool_size_mb": 256,
+        "garbage_collection_threshold": 0.8,
+        "memory_leak_detection_threshold_mb": 50
+      },
+      "cpu_limits": {
+        "max_cpu_utilization_percent": 50.0,
+        "warning_threshold_percent": 40.0,
+        "critical_threshold_percent": 45.0,
+        "max_worker_count": 2,
+        "optimal_worker_count": 2,
+        "cpu_affinity_enabled": false,
+        "load_average_warning": 2.0,
+        "load_average_critical": 3.0,
+        "context_switch_rate_limit": 5000
+      },
+      "disk_limits": {
+        "max_disk_usage_gb": 10.0,
+        "warning_threshold_gb": 8.0,
+        "critical_threshold_gb": 9.0,
+        "temporary_files_limit_gb": 2.0,
+        "log_files_limit_gb": 1.0,
+        "cache_files_limit_gb": 3.0,
+        "io_wait_warning_percent": 20.0,
+        "io_wait_critical_percent": 40.0,
+        "read_throughput_limit_mbps": 100.0,
+        "write_throughput_limit_mbps": 50.0
+      },
+      "simulation_limits": {
+        "max_simulations_per_batch": 100,
+        "max_concurrent_simulations": 2,
+        "simulation_timeout_seconds": 30.0,
+        "batch_timeout_hours": 2.0,
+        "max_retry_attempts": 3,
+        "chunk_size_limit": 25,
+        "memory_per_simulation_mb": 512,
+        "cpu_time_limit_seconds": 60.0
+      },
+      "network_limits": {
+        "bandwidth_limit_mbps": 10.0,
+        "connection_timeout_seconds": 30.0,
+        "max_concurrent_connections": 5,
+        "data_transfer_limit_gb": 1.0
+      }
+    },
+    "testing": {
+      "environment_name": "testing",
+      "description": "Testing environment resource limits optimized for automated testing and validation",
+      "memory_limits": {
+        "max_total_memory_gb": 8.0,
+        "warning_threshold_gb": 6.4,
+        "critical_threshold_gb": 7.5,
+        "per_simulation_limit_mb": 1024,
+        "cache_memory_limit_gb": 2.0,
+        "memory_pool_size_mb": 512,
+        "garbage_collection_threshold": 0.8,
+        "memory_leak_detection_threshold_mb": 100
+      },
+      "cpu_limits": {
+        "max_cpu_utilization_percent": 80.0,
+        "warning_threshold_percent": 70.0,
+        "critical_threshold_percent": 75.0,
+        "max_worker_count": 4,
+        "optimal_worker_count": 4,
+        "cpu_affinity_enabled": true,
+        "load_average_warning": 4.0,
+        "load_average_critical": 6.0,
+        "context_switch_rate_limit": 10000
+      },
+      "disk_limits": {
+        "max_disk_usage_gb": 25.0,
+        "warning_threshold_gb": 20.0,
+        "critical_threshold_gb": 23.0,
+        "temporary_files_limit_gb": 5.0,
+        "log_files_limit_gb": 3.0,
+        "cache_files_limit_gb": 8.0,
+        "io_wait_warning_percent": 15.0,
+        "io_wait_critical_percent": 30.0,
+        "read_throughput_limit_mbps": 200.0,
+        "write_throughput_limit_mbps": 100.0
+      },
+      "simulation_limits": {
+        "max_simulations_per_batch": 1000,
+        "max_concurrent_simulations": 4,
+        "simulation_timeout_seconds": 20.0,
+        "batch_timeout_hours": 4.0,
+        "max_retry_attempts": 3,
+        "chunk_size_limit": 50,
+        "memory_per_simulation_mb": 1024,
+        "cpu_time_limit_seconds": 30.0
+      },
+      "network_limits": {
+        "bandwidth_limit_mbps": 50.0,
+        "connection_timeout_seconds": 30.0,
+        "max_concurrent_connections": 10,
+        "data_transfer_limit_gb": 5.0
+      }
+    },
+    "production": {
+      "environment_name": "production",
+      "description": "Production environment resource limits optimized for high-performance batch processing",
+      "memory_limits": {
+        "max_total_memory_gb": 16.0,
+        "warning_threshold_gb": 12.8,
+        "critical_threshold_gb": 15.0,
+        "per_simulation_limit_mb": 2048,
+        "cache_memory_limit_gb": 4.0,
+        "memory_pool_size_mb": 1024,
+        "garbage_collection_threshold": 0.85,
+        "memory_leak_detection_threshold_mb": 200
+      },
+      "cpu_limits": {
+        "max_cpu_utilization_percent": 95.0,
+        "warning_threshold_percent": 85.0,
+        "critical_threshold_percent": 90.0,
+        "max_worker_count": 8,
+        "optimal_worker_count": 8,
+        "cpu_affinity_enabled": true,
+        "load_average_warning": 8.0,
+        "load_average_critical": 12.0,
+        "context_switch_rate_limit": 20000
+      },
+      "disk_limits": {
+        "max_disk_usage_gb": 80.0,
+        "warning_threshold_gb": 64.0,
+        "critical_threshold_gb": 75.0,
+        "temporary_files_limit_gb": 20.0,
+        "log_files_limit_gb": 10.0,
+        "cache_files_limit_gb": 25.0,
+        "io_wait_warning_percent": 10.0,
+        "io_wait_critical_percent": 20.0,
+        "read_throughput_limit_mbps": 500.0,
+        "write_throughput_limit_mbps": 300.0
+      },
+      "simulation_limits": {
+        "max_simulations_per_batch": 4000,
+        "max_concurrent_simulations": 8,
+        "simulation_timeout_seconds": 15.0,
+        "batch_timeout_hours": 8.0,
+        "max_retry_attempts": 3,
+        "chunk_size_limit": 100,
+        "memory_per_simulation_mb": 2048,
+        "cpu_time_limit_seconds": 15.0
+      },
+      "network_limits": {
+        "bandwidth_limit_mbps": 200.0,
+        "connection_timeout_seconds": 30.0,
+        "max_concurrent_connections": 20,
+        "data_transfer_limit_gb": 50.0
+      }
+    },
+    "scientific_computing": {
+      "environment_name": "scientific_computing",
+      "description": "Scientific computing environment resource limits optimized for maximum performance and reproducibility",
+      "memory_limits": {
+        "max_total_memory_gb": 32.0,
+        "warning_threshold_gb": 25.6,
+        "critical_threshold_gb": 30.0,
+        "per_simulation_limit_mb": 4096,
+        "cache_memory_limit_gb": 8.0,
+        "memory_pool_size_mb": 2048,
+        "garbage_collection_threshold": 0.9,
+        "memory_leak_detection_threshold_mb": 500
+      },
+      "cpu_limits": {
+        "max_cpu_utilization_percent": 90.0,
+        "warning_threshold_percent": 80.0,
+        "critical_threshold_percent": 85.0,
+        "max_worker_count": 16,
+        "optimal_worker_count": 16,
+        "cpu_affinity_enabled": true,
+        "load_average_warning": 16.0,
+        "load_average_critical": 24.0,
+        "context_switch_rate_limit": 50000
+      },
+      "disk_limits": {
+        "max_disk_usage_gb": 500.0,
+        "warning_threshold_gb": 400.0,
+        "critical_threshold_gb": 475.0,
+        "temporary_files_limit_gb": 100.0,
+        "log_files_limit_gb": 50.0,
+        "cache_files_limit_gb": 150.0,
+        "io_wait_warning_percent": 5.0,
+        "io_wait_critical_percent": 10.0,
+        "read_throughput_limit_mbps": 1000.0,
+        "write_throughput_limit_mbps": 500.0
+      },
+      "simulation_limits": {
+        "max_simulations_per_batch": 10000,
+        "max_concurrent_simulations": 16,
+        "simulation_timeout_seconds": 10.0,
+        "batch_timeout_hours": 6.0,
+        "max_retry_attempts": 5,
+        "chunk_size_limit": 200,
+        "memory_per_simulation_mb": 4096,
+        "cpu_time_limit_seconds": 10.0
+      },
+      "network_limits": {
+        "bandwidth_limit_mbps": 1000.0,
+        "connection_timeout_seconds": 30.0,
+        "max_concurrent_connections": 50,
+        "data_transfer_limit_gb": 500.0
+      }
+    }
+  },
+  "system_constraints": {
+    "hardware_requirements": {
+      "minimum_requirements": {
+        "cpu_cores": 2,
+        "memory_gb": 4.0,
+        "disk_space_gb": 20.0,
+        "network_bandwidth_mbps": 10.0
+      },
+      "recommended_requirements": {
+        "cpu_cores": 8,
+        "memory_gb": 16.0,
+        "disk_space_gb": 100.0,
+        "network_bandwidth_mbps": 100.0
+      },
+      "optimal_requirements": {
+        "cpu_cores": 16,
+        "memory_gb": 32.0,
+        "disk_space_gb": 500.0,
+        "network_bandwidth_mbps": 1000.0
+      }
+    },
+    "platform_constraints": {
+      "linux": {
+        "memory_management": "numa_aware",
+        "cpu_scheduling": "cfs_optimized",
+        "io_scheduler": "deadline",
+        "file_system": "ext4_recommended",
+        "kernel_parameters": {
+          "vm.swappiness": 10,
+          "vm.dirty_ratio": 15,
+          "vm.dirty_background_ratio": 5
+        }
+      },
+      "windows": {
+        "memory_management": "large_page_support",
+        "cpu_scheduling": "high_performance",
+        "io_optimization": "write_caching_enabled",
+        "file_system": "ntfs_optimized",
+        "system_settings": {
+          "power_plan": "high_performance",
+          "virtual_memory": "system_managed",
+          "processor_scheduling": "background_services"
+        }
+      },
+      "macos": {
+        "memory_management": "unified_memory_optimized",
+        "cpu_scheduling": "grand_central_dispatch",
+        "io_optimization": "apfs_optimized",
+        "file_system": "apfs_recommended",
+        "system_settings": {
+          "energy_saver": "never_sleep",
+          "memory_pressure": "automatic_termination_disabled"
+        }
+      }
+    },
+    "resource_dependencies": {
+      "memory_cpu_correlation": {
+        "memory_per_cpu_core_gb": 2.0,
+        "optimal_memory_cpu_ratio": 4.0,
+        "minimum_memory_cpu_ratio": 1.0
+      },
+      "disk_memory_correlation": {
+        "disk_cache_ratio": 0.25,
+        "temporary_storage_ratio": 0.5,
+        "log_storage_ratio": 0.1
+      },
+      "network_processing_correlation": {
+        "bandwidth_per_worker_mbps": 10.0,
+        "latency_tolerance_ms": 100.0,
+        "packet_loss_tolerance_percent": 1.0
+      }
+    }
+  },
+  "performance_boundaries": {
+    "simulation_performance": {
+      "target_simulation_time_seconds": 7.2,
+      "max_acceptable_simulation_time_seconds": 15.0,
+      "critical_simulation_time_seconds": 30.0,
+      "batch_completion_target_hours": 8.0,
+      "batch_completion_warning_hours": 7.0,
+      "batch_completion_critical_hours": 9.0,
+      "throughput_target_simulations_per_hour": 500,
+      "throughput_warning_simulations_per_hour": 400,
+      "throughput_critical_simulations_per_hour": 300
+    },
+    "resource_utilization_boundaries": {
+      "memory_utilization": {
+        "target_utilization_percent": 70.0,
+        "warning_utilization_percent": 80.0,
+        "critical_utilization_percent": 90.0,
+        "maximum_utilization_percent": 95.0
+      },
+      "cpu_utilization": {
+        "target_utilization_percent": 80.0,
+        "warning_utilization_percent": 85.0,
+        "critical_utilization_percent": 90.0,
+        "maximum_utilization_percent": 95.0
+      },
+      "disk_utilization": {
+        "target_utilization_percent": 60.0,
+        "warning_utilization_percent": 70.0,
+        "critical_utilization_percent": 80.0,
+        "maximum_utilization_percent": 90.0
+      },
+      "network_utilization": {
+        "target_utilization_percent": 50.0,
+        "warning_utilization_percent": 70.0,
+        "critical_utilization_percent": 85.0,
+        "maximum_utilization_percent": 95.0
+      }
+    },
+    "quality_boundaries": {
+      "accuracy_requirements": {
+        "minimum_correlation_threshold": 0.95,
+        "target_correlation_threshold": 0.99,
+        "numerical_precision_tolerance": 1e-12,
+        "statistical_significance_level": 0.05
+      },
+      "reproducibility_requirements": {
+        "minimum_reproducibility_coefficient": 0.99,
+        "target_reproducibility_coefficient": 0.999,
+        "cross_platform_consistency_threshold": 0.98,
+        "parameter_sensitivity_threshold": 0.05
+      },
+      "error_rate_boundaries": {
+        "maximum_simulation_failure_rate_percent": 1.0,
+        "warning_simulation_failure_rate_percent": 0.5,
+        "maximum_data_processing_error_rate_percent": 1.0,
+        "maximum_cross_format_error_rate_percent": 0.5
+      }
+    }
+  },
+  "resource_monitoring": {
+    "monitoring_intervals": {
+      "real_time_monitoring_seconds": 5.0,
+      "performance_sampling_seconds": 15.0,
+      "resource_utilization_sampling_seconds": 30.0,
+      "health_check_interval_seconds": 60.0,
+      "comprehensive_analysis_interval_minutes": 5.0,
+      "trend_analysis_interval_minutes": 15.0
+    },
+    "alert_thresholds": {
+      "resource_exhaustion_warning_percent": 80.0,
+      "resource_exhaustion_critical_percent": 90.0,
+      "performance_degradation_threshold_percent": 10.0,
+      "batch_failure_alert_threshold_percent": 5.0,
+      "error_rate_spike_threshold_percent": 200.0,
+      "response_time_degradation_threshold_percent": 50.0
+    },
+    "monitoring_scope": {
+      "system_level_monitoring": true,
+      "process_level_monitoring": true,
+      "component_level_monitoring": true,
+      "algorithm_level_monitoring": true,
+      "resource_correlation_analysis": true,
+      "predictive_monitoring": true
+    },
+    "data_collection": {
+      "metrics_retention_hours": 168,
+      "detailed_metrics_retention_hours": 24,
+      "aggregated_metrics_retention_days": 30,
+      "historical_trends_retention_days": 90,
+      "performance_baselines_retention_days": 365
+    }
+  },
+  "optimization_settings": {
+    "automatic_optimization": {
+      "enabled": true,
+      "optimization_triggers": [
+        "resource_threshold_violation",
+        "performance_degradation",
+        "batch_processing_inefficiency",
+        "memory_pressure_detection"
+      ],
+      "optimization_strategies": [
+        "memory_garbage_collection",
+        "cache_eviction",
+        "worker_reallocation",
+        "chunk_size_adjustment",
+        "resource_rebalancing"
+      ],
+      "optimization_frequency_minutes": 15.0,
+      "optimization_aggressiveness": "moderate"
+    },
+    "resource_allocation_optimization": {
+      "dynamic_worker_scaling": true,
+      "memory_pool_optimization": true,
+      "cache_size_optimization": true,
+      "io_optimization": true,
+      "cpu_affinity_optimization": true,
+      "numa_awareness": true
+    },
+    "performance_optimization": {
+      "parallel_processing_optimization": true,
+      "memory_mapping_optimization": true,
+      "disk_io_optimization": true,
+      "network_optimization": false,
+      "algorithm_specific_optimization": true,
+      "batch_size_optimization": true
+    },
+    "emergency_procedures": {
+      "resource_exhaustion_response": {
+        "memory_exhaustion": [
+          "trigger_garbage_collection",
+          "evict_cache_entries",
+          "reduce_worker_count",
+          "pause_new_simulations"
+        ],
+        "cpu_exhaustion": [
+          "reduce_worker_count",
+          "increase_chunk_size",
+          "throttle_simulation_rate",
+          "apply_cpu_affinity"
+        ],
+        "disk_exhaustion": [
+          "cleanup_temporary_files",
+          "compress_log_files",
+          "evict_disk_cache",
+          "pause_logging"
+        ]
+      },
+      "performance_degradation_response": {
+        "simulation_timeout": [
+          "increase_timeout_limits",
+          "reduce_batch_size",
+          "restart_workers",
+          "apply_graceful_degradation"
+        ],
+        "batch_failure": [
+          "retry_failed_simulations",
+          "reduce_parallel_workers",
+          "increase_memory_limits",
+          "apply_error_recovery"
+        ]
+      }
+    }
+  },
+  "validation_and_compliance": {
+    "resource_validation": {
+      "startup_validation": true,
+      "runtime_validation": true,
+      "periodic_validation_minutes": 30.0,
+      "validation_strict_mode": true,
+      "validation_timeout_seconds": 60.0
+    },
+    "compliance_requirements": {
+      "resource_governance": "scientific_computing_grade",
+      "audit_requirements": "comprehensive",
+      "performance_documentation": "required",
+      "resource_utilization_reporting": "detailed",
+      "optimization_tracking": "enabled"
+    },
+    "integration_validation": {
+      "environment_config_consistency": true,
+      "performance_thresholds_alignment": true,
+      "logging_profiles_compatibility": true,
+      "memory_management_integration": true,
+      "parallel_processing_coordination": true
+    }
+  },
+  "integration_points": {
+    "configuration_dependencies": [
+      "infrastructure/config/environment.json",
+      "infrastructure/config/logging_profiles.json",
+      "src/backend/config/performance_thresholds.json",
+      "src/backend/config/default_simulation.json",
+      "src/backend/config/default_normalization.json",
+      "src/backend/config/default_analysis.json"
+    ],
+    "utility_dependencies": [
+      "src/backend/utils/memory_management.py",
+      "src/backend/utils/parallel_processing.py",
+      "src/backend/utils/performance_monitoring.py",
+      "src/backend/utils/resource_monitoring.py",
+      "src/backend/monitoring/resource_monitor.py"
+    ],
+    "validation_dependencies": [
+      "infrastructure/scripts/validate_environment.py",
+      "src/backend/utils/validation_utils.py",
+      "src/backend/utils/config_parser.py"
+    ],
+    "monitoring_dependencies": [
+      "src/backend/monitoring/alert_system.py",
+      "src/backend/monitoring/performance_metrics.py",
+      "src/backend/monitoring/log_manager.py"
+    ]
+  }
+}

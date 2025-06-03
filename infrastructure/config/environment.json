@@ -1,0 +1,504 @@
+{
+  "environment_metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "configuration_type": "environment_master",
+    "system_name": "plume_navigation_simulation",
+    "deployment_target": "scientific_computing",
+    "compatibility_level": "cross_platform",
+    "validation_required": true,
+    "auto_configuration_enabled": true,
+    "environment_inheritance": "hierarchical_with_overrides",
+    "configuration_management_strategy": "centralized_with_local_overrides"
+  },
+  "deployment_environments": {
+    "development": {
+      "environment_name": "development",
+      "environment_type": "development",
+      "description": "Development environment optimized for algorithm development, debugging, and rapid iteration",
+      "active": true,
+      "python_version": "3.9+",
+      "system_requirements": {
+        "min_cpu_cores": 2,
+        "min_memory_gb": 4.0,
+        "min_disk_space_gb": 20.0,
+        "recommended_cpu_cores": 4,
+        "recommended_memory_gb": 8.0,
+        "recommended_disk_space_gb": 50.0
+      },
+      "resource_limits": {
+        "max_simulations": 100,
+        "max_batch_size": 50,
+        "memory_limit_gb": 4.0,
+        "cpu_limit_percent": 50.0,
+        "disk_limit_gb": 10.0,
+        "timeout_multiplier": 2.0
+      },
+      "performance_targets": {
+        "simulation_time_seconds": 15.0,
+        "batch_completion_hours": 2.0,
+        "correlation_threshold": 0.9,
+        "reproducibility_threshold": 0.95,
+        "debug_overhead_acceptable": true
+      },
+      "configuration_overrides": {
+        "logging_level": "DEBUG",
+        "validation_strict": false,
+        "performance_monitoring": "detailed",
+        "error_handling": "verbose",
+        "caching_enabled": true,
+        "parallel_processing_enabled": true,
+        "profiling_enabled": true
+      },
+      "development_features": {
+        "hot_reload_enabled": false,
+        "interactive_debugging": true,
+        "code_coverage_tracking": true,
+        "performance_profiling": true,
+        "memory_leak_detection": true,
+        "algorithm_visualization": true
+      }
+    },
+    "testing": {
+      "environment_name": "testing",
+      "environment_type": "testing",
+      "description": "Testing environment for automated testing, validation, and quality assurance",
+      "active": true,
+      "python_version": "3.9+",
+      "system_requirements": {
+        "min_cpu_cores": 4,
+        "min_memory_gb": 8.0,
+        "min_disk_space_gb": 30.0,
+        "recommended_cpu_cores": 8,
+        "recommended_memory_gb": 16.0,
+        "recommended_disk_space_gb": 100.0
+      },
+      "resource_limits": {
+        "max_simulations": 1000,
+        "max_batch_size": 200,
+        "memory_limit_gb": 8.0,
+        "cpu_limit_percent": 80.0,
+        "disk_limit_gb": 25.0,
+        "timeout_multiplier": 1.5
+      },
+      "performance_targets": {
+        "simulation_time_seconds": 10.0,
+        "batch_completion_hours": 4.0,
+        "correlation_threshold": 0.95,
+        "reproducibility_threshold": 0.99,
+        "test_execution_efficiency": 0.9
+      },
+      "configuration_overrides": {
+        "logging_level": "INFO",
+        "validation_strict": true,
+        "performance_monitoring": "comprehensive",
+        "error_handling": "strict",
+        "caching_enabled": true,
+        "parallel_processing_enabled": true,
+        "test_isolation_enabled": true
+      },
+      "testing_features": {
+        "automated_testing_enabled": true,
+        "regression_testing": true,
+        "performance_benchmarking": true,
+        "cross_platform_testing": true,
+        "integration_testing": true,
+        "load_testing": true,
+        "security_testing": false
+      }
+    },
+    "production": {
+      "environment_name": "production",
+      "environment_type": "production",
+      "description": "Production environment optimized for high-performance batch processing and scientific computing",
+      "active": true,
+      "python_version": "3.9+",
+      "system_requirements": {
+        "min_cpu_cores": 8,
+        "min_memory_gb": 16.0,
+        "min_disk_space_gb": 100.0,
+        "recommended_cpu_cores": 16,
+        "recommended_memory_gb": 32.0,
+        "recommended_disk_space_gb": 500.0
+      },
+      "resource_limits": {
+        "max_simulations": 4000,
+        "max_batch_size": 1000,
+        "memory_limit_gb": 16.0,
+        "cpu_limit_percent": 95.0,
+        "disk_limit_gb": 80.0,
+        "timeout_multiplier": 1.0
+      },
+      "performance_targets": {
+        "simulation_time_seconds": 7.2,
+        "batch_completion_hours": 8.0,
+        "correlation_threshold": 0.95,
+        "reproducibility_threshold": 0.99,
+        "throughput_simulations_per_hour": 500
+      },
+      "configuration_overrides": {
+        "logging_level": "INFO",
+        "validation_strict": true,
+        "performance_monitoring": "optimized",
+        "error_handling": "production",
+        "caching_enabled": true,
+        "parallel_processing_enabled": true,
+        "optimization_enabled": true
+      },
+      "production_features": {
+        "high_availability": false,
+        "load_balancing": false,
+        "auto_scaling": false,
+        "monitoring_comprehensive": true,
+        "alerting_enabled": true,
+        "backup_enabled": true,
+        "disaster_recovery": false
+      }
+    },
+    "scientific_computing": {
+      "environment_name": "scientific_computing",
+      "environment_type": "specialized",
+      "description": "Specialized environment for scientific computing with enhanced reproducibility and audit trails",
+      "active": true,
+      "python_version": "3.9+",
+      "system_requirements": {
+        "min_cpu_cores": 8,
+        "min_memory_gb": 16.0,
+        "min_disk_space_gb": 200.0,
+        "recommended_cpu_cores": 32,
+        "recommended_memory_gb": 64.0,
+        "recommended_disk_space_gb": 1000.0
+      },
+      "resource_limits": {
+        "max_simulations": 10000,
+        "max_batch_size": 2000,
+        "memory_limit_gb": 32.0,
+        "cpu_limit_percent": 90.0,
+        "disk_limit_gb": 500.0,
+        "timeout_multiplier": 1.2
+      },
+      "performance_targets": {
+        "simulation_time_seconds": 5.0,
+        "batch_completion_hours": 6.0,
+        "correlation_threshold": 0.99,
+        "reproducibility_threshold": 0.999,
+        "numerical_precision": "maximum"
+      },
+      "configuration_overrides": {
+        "logging_level": "INFO",
+        "validation_strict": true,
+        "performance_monitoring": "scientific",
+        "error_handling": "scientific",
+        "caching_enabled": true,
+        "parallel_processing_enabled": true,
+        "reproducibility_mode": true
+      },
+      "scientific_features": {
+        "reproducibility_tracking": true,
+        "audit_trail_complete": true,
+        "parameter_versioning": true,
+        "result_archival": true,
+        "statistical_validation": true,
+        "peer_review_support": false,
+        "publication_quality_output": true
+      }
+    }
+  },
+  "system_integration": {
+    "backend_integration": {
+      "config_sync_enabled": true,
+      "config_inheritance_strategy": "environment_extends_backend",
+      "backend_config_path": "src/backend/config",
+      "sync_frequency": "on_startup",
+      "conflict_resolution": "environment_takes_precedence",
+      "validation_cross_check": true
+    },
+    "infrastructure_integration": {
+      "resource_limits_integration": true,
+      "logging_profiles_integration": true,
+      "monitoring_integration": true,
+      "validation_scripts_integration": true,
+      "deployment_automation": false,
+      "container_support": false
+    },
+    "external_dependencies": {
+      "python_packages": {
+        "numpy": ">=2.1.3",
+        "scipy": ">=1.15.3",
+        "opencv-python": ">=4.11.0",
+        "pandas": ">=2.2.0",
+        "joblib": ">=1.6.0",
+        "matplotlib": ">=3.9.0",
+        "seaborn": ">=0.13.2",
+        "jsonschema": ">=4.23.0",
+        "psutil": ">=5.9.0",
+        "h5py": ">=3.8.0"
+      },
+      "system_dependencies": {
+        "ffmpeg": "optional",
+        "git": "required",
+        "cmake": "optional",
+        "gcc": "recommended"
+      },
+      "validation_tools": {
+        "pytest": ">=8.3.5",
+        "coverage": ">=7.0.0",
+        "black": ">=23.0.0",
+        "flake8": ">=6.0.0"
+      }
+    },
+    "configuration_management": {
+      "config_validation_enabled": true,
+      "schema_validation_strict": true,
+      "auto_config_generation": false,
+      "config_backup_enabled": true,
+      "config_versioning": true,
+      "config_migration_support": true
+    }
+  },
+  "cross_platform_compatibility": {
+    "supported_platforms": {
+      "linux": {
+        "supported": true,
+        "tested_distributions": [
+          "ubuntu_20.04",
+          "ubuntu_22.04",
+          "centos_8",
+          "rhel_8"
+        ],
+        "package_manager": "apt/yum",
+        "python_installation": "system/conda/pyenv",
+        "performance_optimizations": [
+          "numa_awareness",
+          "cpu_affinity"
+        ],
+        "known_issues": [],
+        "platform_specific_config": {}
+      },
+      "windows": {
+        "supported": true,
+        "tested_versions": [
+          "windows_10",
+          "windows_11",
+          "windows_server_2019"
+        ],
+        "package_manager": "pip/conda",
+        "python_installation": "official/anaconda",
+        "performance_optimizations": [
+          "process_priority",
+          "memory_management"
+        ],
+        "known_issues": [
+          "path_length_limitations",
+          "case_sensitivity"
+        ],
+        "platform_specific_config": {
+          "path_separator": "\\",
+          "line_endings": "crlf",
+          "case_sensitive": false
+        }
+      },
+      "macos": {
+        "supported": true,
+        "tested_versions": [
+          "macos_11",
+          "macos_12",
+          "macos_13"
+        ],
+        "package_manager": "brew/conda",
+        "python_installation": "homebrew/conda/pyenv",
+        "performance_optimizations": [
+          "metal_acceleration",
+          "unified_memory"
+        ],
+        "known_issues": [
+          "apple_silicon_compatibility"
+        ],
+        "platform_specific_config": {
+          "architecture_support": [
+            "x86_64",
+            "arm64"
+          ],
+          "metal_support": true
+        }
+      }
+    },
+    "compatibility_validation": {
+      "cross_platform_testing_enabled": true,
+      "file_system_compatibility": true,
+      "path_handling_validation": true,
+      "encoding_compatibility": "utf-8",
+      "line_ending_normalization": true,
+      "case_sensitivity_handling": true
+    },
+    "platform_optimization": {
+      "auto_detect_platform": true,
+      "platform_specific_optimizations": true,
+      "hardware_acceleration": "auto_detect",
+      "memory_management_strategy": "platform_optimized",
+      "parallel_processing_optimization": "platform_aware"
+    }
+  },
+  "validation_and_monitoring": {
+    "environment_validation": {
+      "startup_validation_enabled": true,
+      "runtime_validation_enabled": true,
+      "validation_script_path": "infrastructure/scripts/validate_environment.py",
+      "validation_frequency": "on_startup",
+      "validation_timeout_seconds": 300,
+      "validation_strict_mode": true,
+      "validation_report_generation": true
+    },
+    "monitoring_configuration": {
+      "monitoring_enabled": true,
+      "monitoring_level": "comprehensive",
+      "metrics_collection_interval_seconds": 30,
+      "performance_monitoring": true,
+      "resource_monitoring": true,
+      "health_check_enabled": true,
+      "alerting_enabled": true
+    },
+    "logging_integration": {
+      "logging_profiles_enabled": true,
+      "logging_profile_path": "infrastructure/config/logging_profiles.json",
+      "environment_specific_logging": true,
+      "log_aggregation": false,
+      "structured_logging": true,
+      "audit_logging": true
+    },
+    "quality_assurance": {
+      "automated_testing": true,
+      "performance_regression_detection": true,
+      "configuration_drift_detection": true,
+      "compliance_monitoring": true,
+      "security_scanning": false,
+      "vulnerability_assessment": false
+    }
+  },
+  "deployment_automation": {
+    "automated_deployment": false,
+    "deployment_scripts": {
+      "setup_environment": "infrastructure/scripts/setup_environment.sh",
+      "install_dependencies": "infrastructure/scripts/install_dependencies.sh",
+      "validate_environment": "infrastructure/scripts/validate_environment.py",
+      "clean_caches": "infrastructure/scripts/clean_caches.sh"
+    },
+    "container_support": {
+      "docker_enabled": false,
+      "dockerfile_path": "infrastructure/docker/Dockerfile",
+      "docker_compose_enabled": false,
+      "container_registry": null,
+      "orchestration_platform": null
+    },
+    "cloud_deployment": {
+      "cloud_enabled": false,
+      "supported_providers": [],
+      "auto_scaling": false,
+      "load_balancing": false,
+      "managed_services": false
+    }
+  },
+  "security_and_compliance": {
+    "security_features": {
+      "access_control": "file_system_based",
+      "authentication": false,
+      "authorization": false,
+      "encryption_at_rest": false,
+      "encryption_in_transit": false,
+      "secure_communication": false
+    },
+    "compliance_requirements": {
+      "data_governance": "research_grade",
+      "audit_requirements": "basic",
+      "retention_policies": "project_based",
+      "privacy_protection": false,
+      "regulatory_compliance": false
+    },
+    "data_protection": {
+      "data_classification": "research_data",
+      "backup_strategy": "local_backup",
+      "disaster_recovery": false,
+      "data_anonymization": false,
+      "data_masking": false
+    }
+  },
+  "integration_points": {
+    "configuration_dependencies": [
+      "infrastructure/config/resource_limits.json",
+      "infrastructure/config/logging_profiles.json",
+      "src/backend/config/default_simulation.json",
+      "src/backend/config/default_normalization.json",
+      "src/backend/config/default_analysis.json",
+      "src/backend/config/performance_thresholds.json"
+    ],
+    "validation_dependencies": [
+      "infrastructure/scripts/validate_environment.py",
+      "src/backend/utils/validation_utils.py",
+      "src/backend/utils/config_parser.py"
+    ],
+    "monitoring_dependencies": [
+      "src/backend/monitoring/resource_monitor.py",
+      "src/backend/monitoring/performance_metrics.py",
+      "src/backend/utils/performance_monitoring.py"
+    ],
+    "deployment_dependencies": [
+      "infrastructure/scripts/setup_environment.sh",
+      "infrastructure/scripts/install_dependencies.sh",
+      "infrastructure/scripts/clean_caches.sh"
+    ]
+  },
+  "metadata": {
+    "configuration_type": "environment_master",
+    "target_systems": [
+      "scientific_computing",
+      "batch_processing",
+      "algorithm_development"
+    ],
+    "environment_types": [
+      "development",
+      "testing",
+      "production",
+      "scientific_computing"
+    ],
+    "platform_support": [
+      "linux",
+      "windows",
+      "macos"
+    ],
+    "deployment_strategies": [
+      "local_development",
+      "scientific_workstation",
+      "compute_cluster"
+    ],
+    "integration_capabilities": [
+      "backend_config_sync",
+      "resource_management",
+      "monitoring_integration"
+    ],
+    "validation_tools": [
+      "environment_validator",
+      "configuration_checker",
+      "dependency_validator"
+    ],
+    "performance_requirements": {
+      "max_simulation_time_seconds": 7.2,
+      "batch_completion_time_hours": 8.0,
+      "correlation_threshold": 0.95,
+      "reproducibility_threshold": 0.99,
+      "max_simulation_count": 4000
+    },
+    "dependencies": [
+      "infrastructure/config/resource_limits.json",
+      "infrastructure/config/logging_profiles.json",
+      "src/backend/config/performance_thresholds.json",
+      "infrastructure/scripts/validate_environment.py"
+    ],
+    "documentation": [
+      "docs/user_guides/getting_started.md",
+      "docs/architecture/environment_management.md",
+      "infrastructure/README.md"
+    ]
+  }
+}

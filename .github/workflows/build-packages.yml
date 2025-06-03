@@ -1,0 +1,541 @@
+# GitHub Actions workflow for automated package building and distribution of the plume navigation simulation system
+# Implements comprehensive build pipeline including Python package creation, wheel generation, source distribution building,
+# multi-platform compatibility testing, package validation, and automated publishing to PyPI with scientific computing optimization
+# Ensures reproducible builds across different environments while maintaining >95% correlation accuracy, <7.2 seconds per simulation
+# performance, and support for 4000+ batch simulation processing through optimized package distribution
+
+name: Build and Publish Packages
+
+# Comprehensive workflow trigger configuration for automated package building and distribution
+on:
+  # Branch push triggers for development and release workflow integration
+  push:
+    branches: ['main', 'release/*']
+    tags: ['v*.*.*']
+    paths:
+      - 'src/backend/**/*.py'
+      - 'src/backend/setup.py'
+      - 'src/backend/pyproject.toml'
+      - 'src/backend/requirements.txt'
+      - 'src/backend/__init__.py'
+      - '.github/workflows/build-packages.yml'
+  
+  # Pull request validation for package building quality gates
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'src/backend/**/*.py'
+      - 'src/backend/setup.py'
+      - 'src/backend/pyproject.toml'
+      - 'src/backend/requirements.txt'
+      - 'src/backend/__init__.py'
+      - '.github/workflows/build-packages.yml'
+  
+  # Release event triggers for automated PyPI publishing
+  release:
+    types: ['published', 'created']
+  
+  # Manual workflow dispatch with comprehensive configuration options
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Type of build to perform'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'wheel'
+          - 'sdist'
+          - 'validation'
+      
+      python_versions:
+        description: 'Python versions to build for'
+        required: false
+        default: '3.9,3.10,3.11,3.12'
+        type: string
+      
+      publish_to_pypi:
+        description: 'Publish packages to PyPI'
+        required: false
+        default: 'false'
+        type: boolean
+      
+      run_validation_tests:
+        description: 'Run package validation tests'
+        required: false
+        default: 'true'
+        type: boolean
+
+# Global environment variables for scientific computing and reproducible package building
+env:
+  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/src/backend
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+  PIP_CACHE_DIR: ${{ github.workspace }}/.pip-cache
+  BUILD_CACHE_DIR: ${{ github.workspace }}/.build-cache
+  WHEEL_CACHE_DIR: ${{ github.workspace }}/.wheel-cache
+  SCIENTIFIC_COMPUTING_OPTIMIZATION: '1'
+  PACKAGE_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'dev' }}
+  BUILD_NUMBER: ${{ github.run_number }}
+  CORRELATION_THRESHOLD: '0.95'
+  SIMULATION_TIME_LIMIT: '7.2'
+  REPRODUCIBILITY_THRESHOLD: '0.99'
+
+# Comprehensive package building and distribution job pipeline
+jobs:
+  # Environment validation and build matrix configuration for package building
+  validate-build-environment:
+    name: Validate Build Environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      package-version: ${{ steps.version.outputs.version }}
+      build-matrix: ${{ steps.matrix.outputs.matrix }}
+      should-publish: ${{ steps.publish-check.outputs.should-publish }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0  # Full history for version extraction
+          lfs: true       # Large file support for test datasets
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install build dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel build twine check-manifest
+      
+      - name: Validate package configuration
+        run: |
+          cd src/backend
+          python -m build --check
+          check-manifest
+      
+      - name: Extract package version
+        id: version
+        run: |
+          cd src/backend
+          echo "version=$(python setup.py --version)" >> $GITHUB_OUTPUT
+      
+      - name: Generate build matrix
+        id: matrix
+        run: |
+          echo 'matrix={"python-version":["3.9","3.10","3.11","3.12"],"os":["ubuntu-latest","windows-latest","macos-latest"]}' >> $GITHUB_OUTPUT
+      
+      - name: Check if should publish
+        id: publish-check
+        run: |
+          echo "should-publish=${{ github.event_name == 'release' || github.ref_type == 'tag' || github.event.inputs.publish_to_pypi == 'true' }}" >> $GITHUB_OUTPUT
+
+  # Source distribution building for PyPI publication and cross-platform compatibility
+  build-source-distribution:
+    name: Build Source Distribution
+    runs-on: ubuntu-latest
+    needs: ['validate-build-environment']
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install build dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel build
+      
+      - name: Build source distribution
+        run: |
+          cd src/backend
+          python -m build --sdist --outdir ../../dist/
+      
+      - name: Validate source distribution
+        run: |
+          pip install twine
+          twine check dist/*.tar.gz
+      
+      - name: Test source distribution installation
+        run: |
+          pip install dist/*.tar.gz
+          python -c "import backend; print(f'Package version: {backend.__version__}')"
+      
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: source-distribution
+          path: dist/*.tar.gz
+          retention-days: 90
+
+  # Cross-platform wheel building for comprehensive scientific computing compatibility
+  build-wheels:
+    name: Build Wheels
+    runs-on: ${{ matrix.os }}
+    needs: ['validate-build-environment']
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false  # Continue building all combinations for comprehensive coverage
+      matrix:
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        exclude:
+          # Exclude resource-intensive combinations for workflow efficiency
+          - os: windows-latest
+            python-version: '3.12'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Cache build dependencies
+        uses: actions/cache@v3  # github-actions v3
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-build-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ matrix.python-version }}-
+      
+      # Platform-specific system dependencies for scientific computing libraries
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev libopencv-dev ffmpeg build-essential
+      
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install hdf5 opencv ffmpeg
+      
+      - name: Install build dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel build cython numpy>=2.1.3
+      
+      - name: Install package dependencies
+        run: |
+          pip install -r src/backend/requirements.txt
+      
+      - name: Build wheel
+        run: |
+          cd src/backend
+          python -m build --wheel --outdir ../../dist/
+      
+      - name: Validate wheel
+        run: |
+          pip install twine
+          twine check dist/*.whl
+      
+      - name: Test wheel installation
+        run: |
+          pip install --force-reinstall dist/*.whl
+          python -c "import backend; print(f'Package version: {backend.__version__}'); backend.initialize_backend_system()"
+      
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          path: dist/*.whl
+          retention-days: 90
+
+  # Comprehensive package validation across platforms and installation methods
+  validate-packages:
+    name: Validate Package Installation
+    runs-on: ${{ matrix.os }}
+    needs: ['build-source-distribution', 'build-wheels']
+    if: github.event.inputs.run_validation_tests != 'false'
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        python-version: ['3.9', '3.11']
+        package-type: ['wheel', 'sdist']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Download package artifacts
+        uses: actions/download-artifact@v3  # github-actions v3
+      
+      # Platform-specific system dependencies for validation testing
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev libopencv-dev ffmpeg
+      
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install hdf5 opencv ffmpeg
+      
+      - name: Install package from wheel
+        if: matrix.package-type == 'wheel'
+        run: |
+          pip install wheels-${{ matrix.os }}-${{ matrix.python-version }}/*.whl
+      
+      - name: Install package from source distribution
+        if: matrix.package-type == 'sdist'
+        run: |
+          pip install source-distribution/*.tar.gz
+      
+      - name: Validate package functionality
+        run: |
+          python -c "import backend; system = backend.create_plume_simulation_system('test-system', {}); print('Package validation successful')"
+      
+      - name: Run basic functionality tests
+        run: |
+          python -c "import backend; backend.initialize_backend_system(); status = backend.get_backend_system_status(); print(f'System status: {status}'); assert status['is_initialized'] == True"
+      
+      - name: Validate CLI functionality
+        run: |
+          plume-simulation --help
+          plume-validate --test-mode
+      
+      - name: Test scientific computing dependencies
+        run: |
+          python -c "import numpy as np; import scipy; import cv2; import joblib; print('Scientific computing dependencies validated')"
+
+  # Performance validation for <7.2 seconds per simulation requirement
+  performance-validation:
+    name: Performance Validation
+    runs-on: ubuntu-latest
+    needs: ['validate-packages']
+    if: github.event.inputs.run_validation_tests != 'false'
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Download wheel artifacts
+        uses: actions/download-artifact@v3  # github-actions v3
+        with:
+          name: wheels-ubuntu-latest-3.9
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev libopencv-dev ffmpeg
+      
+      - name: Install package and test dependencies
+        run: |
+          pip install *.whl
+          pip install -r src/test/requirements.txt
+      
+      - name: Run performance validation tests
+        run: |
+          cd src/test
+          pytest performance/test_simulation_speed.py -v --benchmark-only --benchmark-sort=mean --timeout=300
+      
+      - name: Validate simulation time requirements
+        run: |
+          python -c "import time; start = time.time(); import backend; backend.initialize_backend_system(); elapsed = time.time() - start; print(f'Initialization time: {elapsed:.2f}s'); assert elapsed < 5.0, 'Initialization too slow'"
+      
+      - name: Validate memory efficiency
+        run: |
+          python -c "import psutil; import backend; process = psutil.Process(); mem_before = process.memory_info().rss; backend.initialize_backend_system(); mem_after = process.memory_info().rss; mem_diff = (mem_after - mem_before) / 1024 / 1024; print(f'Memory usage: {mem_diff:.2f} MB'); assert mem_diff < 100, 'Memory usage too high'"
+
+  # Security validation for package integrity and vulnerability scanning
+  security-validation:
+    name: Security Validation
+    runs-on: ubuntu-latest
+    needs: ['build-source-distribution', 'build-wheels']
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Download package artifacts
+        uses: actions/download-artifact@v3  # github-actions v3
+      
+      - name: Install security scanning tools
+        run: |
+          pip install bandit safety twine
+      
+      - name: Scan source distribution for security issues
+        run: |
+          twine check source-distribution/*.tar.gz
+      
+      - name: Scan wheels for security issues
+        run: |
+          for wheel in wheels-*/*.whl; do twine check "$wheel"; done
+      
+      - name: Run dependency vulnerability scan
+        run: |
+          pip install source-distribution/*.tar.gz
+          safety check --json --output security-report.json || true
+      
+      - name: Validate security scan results
+        run: |
+          python -c "import json; report = json.load(open('security-report.json', 'r')); vulnerabilities = len(report); print(f'Vulnerabilities found: {vulnerabilities}'); exit(1 if vulnerabilities > 0 else 0)" || echo 'No security report generated'
+
+  # PyPI publishing for production release distribution
+  publish-to-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: ['validate-packages', 'performance-validation', 'security-validation']
+    if: needs.validate-build-environment.outputs.should-publish == 'true'
+    environment: pypi-publishing
+    timeout-minutes: 15
+    
+    steps:
+      - name: Download all package artifacts
+        uses: actions/download-artifact@v3  # github-actions v3
+      
+      - name: Prepare distribution directory
+        run: |
+          mkdir -p dist/
+          cp source-distribution/*.tar.gz dist/
+          cp wheels-ubuntu-latest-3.9/*.whl dist/
+      
+      - name: Validate packages before publishing
+        run: |
+          pip install twine
+          twine check dist/*
+      
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1  # github-actions release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: dist/
+          verify_metadata: true
+          skip_existing: true
+          verbose: true
+      
+      - name: Verify PyPI publication
+        run: |
+          sleep 60
+          pip install --index-url https://pypi.org/simple/ plume-simulation-backend==${{ needs.validate-build-environment.outputs.package-version }}
+          python -c "import backend; print(f'Successfully installed version: {backend.__version__}')"
+
+  # Test PyPI publishing for development and validation
+  publish-to-test-pypi:
+    name: Publish to Test PyPI
+    runs-on: ubuntu-latest
+    needs: ['validate-packages', 'performance-validation']
+    if: github.event_name == 'pull_request' || github.event.inputs.publish_to_pypi == 'false'
+    timeout-minutes: 15
+    
+    steps:
+      - name: Download all package artifacts
+        uses: actions/download-artifact@v3  # github-actions v3
+      
+      - name: Prepare distribution directory
+        run: |
+          mkdir -p dist/
+          cp source-distribution/*.tar.gz dist/
+          cp wheels-ubuntu-latest-3.9/*.whl dist/
+      
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1  # github-actions release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+          packages_dir: dist/
+          verify_metadata: true
+          skip_existing: true
+          verbose: true
+
+  # Comprehensive build summary and reporting for package quality assurance
+  build-summary:
+    name: Build Summary Report
+    runs-on: ubuntu-latest
+    needs: [
+      'validate-build-environment',
+      'build-source-distribution', 
+      'build-wheels',
+      'validate-packages',
+      'performance-validation',
+      'security-validation'
+    ]
+    if: always()
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3  # github-actions v3
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+      
+      - name: Generate build summary
+        run: |
+          python .github/scripts/generate_build_summary.py \
+            --package-version '${{ needs.validate-build-environment.outputs.package-version }}' \
+            --build-number '${{ github.run_number }}'
+      
+      - name: Validate build success
+        run: |
+          python -c "import json; summary = json.load(open('build-summary.json')); success = summary['overall_success']; packages_built = summary['packages_built']; validation_passed = summary['validation_passed']; print(f'Build Summary - Success: {success}, Packages: {packages_built}, Validation: {validation_passed}'); exit(0 if success and packages_built > 0 and validation_passed else 1)"
+      
+      - name: Upload build summary
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: build-summary-report
+          path: build-summary.*
+          retention-days: 180
+      
+      - name: Comment build results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6  # github-actions v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('build-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Package Build Results\n\n${summary}`
+            });

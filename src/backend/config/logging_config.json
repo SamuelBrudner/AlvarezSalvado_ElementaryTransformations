@@ -1,0 +1,407 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "detailed_scientific": {
+            "format": "%(asctime)s.%(msecs)03d | %(levelname)-8s | %(name)-20s | %(simulation_id)s | %(algorithm_name)s | %(processing_stage)s | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "class": "src.backend.utils.logging_utils.ScientificFormatter",
+            "style": "%",
+            "validate": true,
+            "scientific_precision": 6,
+            "include_context": true,
+            "include_performance_metrics": true
+        },
+        "console_colored": {
+            "format": "%(asctime)s | %(levelname_colored)s | %(name_colored)s | %(message_formatted)s",
+            "datefmt": "%H:%M:%S",
+            "class": "src.backend.monitoring.console_formatter.ConsoleFormatter",
+            "style": "%",
+            "use_colors": true,
+            "terminal_width": 120,
+            "scientific_notation": true,
+            "progress_indicators": true
+        },
+        "performance_metrics": {
+            "format": "{\"timestamp\": \"%(asctime)s\", \"level\": \"%(levelname)s\", \"logger\": \"%(name)s\", \"metric_name\": \"%(metric_name)s\", \"metric_value\": %(metric_value)s, \"metric_unit\": \"%(metric_unit)s\", \"context\": %(context)s}",
+            "datefmt": "%Y-%m-%dT%H:%M:%S.%fZ",
+            "class": "src.backend.utils.logging_utils.PerformanceFormatter",
+            "style": "%",
+            "json_format": true,
+            "include_system_metrics": true,
+            "buffer_size": 1000
+        },
+        "audit_trail": {
+            "format": "%(asctime)s.%(msecs)03d | AUDIT | %(audit_id)s | %(component)s | %(action)s | %(user_context)s | %(details)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "class": "logging.Formatter",
+            "style": "%",
+            "validate": true
+        },
+        "error_detailed": {
+            "format": "%(asctime)s.%(msecs)03d | %(levelname)-8s | %(name)-20s | %(pathname)s:%(lineno)d | %(funcName)s | %(message)s\n%(exc_info)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "class": "logging.Formatter",
+            "style": "%",
+            "validate": true
+        },
+        "simple_file": {
+            "format": "%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "class": "logging.Formatter",
+            "style": "%"
+        }
+    },
+    "handlers": {
+        "console_scientific": {
+            "class": "src.backend.monitoring.console_formatter.ScientificConsoleHandler",
+            "level": "INFO",
+            "formatter": "console_colored",
+            "stream": "ext://sys.stdout",
+            "progress_mode": true,
+            "buffering_enabled": true,
+            "buffer_size": 100,
+            "flush_interval": 1.0,
+            "color_scheme": "scientific_default"
+        },
+        "file_detailed": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "DEBUG",
+            "formatter": "detailed_scientific",
+            "filename": "logs/plume_simulation_detailed.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "encoding": "utf-8",
+            "delay": false
+        },
+        "file_performance": {
+            "class": "src.backend.utils.logging_utils.PerformanceLoggingHandler",
+            "level": "INFO",
+            "formatter": "performance_metrics",
+            "filename": "logs/performance_metrics.jsonl",
+            "buffer_size": 1000,
+            "flush_interval": 60.0,
+            "compression": true,
+            "real_time_monitoring": true
+        },
+        "file_audit": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "level": "INFO",
+            "formatter": "audit_trail",
+            "filename": "logs/audit_trail.log",
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 30,
+            "encoding": "utf-8",
+            "utc": true
+        },
+        "file_error": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "error_detailed",
+            "filename": "logs/errors.log",
+            "maxBytes": 5242880,
+            "backupCount": 10,
+            "encoding": "utf-8",
+            "delay": false
+        },
+        "file_simulation": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "formatter": "detailed_scientific",
+            "filename": "logs/simulation_runs.log",
+            "maxBytes": 20971520,
+            "backupCount": 10,
+            "encoding": "utf-8",
+            "delay": false
+        },
+        "file_normalization": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "DEBUG",
+            "formatter": "detailed_scientific",
+            "filename": "logs/data_normalization.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "encoding": "utf-8",
+            "delay": false
+        },
+        "file_analysis": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "formatter": "detailed_scientific",
+            "filename": "logs/analysis_pipeline.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "encoding": "utf-8",
+            "delay": false
+        }
+    },
+    "loggers": {
+        "src.backend.core.simulation": {
+            "level": "INFO",
+            "handlers": ["console_scientific", "file_simulation", "file_performance"],
+            "propagate": false,
+            "scientific_context": true,
+            "performance_tracking": true,
+            "audit_trail": true
+        },
+        "src.backend.core.data_normalization": {
+            "level": "DEBUG",
+            "handlers": ["console_scientific", "file_normalization", "file_performance"],
+            "propagate": false,
+            "scientific_context": true,
+            "performance_tracking": true,
+            "validation_logging": true
+        },
+        "src.backend.core.analysis": {
+            "level": "INFO",
+            "handlers": ["console_scientific", "file_analysis", "file_performance"],
+            "propagate": false,
+            "scientific_context": true,
+            "performance_tracking": true,
+            "statistical_logging": true
+        },
+        "src.backend.algorithms": {
+            "level": "INFO",
+            "handlers": ["console_scientific", "file_simulation", "file_performance"],
+            "propagate": false,
+            "scientific_context": true,
+            "algorithm_profiling": true,
+            "convergence_tracking": true
+        },
+        "src.backend.io": {
+            "level": "INFO",
+            "handlers": ["console_scientific", "file_detailed"],
+            "propagate": false,
+            "file_operation_tracking": true,
+            "format_validation_logging": true
+        },
+        "src.backend.cache": {
+            "level": "INFO",
+            "handlers": ["file_detailed", "file_performance"],
+            "propagate": false,
+            "cache_performance_tracking": true,
+            "memory_usage_logging": true
+        },
+        "src.backend.monitoring": {
+            "level": "INFO",
+            "handlers": ["console_scientific", "file_detailed", "file_performance"],
+            "propagate": false,
+            "real_time_monitoring": true,
+            "alert_logging": true
+        },
+        "src.backend.error": {
+            "level": "ERROR",
+            "handlers": ["console_scientific", "file_error", "file_audit"],
+            "propagate": false,
+            "error_context_enhancement": true,
+            "recovery_strategy_logging": true
+        },
+        "src.backend.utils": {
+            "level": "INFO",
+            "handlers": ["file_detailed"],
+            "propagate": false,
+            "utility_performance_tracking": true
+        }
+    },
+    "root": {
+        "level": "INFO",
+        "handlers": ["console_scientific", "file_detailed", "file_error"]
+    },
+    "log_levels": {
+        "SIMULATION_START": 25,
+        "SIMULATION_END": 25,
+        "VALIDATION_ERROR": 35,
+        "PERFORMANCE_ALERT": 35,
+        "AUDIT_TRAIL": 22,
+        "PROGRESS_UPDATE": 15,
+        "SCIENTIFIC_DEBUG": 5
+    },
+    "context_fields": {
+        "simulation_id": {
+            "type": "string",
+            "required": false,
+            "default": "unknown",
+            "description": "Unique identifier for simulation run"
+        },
+        "algorithm_name": {
+            "type": "string",
+            "required": false,
+            "default": "unknown",
+            "description": "Name of navigation algorithm being executed"
+        },
+        "processing_stage": {
+            "type": "string",
+            "required": false,
+            "default": "unknown",
+            "description": "Current processing stage (normalization, simulation, analysis)"
+        },
+        "batch_id": {
+            "type": "string",
+            "required": false,
+            "default": "single",
+            "description": "Batch processing identifier for grouped simulations"
+        },
+        "input_file": {
+            "type": "string",
+            "required": false,
+            "default": "unknown",
+            "description": "Input video file path for traceability"
+        },
+        "component": {
+            "type": "string",
+            "required": false,
+            "default": "system",
+            "description": "System component generating the log entry"
+        },
+        "performance_metrics": {
+            "type": "dict",
+            "required": false,
+            "default": {},
+            "description": "Performance metrics associated with log entry"
+        },
+        "user_context": {
+            "type": "string",
+            "required": false,
+            "default": "system",
+            "description": "User or system context for audit trail"
+        }
+    },
+    "rotation_policies": {
+        "size_based": {
+            "max_file_size_mb": 10,
+            "backup_count": 5,
+            "compression_enabled": true,
+            "compression_format": "gzip",
+            "rotation_check_interval": 300
+        },
+        "time_based": {
+            "rotation_interval": "midnight",
+            "backup_count": 30,
+            "utc_timestamps": true,
+            "compression_enabled": true,
+            "cleanup_schedule": "daily"
+        },
+        "performance_logs": {
+            "max_file_size_mb": 50,
+            "backup_count": 10,
+            "compression_enabled": true,
+            "real_time_flush": false,
+            "buffer_flush_interval": 60
+        },
+        "audit_logs": {
+            "rotation_interval": "midnight",
+            "backup_count": 365,
+            "compression_enabled": true,
+            "integrity_verification": true,
+            "tamper_protection": true
+        }
+    },
+    "output_directories": {
+        "base_log_directory": "logs",
+        "simulation_logs": "logs/simulation",
+        "performance_logs": "logs/performance",
+        "audit_logs": "logs/audit",
+        "error_logs": "logs/errors",
+        "debug_logs": "logs/debug",
+        "archive_directory": "logs/archive",
+        "temporary_logs": "logs/temp",
+        "create_directories": true,
+        "directory_permissions": "0755"
+    },
+    "performance_monitoring": {
+        "enabled": true,
+        "real_time_monitoring": true,
+        "sampling_interval_seconds": 10.0,
+        "buffer_size": 1000,
+        "flush_interval_seconds": 60.0,
+        "metrics_retention_days": 30,
+        "performance_thresholds": {
+            "log_processing_latency_ms": 10.0,
+            "handler_flush_time_ms": 100.0,
+            "formatter_processing_time_ms": 5.0,
+            "file_write_latency_ms": 50.0,
+            "memory_usage_mb": 100.0,
+            "disk_usage_warning_gb": 1.0
+        },
+        "alert_conditions": {
+            "high_error_rate_threshold": 0.05,
+            "performance_degradation_threshold": 0.2,
+            "disk_space_warning_threshold": 0.8,
+            "memory_usage_warning_threshold": 0.8,
+            "log_processing_backlog_threshold": 1000
+        }
+    },
+    "scientific_context": {
+        "traceability_enabled": true,
+        "reproducibility_tracking": true,
+        "parameter_logging": true,
+        "result_correlation": true,
+        "cross_reference_validation": true,
+        "scientific_notation_precision": 6,
+        "statistical_logging": true,
+        "algorithm_profiling": true,
+        "performance_correlation": true,
+        "data_lineage_tracking": true
+    },
+    "error_handling": {
+        "error_context_enhancement": true,
+        "stack_trace_formatting": true,
+        "recovery_recommendation_logging": true,
+        "error_correlation": true,
+        "exception_chaining": true,
+        "debug_information_collection": true,
+        "error_rate_monitoring": true,
+        "automatic_error_reporting": true
+    },
+    "console_configuration": {
+        "color_scheme": "scientific_default",
+        "progress_indicators": true,
+        "real_time_updates": true,
+        "terminal_width_detection": true,
+        "unicode_support": true,
+        "responsive_formatting": true,
+        "status_icons": true,
+        "performance_display": true,
+        "error_highlighting": true,
+        "scientific_formatting": true
+    },
+    "integration": {
+        "alert_system_integration": true,
+        "monitoring_system_integration": true,
+        "performance_metrics_integration": true,
+        "audit_trail_integration": true,
+        "cache_logging_integration": true,
+        "error_handling_integration": true,
+        "progress_tracking_integration": true,
+        "statistical_analysis_integration": true
+    },
+    "compliance": {
+        "scientific_computing_standards": true,
+        "reproducible_research_requirements": true,
+        "audit_trail_compliance": true,
+        "data_integrity_validation": true,
+        "performance_monitoring_compliance": true,
+        "error_tracking_compliance": true,
+        "log_retention_compliance": true,
+        "security_logging_compliance": true
+    },
+    "metadata": {
+        "version": "1.0.0",
+        "schema_version": "1.0",
+        "created_date": "2024-01-01",
+        "last_updated": "2024-01-01",
+        "configuration_source": "Technical Specifications/CROSS-CUTTING CONCERNS/Logging and Tracing Strategy",
+        "validation_standards": [
+            "scientific_computing",
+            "reproducible_research",
+            "audit_compliance"
+        ],
+        "dependencies": [
+            "logging_utils.py",
+            "console_formatter.py",
+            "performance_thresholds.json"
+        ],
+        "documentation": "docs/developer_guides/logging_configuration.md"
+    }
+}

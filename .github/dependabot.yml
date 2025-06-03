@@ -1,0 +1,390 @@
+# GitHub Dependabot configuration for automated dependency management
+# Scientific computing optimization with security vulnerability monitoring
+# Ensures reproducible research environments through controlled dependency updates
+# Maintains >95% correlation accuracy, <7.2 seconds per simulation performance, and 4000+ batch processing requirements
+
+version: 2
+
+updates:
+  # Backend Python dependencies - Scientific Computing Core
+  # Manages NumPy 2.1.3+, SciPy 1.15.3+, OpenCV 4.11.0+ with precision version constraints
+  - package-ecosystem: "pip"
+    directory: "/src/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "@research-team/maintainers"
+    assignees:
+      - "@research-team/lead-developer"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "scientific-computing"
+    milestone: "dependency-updates"
+    commit-message:
+      prefix: "deps(backend)"
+      prefix-development: "deps(backend-dev)"
+      include: "scope"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # Critical scientific computing version constraints for numerical accuracy
+      - dependency-name: "numpy"
+        versions: ["< 2.1.3"]
+      - dependency-name: "scipy"
+        versions: ["< 1.15.3"]
+      - dependency-name: "opencv-python"
+        versions: ["< 4.11.0"]
+      # Preserve parallel processing efficiency
+      - dependency-name: "joblib"
+        versions: ["< 1.6.0"]
+      # Maintain statistical analysis compatibility
+      - dependency-name: "pandas"
+        versions: ["< 2.2.0"]
+      - dependency-name: "statsmodels"
+        versions: ["< 0.14.0"]
+      - dependency-name: "scikit-learn"
+        versions: ["< 1.5.0"]
+    groups:
+      # Core scientific computing dependencies updated together for compatibility
+      scientific-computing:
+        patterns:
+          - "numpy"
+          - "scipy"
+          - "pandas"
+          - "matplotlib"
+          - "seaborn"
+          - "statsmodels"
+          - "scikit-learn"
+          - "scikit-image"
+        update-types:
+          - "minor"
+          - "patch"
+      # Video processing and format compatibility
+      video-processing:
+        patterns:
+          - "opencv-python"
+          - "imageio"
+          - "pillow"
+        update-types:
+          - "minor"
+          - "patch"
+      # Parallel processing and performance optimization
+      parallel-processing:
+        patterns:
+          - "joblib"
+          - "multiprocess"
+          - "numba"
+        update-types:
+          - "minor"
+          - "patch"
+      # Data serialization and compression
+      data-serialization:
+        patterns:
+          - "h5py"
+          - "lz4"
+          - "zstandard"
+          - "pickle5"
+        update-types:
+          - "minor"
+          - "patch"
+      # Development and quality assurance tools
+      development-tools:
+        patterns:
+          - "pytest*"
+          - "black"
+          - "isort"
+          - "mypy"
+          - "flake8"
+          - "setuptools"
+        update-types:
+          - "minor"
+          - "patch"
+      # Validation and configuration management
+      validation-tools:
+        patterns:
+          - "jsonschema"
+          - "pydantic"
+          - "cerberus"
+          - "PyYAML"
+        update-types:
+          - "minor"
+          - "patch"
+      # Visualization and reporting
+      visualization:
+        patterns:
+          - "plotly"
+          - "Jinja2"
+          - "Markdown"
+          - "WeasyPrint"
+        update-types:
+          - "minor"
+          - "patch"
+      # User interface and progress monitoring
+      ui-monitoring:
+        patterns:
+          - "tqdm"
+          - "rich"
+          - "colorlog"
+          - "click"
+          - "psutil"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Testing framework dependencies - Quality Assurance and Validation
+  # Comprehensive testing validation for scientific accuracy preservation
+  - package-ecosystem: "pip"
+    directory: "/src/test"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "@research-team/qa-engineers"
+    assignees:
+      - "@research-team/test-lead"
+    labels:
+      - "dependencies"
+      - "testing"
+      - "quality-assurance"
+    commit-message:
+      prefix: "deps(test)"
+      include: "scope"
+    allow:
+      - dependency-type: "direct"
+    groups:
+      # Core testing framework with scientific computing support
+      testing-framework:
+        patterns:
+          - "pytest*"
+          - "coverage"
+          - "hypothesis"
+        update-types:
+          - "minor"
+          - "patch"
+      # Performance testing and profiling for <7.2s simulation requirement
+      performance-testing:
+        patterns:
+          - "pytest-benchmark"
+          - "memory-profiler"
+          - "line-profiler"
+          - "py-spy"
+          - "psutil"
+        update-types:
+          - "minor"
+          - "patch"
+      # Mock and fixture generation for reproducible testing
+      mock-and-fixtures:
+        patterns:
+          - "factory-boy"
+          - "faker"
+          - "responses"
+          - "requests-mock"
+        update-types:
+          - "minor"
+          - "patch"
+      # Statistical validation and numerical accuracy testing
+      statistical-validation:
+        patterns:
+          - "numpy"
+          - "scipy"
+          - "pandas"
+          - "statsmodels"
+          - "scikit-learn"
+        update-types:
+          - "patch"
+      # Test data generation and validation
+      test-data:
+        patterns:
+          - "imageio"
+          - "pillow"
+          - "opencv-python"
+          - "h5py"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Docker infrastructure dependencies - Containerized Deployment
+  # Minimal dependencies for efficient containerized scientific computing
+  - package-ecosystem: "pip"
+    directory: "/infrastructure/docker"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    open-pull-requests-limit: 2
+    reviewers:
+      - "@research-team/devops"
+    assignees:
+      - "@research-team/infrastructure-lead"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "infrastructure"
+    commit-message:
+      prefix: "deps(docker)"
+      include: "scope"
+    allow:
+      - dependency-type: "direct"
+    ignore:
+      # Prevent major version updates in production containers
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # Maintain scientific computing precision in containers
+      - dependency-name: "numpy"
+        versions: ["< 2.1.3"]
+      - dependency-name: "scipy"
+        versions: ["< 1.15.3"]
+      - dependency-name: "opencv-python-headless"
+        versions: ["< 4.11.0"]
+
+  # Benchmarking framework dependencies - Performance Validation
+  # Performance testing for <7.2 seconds per simulation requirement
+  - package-ecosystem: "pip"
+    directory: "/benchmarks"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    open-pull-requests-limit: 2
+    reviewers:
+      - "@research-team/performance-engineers"
+    assignees:
+      - "@research-team/benchmark-lead"
+    labels:
+      - "dependencies"
+      - "benchmarks"
+      - "performance"
+    commit-message:
+      prefix: "deps(benchmarks)"
+      include: "scope"
+    groups:
+      # Core benchmarking tools for performance measurement
+      benchmarking-tools:
+        patterns:
+          - "pytest-benchmark"
+          - "psutil"
+          - "memory-profiler"
+          - "line-profiler"
+          - "py-spy"
+        update-types:
+          - "minor"
+          - "patch"
+      # Statistical analysis for performance validation
+      performance-analysis:
+        patterns:
+          - "numpy"
+          - "scipy"
+          - "pandas"
+          - "statsmodels"
+          - "matplotlib"
+          - "seaborn"
+          - "plotly"
+        update-types:
+          - "patch"
+      # Test framework for benchmark execution
+      benchmark-testing:
+        patterns:
+          - "pytest*"
+          - "factory-boy"
+          - "faker"
+          - "hypothesis"
+        update-types:
+          - "minor"
+          - "patch"
+      # Data processing for benchmark validation
+      data-processing:
+        patterns:
+          - "opencv-python"
+          - "imageio"
+          - "pillow"
+          - "h5py"
+          - "joblib"
+          - "multiprocess"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions workflow dependencies - CI/CD Integration
+  # Automated updates for testing frameworks and CI/CD dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "@research-team/devops"
+    assignees:
+      - "@research-team/ci-cd-lead"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci-cd"
+    commit-message:
+      prefix: "deps(actions)"
+      include: "scope"
+    groups:
+      # Core GitHub Actions for repository management
+      core-actions:
+        patterns:
+          - "actions/checkout"
+          - "actions/setup-python"
+          - "actions/cache"
+          - "actions/upload-artifact"
+          - "actions/download-artifact"
+        update-types:
+          - "minor"
+          - "patch"
+      # Testing and validation actions
+      testing-actions:
+        patterns:
+          - "codecov/codecov-action"
+          - "actions/github-script"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Docker base images - Container Infrastructure
+  # Automated updates for Python base images with version constraints
+  - package-ecosystem: "docker"
+    directory: "/infrastructure/docker"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    open-pull-requests-limit: 2
+    reviewers:
+      - "@research-team/devops"
+    assignees:
+      - "@research-team/infrastructure-lead"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "base-images"
+    commit-message:
+      prefix: "deps(docker-images)"
+      include: "scope"
+    ignore:
+      # Maintain Python 3.9+ requirement for scientific computing compatibility
+      - dependency-name: "python"
+        versions: ["< 3.9"]

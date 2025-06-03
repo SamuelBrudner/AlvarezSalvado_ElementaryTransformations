@@ -1,0 +1,436 @@
+# Codecov Configuration for Plume Navigation Simulation System
+# Comprehensive code coverage analysis for scientific computing accuracy validation
+# Supports >95% code coverage requirements for reproducible research outcomes
+
+# Coverage analysis precision and rounding configuration
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  # Project-level coverage status configuration with quality gates
+  status:
+    project:
+      # Default project coverage requirements for overall system
+      default:
+        target: 95%
+        threshold: 1%
+        base: auto
+        flags:
+          - unit
+          - integration
+          - performance
+        paths:
+          - src/backend
+        informational: false
+        only_pulls: false
+
+      # Scientific computing components requiring 98% coverage for numerical accuracy
+      scientific_computing:
+        target: 98%
+        threshold: 0.5%
+        base: auto
+        flags:
+          - scientific
+          - algorithms
+          - accuracy
+        paths:
+          - src/backend/core
+          - src/backend/algorithms
+          - src/backend/utils/scientific_constants.py
+          - src/backend/core/data_normalization/intensity_calibration.py
+          - src/backend/core/data_normalization/scale_calibration.py
+          - src/backend/core/analysis/performance_metrics.py
+        informational: false
+        only_pulls: false
+
+      # Cross-format compatibility requiring 95% coverage for Crimaldi and custom formats
+      cross_format_compatibility:
+        target: 95%
+        threshold: 1%
+        base: auto
+        flags:
+          - cross_format
+          - crimaldi
+          - custom_format
+        paths:
+          - src/backend/io
+          - src/backend/core/data_normalization
+          - src/backend/io/crimaldi_format_handler.py
+          - src/backend/io/custom_format_handler.py
+          - src/backend/io/avi_handler.py
+          - src/backend/io/format_registry.py
+          - src/backend/core/data_normalization/format_converter.py
+        informational: false
+        only_pulls: false
+
+      # Performance-critical paths requiring 100% coverage for <7.2 seconds validation
+      performance_critical:
+        target: 100%
+        threshold: 0%
+        base: auto
+        flags:
+          - performance
+          - batch
+          - speed
+        paths:
+          - src/backend/core/simulation
+          - src/backend/utils/parallel_processing.py
+          - src/backend/core/simulation/simulation_engine.py
+          - src/backend/core/simulation/batch_executor.py
+          - src/backend/cache/cache_manager.py
+          - src/backend/utils/memory_management.py
+        informational: false
+        only_pulls: false
+
+      # Error handling and recovery systems requiring 95% coverage
+      error_handling:
+        target: 95%
+        threshold: 1%
+        base: auto
+        flags:
+          - error_handling
+          - recovery
+        paths:
+          - src/backend/error
+          - src/backend/error/recovery_strategy.py
+          - src/backend/io/checkpoint_manager.py
+          - src/backend/utils/error_handling.py
+        informational: false
+        only_pulls: false
+
+      # Algorithm implementations requiring 98% coverage for >95% correlation validation
+      algorithm_implementations:
+        target: 98%
+        threshold: 0.5%
+        base: auto
+        flags:
+          - algorithms
+          - scientific
+        paths:
+          - src/backend/algorithms/infotaxis.py
+          - src/backend/algorithms/casting.py
+          - src/backend/algorithms/gradient_following.py
+          - src/backend/algorithms/plume_tracking.py
+          - src/backend/algorithms/hybrid_strategies.py
+          - src/backend/algorithms/base_algorithm.py
+          - src/backend/algorithms/algorithm_registry.py
+        informational: false
+        only_pulls: false
+
+      # Reproducibility-critical paths requiring 98% coverage for >0.99 coefficient
+      reproducibility_validation:
+        target: 98%
+        threshold: 0.5%
+        base: auto
+        flags:
+          - scientific
+          - accuracy
+        paths:
+          - src/backend/core/simulation/checkpointing.py
+          - src/backend/io/checkpoint_manager.py
+          - src/backend/utils/validation_utils.py
+          - src/backend/core/analysis/statistical_comparison.py
+          - src/backend/utils/statistical_utils.py
+        informational: false
+        only_pulls: false
+
+    # Patch coverage configuration for pull request validation
+    patch:
+      default:
+        target: 90%
+        threshold: 5%
+        base: auto
+        informational: false
+        only_pulls: false
+
+# Parser configuration for comprehensive coverage analysis
+parsers:
+  gcov:
+    branch_detection:
+      conditional: true
+      loop: true
+      method: false
+      macro: false
+
+# Flag configuration for comprehensive test categorization and carryforward
+flags:
+  # Unit tests flag configuration
+  unit:
+    paths:
+      - src/backend
+    carryforward: true
+    
+  # Integration tests flag configuration  
+  integration:
+    paths:
+      - src/backend
+    carryforward: true
+    
+  # Performance tests flag configuration (no carryforward for real-time validation)
+  performance:
+    paths:
+      - src/backend/core/simulation
+      - src/backend/utils
+      - src/backend/cache
+    carryforward: false
+    
+  # Scientific computing flag configuration
+  scientific:
+    paths:
+      - src/backend/core
+      - src/backend/algorithms
+      - src/backend/utils/scientific_constants.py
+      - src/backend/utils/statistical_utils.py
+    carryforward: true
+    
+  # Algorithm implementations flag configuration
+  algorithms:
+    paths:
+      - src/backend/algorithms
+    carryforward: true
+    
+  # Accuracy validation flag configuration
+  accuracy:
+    paths:
+      - src/backend/core/analysis
+      - src/backend/utils/statistical_utils.py
+      - src/backend/utils/validation_utils.py
+    carryforward: true
+    
+  # Cross-format compatibility flag configuration
+  cross_format:
+    paths:
+      - src/backend/io
+      - src/backend/core/data_normalization
+    carryforward: true
+    
+  # Crimaldi format handling flag configuration
+  crimaldi:
+    paths:
+      - src/backend/io/crimaldi_format_handler.py
+    carryforward: true
+    
+  # Custom format handling flag configuration  
+  custom_format:
+    paths:
+      - src/backend/io/custom_format_handler.py
+      - src/backend/io/avi_handler.py
+    carryforward: true
+    
+  # Batch processing flag configuration (no carryforward for performance validation)
+  batch:
+    paths:
+      - src/backend/core/simulation/batch_executor.py
+    carryforward: false
+    
+  # Speed optimization flag configuration (no carryforward for real-time validation)
+  speed:
+    paths:
+      - src/backend/core/simulation
+      - src/backend/utils/parallel_processing.py
+      - src/backend/cache
+    carryforward: false
+    
+  # Error handling flag configuration
+  error_handling:
+    paths:
+      - src/backend/error
+      - src/backend/utils/error_handling.py
+    carryforward: true
+    
+  # Recovery systems flag configuration
+  recovery:
+    paths:
+      - src/backend/error/recovery_strategy.py
+      - src/backend/io/checkpoint_manager.py
+    carryforward: true
+
+# File and directory ignore patterns for focused coverage analysis
+ignore:
+  - src/backend/examples
+  - src/backend/scripts
+  - src/test
+  - infrastructure
+  - docs
+  - benchmarks
+  - "*.md"
+  - "*.txt"
+  - "*.yml"
+  - "*.yaml"
+  - "*.json"
+  - "*.sh"
+
+# Path fixes for accurate coverage mapping
+fixes:
+  - "src/backend/::"
+
+# Comment configuration for pull request coverage reporting
+comment:
+  layout: "reach,diff,flags,tree,reach"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  branches:
+    - main
+    - develop
+
+# GitHub integration configuration
+github_checks:
+  annotations: true
+
+# Scientific computing coverage requirements for specialized validation
+coverage_requirements:
+  # Numerical accuracy paths requiring 100% coverage for scientific precision
+  numerical_accuracy_paths:
+    target_coverage: "100%"
+    threshold: "0%"
+    paths:
+      - src/backend/utils/scientific_constants.py
+      - src/backend/core/data_normalization/intensity_calibration.py
+      - src/backend/core/data_normalization/scale_calibration.py
+      - src/backend/core/analysis/performance_metrics.py
+    description: "Critical paths requiring 100% coverage for numerical accuracy validation"
+
+  # Algorithm implementation paths for >95% correlation validation
+  algorithm_implementation_paths:
+    target_coverage: "98%"
+    threshold: "0.5%"
+    paths:
+      - src/backend/algorithms/infotaxis.py
+      - src/backend/algorithms/casting.py
+      - src/backend/algorithms/gradient_following.py
+      - src/backend/algorithms/plume_tracking.py
+      - src/backend/algorithms/hybrid_strategies.py
+    description: "Algorithm implementations requiring comprehensive coverage for >95% correlation validation"
+
+  # Cross-format handling paths for Crimaldi and custom format support
+  cross_format_compatibility_paths:
+    target_coverage: "95%"
+    threshold: "1%"
+    paths:
+      - src/backend/io/crimaldi_format_handler.py
+      - src/backend/io/custom_format_handler.py
+      - src/backend/io/avi_handler.py
+      - src/backend/io/format_registry.py
+      - src/backend/core/data_normalization/format_converter.py
+    description: "Cross-format handling requiring comprehensive coverage for Crimaldi and custom format support"
+
+  # Performance-critical paths for <7.2 seconds per simulation validation
+  performance_critical_paths:
+    target_coverage: "100%"
+    threshold: "0%"
+    paths:
+      - src/backend/core/simulation/simulation_engine.py
+      - src/backend/core/simulation/batch_executor.py
+      - src/backend/utils/parallel_processing.py
+      - src/backend/cache/cache_manager.py
+      - src/backend/utils/memory_management.py
+    description: "Performance-critical paths requiring complete coverage for <7.2 seconds per simulation validation"
+
+  # Reproducibility paths for >0.99 coefficient validation
+  reproducibility_paths:
+    target_coverage: "98%"
+    threshold: "0.5%"
+    paths:
+      - src/backend/core/simulation/checkpointing.py
+      - src/backend/io/checkpoint_manager.py
+      - src/backend/utils/validation_utils.py
+      - src/backend/core/analysis/statistical_comparison.py
+    description: "Reproducibility-critical paths requiring comprehensive coverage for >0.99 coefficient validation"
+
+# Quality gates configuration for scientific computing standards
+quality_gates:
+  coverage_requirements:
+    overall_project_coverage: "95%"
+    scientific_computing_coverage: "98%"
+    algorithm_coverage: "98%"
+    cross_format_coverage: "95%"
+    performance_critical_coverage: "100%"
+    error_handling_coverage: "95%"
+    
+  threshold_settings:
+    coverage_drop_threshold: "1%"
+    scientific_computing_drop_threshold: "0.5%"
+    performance_critical_drop_threshold: "0%"
+    patch_coverage_threshold: "90%"
+    
+  validation_criteria:
+    branch_coverage: enabled
+    line_coverage: enabled
+    function_coverage: enabled
+    condition_coverage: enabled
+
+# Integration settings with GitHub Actions workflow
+integration_settings:
+  github_actions_integration:
+    workflow_integration: "Integrated with run-tests.yml and code-quality.yml workflows"
+    artifact_upload: "Coverage reports uploaded as artifacts for analysis"
+    pr_comments: "Automated coverage analysis comments on pull requests"
+    status_checks: "Coverage status checks for merge protection"
+    
+  notification_settings:
+    slack_notifications: false
+    email_notifications: false
+    github_notifications: true
+    webhook_notifications: false
+    
+  reporting_configuration:
+    html_reports: true
+    xml_reports: true
+    json_reports: true
+    lcov_reports: false
+
+# Advanced configuration for scientific computing optimization
+advanced_configuration:
+  carryforward:
+    description: "Carryforward settings for different test categories"
+    unit_tests: true
+    integration_tests: true
+    scientific_validation: true
+    performance_tests: false
+    batch_processing: false
+    
+  path_fixes:
+    description: "Path fixing for accurate coverage mapping"
+    backend_path_fix: "src/backend/::"
+    relative_path_handling: enabled
+    
+  ignore_patterns:
+    description: "Files and directories excluded from coverage analysis"
+    examples_exclusion: "src/backend/examples"
+    scripts_exclusion: "src/backend/scripts"
+    test_exclusion: "src/test"
+    infrastructure_exclusion: "infrastructure"
+    documentation_exclusion: "docs"
+
+# Scientific computing validation requirements
+scientific_computing_validation:
+  correlation_accuracy_coverage:
+    description: "Coverage requirements for >95% correlation validation"
+    algorithm_implementations: "98% coverage required"
+    numerical_computations: "100% coverage required"
+    statistical_validation: "95% coverage required"
+    reference_comparisons: "98% coverage required"
+    
+  performance_validation_coverage:
+    description: "Coverage requirements for <7.2 seconds per simulation validation"
+    simulation_engine: "100% coverage required"
+    parallel_processing: "100% coverage required"
+    memory_management: "100% coverage required"
+    caching_mechanisms: "95% coverage required"
+    
+  reproducibility_validation_coverage:
+    description: "Coverage requirements for >0.99 reproducibility coefficient validation"
+    checkpointing_systems: "98% coverage required"
+    deterministic_computations: "100% coverage required"
+    validation_frameworks: "98% coverage required"
+    error_recovery: "95% coverage required"
+    
+  cross_format_validation_coverage:
+    description: "Coverage requirements for Crimaldi and custom format compatibility"
+    format_handlers: "95% coverage required"
+    conversion_algorithms: "95% coverage required"
+    validation_systems: "98% coverage required"
+    metadata_processing: "90% coverage required"

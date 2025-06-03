@@ -1,0 +1,622 @@
+{
+  "profile_metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "configuration_type": "infrastructure_logging_profiles",
+    "system_name": "plume_navigation_simulation",
+    "target_scope": "infrastructure_and_deployment",
+    "compatibility_level": "cross_platform",
+    "validation_required": true,
+    "backend_integration_enabled": true,
+    "environment_inheritance": "hierarchical_with_infrastructure_overrides",
+    "profile_management_strategy": "environment_aware_with_deployment_optimization"
+  },
+  "environment_profiles": {
+    "development": {
+      "profile_name": "development_infrastructure",
+      "environment_type": "development",
+      "description": "Development environment infrastructure logging optimized for debugging, rapid iteration, and development workflow support",
+      "active": true,
+      "logging_level": "DEBUG",
+      "infrastructure_logging": {
+        "environment_validation": {
+          "enabled": true,
+          "log_level": "DEBUG",
+          "detailed_validation_logging": true,
+          "dependency_check_logging": true,
+          "configuration_validation_logging": true,
+          "performance_impact_acceptable": true
+        },
+        "resource_monitoring": {
+          "enabled": true,
+          "log_level": "INFO",
+          "monitoring_interval_seconds": 60.0,
+          "resource_threshold_logging": true,
+          "performance_degradation_logging": true,
+          "memory_usage_detailed_logging": true
+        },
+        "deployment_automation": {
+          "enabled": true,
+          "log_level": "DEBUG",
+          "script_execution_logging": true,
+          "dependency_installation_logging": true,
+          "configuration_setup_logging": true,
+          "error_recovery_logging": true
+        }
+      },
+      "console_output": {
+        "enabled": true,
+        "color_coding": true,
+        "progress_indicators": true,
+        "verbose_output": true,
+        "interactive_feedback": true,
+        "development_helpers": true
+      },
+      "file_logging": {
+        "enabled": true,
+        "log_directory": "logs/infrastructure/development",
+        "rotation_policy": "size_based",
+        "max_file_size_mb": 50,
+        "backup_count": 10,
+        "compression_enabled": false
+      },
+      "integration_with_backend": {
+        "sync_enabled": true,
+        "backend_log_level_override": false,
+        "shared_context_enabled": true,
+        "cross_component_correlation": true
+      }
+    },
+    "testing": {
+      "profile_name": "testing_infrastructure",
+      "environment_type": "testing",
+      "description": "Testing environment infrastructure logging optimized for automated testing, validation, and quality assurance",
+      "active": true,
+      "logging_level": "INFO",
+      "infrastructure_logging": {
+        "environment_validation": {
+          "enabled": true,
+          "log_level": "INFO",
+          "detailed_validation_logging": true,
+          "test_environment_setup_logging": true,
+          "cross_platform_validation_logging": true,
+          "performance_baseline_logging": true
+        },
+        "resource_monitoring": {
+          "enabled": true,
+          "log_level": "INFO",
+          "monitoring_interval_seconds": 30.0,
+          "resource_threshold_logging": true,
+          "test_isolation_monitoring": true,
+          "performance_regression_detection": true
+        },
+        "deployment_automation": {
+          "enabled": true,
+          "log_level": "INFO",
+          "automated_testing_logging": true,
+          "test_data_preparation_logging": true,
+          "test_execution_monitoring": true,
+          "result_validation_logging": true
+        }
+      },
+      "console_output": {
+        "enabled": true,
+        "color_coding": true,
+        "progress_indicators": true,
+        "test_result_formatting": true,
+        "automated_reporting": true,
+        "ci_cd_integration": true
+      },
+      "file_logging": {
+        "enabled": true,
+        "log_directory": "logs/infrastructure/testing",
+        "rotation_policy": "time_based",
+        "rotation_interval": "daily",
+        "backup_count": 30,
+        "compression_enabled": true
+      },
+      "integration_with_backend": {
+        "sync_enabled": true,
+        "backend_log_level_override": false,
+        "test_isolation_enabled": true,
+        "performance_correlation_enabled": true
+      }
+    },
+    "production": {
+      "profile_name": "production_infrastructure",
+      "environment_type": "production",
+      "description": "Production environment infrastructure logging optimized for high-performance operations, monitoring, and reliability",
+      "active": true,
+      "logging_level": "INFO",
+      "infrastructure_logging": {
+        "environment_validation": {
+          "enabled": true,
+          "log_level": "WARNING",
+          "startup_validation_only": true,
+          "critical_validation_logging": true,
+          "performance_optimized_validation": true,
+          "minimal_overhead_mode": true
+        },
+        "resource_monitoring": {
+          "enabled": true,
+          "log_level": "INFO",
+          "monitoring_interval_seconds": 15.0,
+          "real_time_alerting": true,
+          "performance_optimization_logging": true,
+          "capacity_planning_metrics": true
+        },
+        "deployment_automation": {
+          "enabled": false,
+          "log_level": "ERROR",
+          "production_deployment_logging": false,
+          "maintenance_mode_logging": true,
+          "emergency_procedures_logging": true,
+          "rollback_logging": true
+        }
+      },
+      "console_output": {
+        "enabled": true,
+        "color_coding": true,
+        "progress_indicators": true,
+        "production_status_display": true,
+        "minimal_verbosity": true,
+        "performance_focused": true
+      },
+      "file_logging": {
+        "enabled": true,
+        "log_directory": "logs/infrastructure/production",
+        "rotation_policy": "time_based",
+        "rotation_interval": "daily",
+        "backup_count": 90,
+        "compression_enabled": true
+      },
+      "integration_with_backend": {
+        "sync_enabled": true,
+        "backend_log_level_override": false,
+        "production_correlation_enabled": true,
+        "performance_monitoring_integration": true
+      }
+    },
+    "scientific_computing": {
+      "profile_name": "scientific_computing_infrastructure",
+      "environment_type": "specialized",
+      "description": "Scientific computing environment infrastructure logging optimized for reproducibility, audit trails, and research compliance",
+      "active": true,
+      "logging_level": "INFO",
+      "infrastructure_logging": {
+        "environment_validation": {
+          "enabled": true,
+          "log_level": "INFO",
+          "comprehensive_validation_logging": true,
+          "reproducibility_validation_logging": true,
+          "scientific_compliance_logging": true,
+          "audit_trail_validation": true
+        },
+        "resource_monitoring": {
+          "enabled": true,
+          "log_level": "INFO",
+          "monitoring_interval_seconds": 10.0,
+          "scientific_metrics_logging": true,
+          "reproducibility_monitoring": true,
+          "research_quality_metrics": true
+        },
+        "deployment_automation": {
+          "enabled": true,
+          "log_level": "INFO",
+          "scientific_environment_setup": true,
+          "reproducibility_setup_logging": true,
+          "research_configuration_logging": true,
+          "compliance_validation_logging": true
+        }
+      },
+      "console_output": {
+        "enabled": true,
+        "color_coding": true,
+        "progress_indicators": true,
+        "scientific_formatting": true,
+        "research_status_display": true,
+        "publication_quality_output": true
+      },
+      "file_logging": {
+        "enabled": true,
+        "log_directory": "logs/infrastructure/scientific",
+        "rotation_policy": "size_based",
+        "max_file_size_mb": 100,
+        "backup_count": 50,
+        "compression_enabled": true
+      },
+      "integration_with_backend": {
+        "sync_enabled": true,
+        "backend_log_level_override": false,
+        "scientific_context_correlation": true,
+        "research_audit_trail_integration": true
+      }
+    }
+  },
+  "infrastructure_logging": {
+    "environment_management": {
+      "environment_validation_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "validation_script_logging": true,
+        "dependency_validation_logging": true,
+        "configuration_validation_logging": true,
+        "cross_platform_validation_logging": true,
+        "performance_validation_logging": true,
+        "security_validation_logging": false
+      },
+      "environment_setup_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "setup_script_execution_logging": true,
+        "dependency_installation_logging": true,
+        "configuration_application_logging": true,
+        "environment_optimization_logging": true,
+        "cleanup_operation_logging": true
+      },
+      "environment_monitoring": {
+        "enabled": true,
+        "log_level": "INFO",
+        "resource_utilization_logging": true,
+        "performance_monitoring_logging": true,
+        "health_check_logging": true,
+        "capacity_monitoring_logging": true,
+        "trend_analysis_logging": true
+      }
+    },
+    "resource_management": {
+      "resource_allocation_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "memory_allocation_logging": true,
+        "cpu_allocation_logging": true,
+        "disk_allocation_logging": true,
+        "network_allocation_logging": true,
+        "resource_optimization_logging": true
+      },
+      "resource_monitoring_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "real_time_monitoring": true,
+        "threshold_violation_logging": true,
+        "performance_degradation_logging": true,
+        "resource_exhaustion_logging": true,
+        "optimization_recommendation_logging": true
+      },
+      "resource_cleanup_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "cache_cleanup_logging": true,
+        "temporary_file_cleanup_logging": true,
+        "memory_cleanup_logging": true,
+        "resource_recovery_logging": true
+      }
+    },
+    "system_integration": {
+      "backend_integration_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "configuration_sync_logging": true,
+        "cross_component_communication_logging": true,
+        "integration_validation_logging": true,
+        "performance_correlation_logging": true
+      },
+      "external_system_integration": {
+        "enabled": false,
+        "log_level": "INFO",
+        "external_dependency_logging": false,
+        "api_integration_logging": false,
+        "service_communication_logging": false,
+        "integration_health_monitoring": false
+      },
+      "platform_integration_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "cross_platform_compatibility_logging": true,
+        "platform_specific_optimization_logging": true,
+        "hardware_integration_logging": true,
+        "operating_system_integration_logging": true
+      }
+    }
+  },
+  "deployment_logging": {
+    "deployment_automation": {
+      "script_execution_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "setup_script_logging": true,
+        "installation_script_logging": true,
+        "validation_script_logging": true,
+        "cleanup_script_logging": true,
+        "maintenance_script_logging": true
+      },
+      "dependency_management_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "package_installation_logging": true,
+        "version_validation_logging": true,
+        "dependency_resolution_logging": true,
+        "compatibility_check_logging": true,
+        "update_management_logging": true
+      },
+      "configuration_management_logging": {
+        "enabled": true,
+        "log_level": "INFO",
+        "configuration_application_logging": true,
+        "configuration_validation_logging": true,
+        "configuration_backup_logging": true,
+        "configuration_migration_logging": true,
+        "configuration_rollback_logging": true
+      }
+    },
+    "container_deployment": {
+      "docker_logging": {
+        "enabled": false,
+        "log_level": "INFO",
+        "container_build_logging": false,
+        "container_deployment_logging": false,
+        "container_monitoring_logging": false,
+        "container_orchestration_logging": false
+      },
+      "orchestration_logging": {
+        "enabled": false,
+        "log_level": "INFO",
+        "cluster_management_logging": false,
+        "service_discovery_logging": false,
+        "load_balancing_logging": false,
+        "auto_scaling_logging": false
+      }
+    },
+    "cloud_deployment": {
+      "cloud_provider_logging": {
+        "enabled": false,
+        "log_level": "INFO",
+        "cloud_resource_management_logging": false,
+        "cloud_service_integration_logging": false,
+        "cloud_monitoring_integration": false,
+        "cloud_cost_optimization_logging": false
+      }
+    }
+  },
+  "integration_settings": {
+    "backend_logging_integration": {
+      "sync_configuration": {
+        "enabled": true,
+        "sync_frequency": "on_startup",
+        "conflict_resolution": "infrastructure_takes_precedence",
+        "bidirectional_sync": false,
+        "validation_cross_check": true
+      },
+      "shared_context": {
+        "enabled": true,
+        "simulation_context_sharing": true,
+        "performance_context_sharing": true,
+        "error_context_sharing": true,
+        "audit_trail_sharing": true
+      },
+      "log_level_coordination": {
+        "enabled": true,
+        "environment_based_coordination": true,
+        "component_specific_overrides": true,
+        "dynamic_level_adjustment": false,
+        "performance_based_adjustment": true
+      }
+    },
+    "monitoring_system_integration": {
+      "resource_monitoring_integration": {
+        "enabled": true,
+        "real_time_metrics_sharing": true,
+        "threshold_violation_coordination": true,
+        "performance_correlation": true,
+        "alert_coordination": true
+      },
+      "performance_monitoring_integration": {
+        "enabled": true,
+        "performance_metrics_sharing": true,
+        "benchmark_correlation": true,
+        "optimization_recommendation_sharing": true,
+        "trend_analysis_coordination": true
+      },
+      "health_monitoring_integration": {
+        "enabled": true,
+        "health_status_sharing": true,
+        "component_health_correlation": true,
+        "system_health_aggregation": true,
+        "predictive_health_monitoring": false
+      }
+    },
+    "external_logging_integration": {
+      "log_aggregation": {
+        "enabled": false,
+        "centralized_logging": false,
+        "log_shipping": false,
+        "log_indexing": false,
+        "log_search_integration": false
+      },
+      "alerting_integration": {
+        "enabled": true,
+        "infrastructure_alerting": true,
+        "performance_alerting": true,
+        "resource_alerting": true,
+        "error_alerting": true
+      },
+      "compliance_integration": {
+        "enabled": true,
+        "audit_trail_integration": true,
+        "compliance_reporting": true,
+        "data_governance_integration": false,
+        "regulatory_compliance": false
+      }
+    }
+  },
+  "logging_optimization": {
+    "performance_optimization": {
+      "buffering_optimization": {
+        "enabled": true,
+        "buffer_size_optimization": true,
+        "flush_interval_optimization": true,
+        "memory_usage_optimization": true,
+        "io_optimization": true
+      },
+      "filtering_optimization": {
+        "enabled": true,
+        "log_level_filtering": true,
+        "component_filtering": true,
+        "performance_based_filtering": true,
+        "dynamic_filtering": true
+      },
+      "formatting_optimization": {
+        "enabled": true,
+        "lazy_formatting": true,
+        "template_caching": true,
+        "string_optimization": true,
+        "scientific_formatting_optimization": true
+      }
+    },
+    "storage_optimization": {
+      "compression_optimization": {
+        "enabled": true,
+        "real_time_compression": false,
+        "batch_compression": true,
+        "compression_algorithm": "gzip",
+        "compression_level": 6
+      },
+      "rotation_optimization": {
+        "enabled": true,
+        "intelligent_rotation": true,
+        "size_based_optimization": true,
+        "time_based_optimization": true,
+        "performance_based_rotation": true
+      },
+      "archival_optimization": {
+        "enabled": true,
+        "automated_archival": true,
+        "archival_compression": true,
+        "archival_indexing": false,
+        "long_term_storage_optimization": true
+      }
+    },
+    "cross_platform_optimization": {
+      "platform_specific_optimization": {
+        "enabled": true,
+        "linux_optimization": true,
+        "windows_optimization": true,
+        "macos_optimization": true,
+        "hardware_specific_optimization": true
+      },
+      "file_system_optimization": {
+        "enabled": true,
+        "file_system_aware_logging": true,
+        "path_optimization": true,
+        "permission_optimization": true,
+        "io_pattern_optimization": true
+      }
+    }
+  },
+  "validation_and_compliance": {
+    "configuration_validation": {
+      "schema_validation": {
+        "enabled": true,
+        "strict_validation": true,
+        "schema_version_checking": true,
+        "backward_compatibility_validation": true,
+        "forward_compatibility_validation": false
+      },
+      "integration_validation": {
+        "enabled": true,
+        "backend_integration_validation": true,
+        "environment_consistency_validation": true,
+        "resource_limits_validation": true,
+        "performance_thresholds_validation": true
+      },
+      "runtime_validation": {
+        "enabled": true,
+        "configuration_drift_detection": true,
+        "performance_validation": true,
+        "resource_validation": true,
+        "compliance_validation": true
+      }
+    },
+    "compliance_requirements": {
+      "scientific_computing_compliance": {
+        "enabled": true,
+        "reproducibility_compliance": true,
+        "audit_trail_compliance": true,
+        "data_integrity_compliance": true,
+        "research_standards_compliance": true
+      },
+      "infrastructure_compliance": {
+        "enabled": true,
+        "resource_governance_compliance": true,
+        "performance_compliance": true,
+        "security_compliance": false,
+        "operational_compliance": true
+      },
+      "deployment_compliance": {
+        "enabled": true,
+        "deployment_standards_compliance": true,
+        "environment_consistency_compliance": true,
+        "configuration_management_compliance": true,
+        "change_management_compliance": false
+      }
+    }
+  },
+  "metadata": {
+    "configuration_type": "infrastructure_logging_profiles",
+    "target_systems": [
+      "infrastructure_management",
+      "deployment_automation",
+      "resource_monitoring",
+      "environment_validation"
+    ],
+    "environment_types": [
+      "development",
+      "testing",
+      "production",
+      "scientific_computing"
+    ],
+    "platform_support": [
+      "linux",
+      "windows",
+      "macos"
+    ],
+    "deployment_strategies": [
+      "local_development",
+      "scientific_workstation",
+      "compute_cluster"
+    ],
+    "integration_capabilities": [
+      "backend_logging_sync",
+      "resource_monitoring_integration",
+      "performance_correlation",
+      "environment_validation"
+    ],
+    "logging_features": [
+      "environment_specific_profiles",
+      "deployment_automation_logging",
+      "resource_management_logging",
+      "cross_platform_optimization"
+    ],
+    "performance_requirements": {
+      "logging_overhead_max_percent": 5.0,
+      "log_processing_latency_max_ms": 10.0,
+      "file_rotation_max_time_ms": 100.0,
+      "memory_usage_max_mb": 50.0
+    },
+    "dependencies": [
+      "infrastructure/config/environment.json",
+      "infrastructure/config/resource_limits.json",
+      "src/backend/config/logging_config.json",
+      "src/backend/config/performance_thresholds.json",
+      "src/backend/utils/logging_utils.py",
+      "src/backend/monitoring/console_formatter.py"
+    ],
+    "documentation": [
+      "docs/architecture/logging_architecture.md",
+      "docs/user_guides/logging_configuration.md",
+      "infrastructure/README.md"
+    ]
+  }
+}
