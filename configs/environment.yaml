@@ -1,0 +1,7 @@
+name: dev_env
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - matplotlib
+  - scipy
