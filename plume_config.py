@@ -5,24 +5,34 @@ import logging
 logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
+DEFAULT_PLUME_FILE = '10302017_10cms_bounded.hdf5'
 
 
 def get_config_path() -> str:
     """Return the path to the configuration file."""
-    return os.environ.get('PLUME_CONFIG', DEFAULT_CONFIG_PATH)
+    path = os.environ.get('PLUME_CONFIG', DEFAULT_CONFIG_PATH)
+    if path == DEFAULT_CONFIG_PATH:
+        logger.debug('PLUME_CONFIG not set; using default %s', path)
+    else:
+        logger.debug('Using config path from PLUME_CONFIG: %s', path)
+    return path
 
 
 def get_plume_file() -> str:
     """Return the HDF5 plume filename from the configuration."""
     config_path = get_config_path()
-    logger.debug("Loading config from %s", config_path)
+    logger.debug('Loading config from %s', config_path)
     if not os.path.exists(config_path):
-        logger.warning("Config file %s not found. Using default filename.", config_path)
-        return '10302017_10cms_bounded.hdf5'
+        logger.warning('Config file %s not found. Using default filename.', config_path)
+        logger.debug('Default plume file: %s', DEFAULT_PLUME_FILE)
+        return DEFAULT_PLUME_FILE
     try:
         with open(config_path) as f:
             data = json.load(f)
-        return data.get("plume_file", '10302017_10cms_bounded.hdf5')
+        plume_file = data.get('plume_file', DEFAULT_PLUME_FILE)
+        logger.debug('Plume file from config: %s', plume_file)
+        return plume_file
     except Exception as exc:
-        logger.error("Invalid config file %s: %s", config_path, exc)
-        return '10302017_10cms_bounded.hdf5'
+        logger.error('Invalid config file %s: %s', config_path, exc)
+        logger.debug('Default plume file: %s', DEFAULT_PLUME_FILE)
+        return DEFAULT_PLUME_FILE
