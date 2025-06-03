@@ -32,5 +32,9 @@
   "wind": {
     "direction": 90,
     "speed": 100.0
+  },
+  "simulation": {
+    "duration_seconds": 240.0,
+    "comment": "4 minutes"
   }
 }

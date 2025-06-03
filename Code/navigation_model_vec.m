@@ -35,6 +35,42 @@ function out = navigation_model_vec(triallength, environment, plotting,ntrials)
 
 
 tic
+
+% Handle string input for triallength
+if ischar(triallength) || isstring(triallength)
+    if strcmpi(triallength, 'config') || strcmpi(triallength, 'auto')
+        fprintf('Reading duration from config file...\n');
+        [~, plume_config] = get_plume_file();
+        
+        % Get duration in seconds from config
+        if isfield(plume_config, 'simulation') && isfield(plume_config.simulation, 'duration_seconds')
+            duration_seconds = plume_config.simulation.duration_seconds;
+        else
+            duration_seconds = 240.0;  % Default 4 minutes
+            fprintf('No simulation.duration_seconds in config, using default: %.1f seconds\n', duration_seconds);
+        end
+        
+        % Convert to samples based on environment
+        switch lower(environment)
+            case {'crimaldi', 'openlooppulse15', 'openlooppulsewb15'}
+                frame_rate = 15;
+            case {'gaussian', 'openlooppulse', 'openlooppulsewb'}
+                frame_rate = 50;
+            otherwise
+                frame_rate = 15;
+        end
+        
+        triallength = round(duration_seconds * frame_rate);
+        fprintf('Using config duration: %.1f seconds = %d samples at %d Hz\n', ...
+                duration_seconds, triallength, frame_rate);
+    else
+        error('Invalid triallength string. Use ''config'' or a number.');
+    end
+else
+    % Ensure triallength is numeric if not a string
+    triallength = double(triallength);
+end
+
 % Scaling factors
 
 tscale = 15/50; %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
