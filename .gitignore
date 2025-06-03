@@ -124,6 +124,7 @@ pip-delete-this-directory.txt
 *.log
 *.out
 *.err
+test_output*/
 
 # macOS
 .DS_Store

@@ -22,7 +22,7 @@
   },
   "data_path": {
     "format": "single_file",
-    "path": "data/plumes/10302017_10cms_bounded.hdf5",
+    "path": "/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations/data/plumes/10302017_10cms_bounded.hdf5",
     "dataset_name": "/dataset2"
   },
   "preprocessing": {
@@ -34,7 +34,7 @@
     "speed": 100.0
   },
   "simulation": {
-    "duration_seconds": 240.0,
+    "duration_seconds": 300.0,
     "comment": "4 minutes"
   }
 }
