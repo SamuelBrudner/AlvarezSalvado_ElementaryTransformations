@@ -19,6 +19,9 @@
 #SBATCH --output=logs/slurm-%A_%a.out
 #SBATCH --error=logs/slurm-%A_%a.err
 
+# Ensure no display
+unset DISPLAY
+export MATLAB_JAVA=$JAVA_HOME/jre
 # Load MATLAB module (required on Grace)
 module load MATLAB/2023b
 
@@ -32,7 +35,7 @@ echo "Running on: $(hostname)"
 echo "Array task: ${SLURM_ARRAY_TASK_ID}"
 
 # Run MATLAB
-matlab -nodisplay -nosplash << 'EOF'
+matlab -nodisplay -nosplash -nodesktop -nojvm << 'EOF'
 % Add code to path
 addpath(genpath('Code'));
 

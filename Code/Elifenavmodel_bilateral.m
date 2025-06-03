@@ -2,6 +2,11 @@
 
 function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials) 
 
+% Disable plotting if no display available
+if ~usejava('desktop') || ~feature('ShowFigureWindows')
+    plotting = 0;
+end
+
 
 
 % [x,y,heading,odor,odorON,odorOFF] = Elifenavmodel_bilateral(triallength, environment, plotting,ntrials)

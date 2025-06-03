@@ -1,5 +1,3 @@
-
-
 function out = navigation_model_vec(triallength, environment, plotting,ntrials)
 
 % [x,y,heading,odor,successrate,latency,start,odorON,odorOFF]...
@@ -38,8 +36,27 @@ function out = navigation_model_vec(triallength, environment, plotting,ntrials)
 
 tic
 % Scaling factors
-%tscale = 15/50; % Now loaded from config %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
-%pxscale = 0.74; % Now loaded from config %mm/pixel ratio to convert pixels from the plume data to actual mm
+
+tscale = 15/50; %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
+pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual mm
+
+% Override with config values for Crimaldi
+if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
+    try
+        [plume_filename, plume_config] = get_plume_file();
+        tscale = plume_config.time_scale_50hz;
+        pxscale = plume_config.pixel_scale;
+        fprintf('Loaded config: %.1f Hz, %.3f mm/px\n', plume_config.frame_rate, pxscale);
+    catch
+        fprintf('Config failed, using defaults\n');
+        plume_config.frame_rate = 15;
+    end
+end
+
+% Ensure plume_config exists
+if ~exist('plume_config', 'var')
+    plume_config.frame_rate = 15;
+end
 
 
 
@@ -154,8 +171,8 @@ heading = 360*rand(1,ntrials); % starts with a random heading
 odormax = 1; % Maximal odor concentration for pulse environments
 sigma = 5; % Width of gaussian gradient in cm
 pmax = 1; % Maximal odor probability for gaussian environment
-%plume_xlims=[1 216]; % Now from config
-%plume_ylims=[1 406]; % Now from config
+plume_xlims=[1 216];
+plume_ylims=[1 406];
 
 OLzero=zeros(3501,1);
 OLodorlib.openlooppulse15.data    =OLzero; OLodorlib.openlooppulse15.data(450:600) = 1;
@@ -180,7 +197,7 @@ for i = 1:triallength
     switch environment
         
         case {'Crimaldi', 'crimaldi'}
-            %plume_filename = get_plume_file(); % Now loaded earlier from config
+            plume_filename = get_plume_file();
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
             xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
             yind = -round(10*y(i,:)/pxscale)+1;
@@ -189,7 +206,7 @@ for i = 1:triallength
             odor(i,out_of_plume)=0;
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read(plume_filename,dataset_name,[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read(plume_filename,'/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
             odor(i,:) = odormax*OLodorlib.(environment).data(i);
@@ -247,7 +264,7 @@ for i = 1:triallength
     % Calculate X and Y positions
     switch environment
         case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
-            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/(10*plume_config.frame_rate));  % convert mm/s to cm/samp
+            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/150);  % convert mm/s to cm/samp
         otherwise
            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/500); % convert mm/s to cm/samp (for 50Hz)
     end
@@ -285,7 +302,7 @@ switch environment
             success(i) = 1;
             switch environment
                 case {'Crimaldi','crimaldi'}
-                    latency(i) = found/plume_config.frame_rate; % Use config frame rate
+                    latency(i) = found/15;
                 case {'gaussian','Gaussian'}
                     latency(i) = found/50;
             end
