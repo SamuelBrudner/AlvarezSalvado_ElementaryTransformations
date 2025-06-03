@@ -1,0 +1,468 @@
+{
+  "analysis_pipeline": {
+    "enabled": true,
+    "enabled_analyzers": [
+      "success_rate_calculator",
+      "path_efficiency_analyzer",
+      "temporal_dynamics_analyzer",
+      "robustness_analyzer",
+      "trajectory_analysis",
+      "statistical_comparison"
+    ],
+    "parallel_processing": true,
+    "max_workers": 4,
+    "memory_limit_gb": 8,
+    "timeout_seconds": 1800,
+    "checkpoint_interval": 50,
+    "error_handling_strategy": "graceful_degradation"
+  },
+  "performance_metrics": {
+    "navigation_success": {
+      "source_localization_threshold_meters": 0.05,
+      "time_to_target_max_seconds": 300,
+      "success_rate_calculation_method": "percentage",
+      "confidence_interval": 0.95,
+      "statistical_validation": true,
+      "baseline_comparison": true
+    },
+    "path_efficiency": {
+      "distance_calculation_method": "euclidean",
+      "efficiency_metric": "path_length_ratio",
+      "optimal_path_algorithm": "straight_line",
+      "search_pattern_analysis": true,
+      "energy_consumption_analysis": true,
+      "coverage_metrics": true
+    },
+    "temporal_dynamics": {
+      "response_time_threshold_ms": 100,
+      "plume_encounter_detection_method": "intensity_threshold",
+      "temporal_resolution_ms": 50,
+      "smoothing_window_size": 5,
+      "adaptation_time_analysis": true,
+      "convergence_rate_calculation": true
+    },
+    "robustness_analysis": {
+      "complexity_factors": [
+        "plume_intermittency",
+        "wind_variability",
+        "arena_size",
+        "source_distance",
+        "noise_level"
+      ],
+      "degradation_threshold": 0.1,
+      "adaptability_metrics": [
+        "performance_variance",
+        "convergence_stability",
+        "parameter_sensitivity"
+      ],
+      "environmental_stress_testing": true
+    },
+    "resource_utilization": {
+      "memory_tracking": true,
+      "cpu_utilization_monitoring": true,
+      "processing_time_analysis": true,
+      "throughput_calculation": true,
+      "scalability_assessment": true
+    }
+  },
+  "statistical_comparison": {
+    "significance_level": 0.05,
+    "multiple_comparison_correction": "benjamini_hochberg",
+    "effect_size_calculation": true,
+    "bootstrap_iterations": 10000,
+    "correlation_methods": [
+      "pearson",
+      "spearman"
+    ],
+    "normality_tests": [
+      "shapiro_wilk",
+      "kolmogorov_smirnov"
+    ],
+    "hypothesis_testing": {
+      "parametric_tests": [
+        "t_test",
+        "anova"
+      ],
+      "non_parametric_tests": [
+        "mann_whitney_u",
+        "kruskal_wallis",
+        "wilcoxon_signed_rank"
+      ],
+      "equivalence_testing": true,
+      "power_analysis": true
+    },
+    "reproducibility_assessment": {
+      "icc_calculation": true,
+      "variance_component_analysis": true,
+      "cross_environment_validation": true,
+      "audit_trail_generation": true
+    }
+  },
+  "trajectory_analysis": {
+    "sampling_rate_hz": 20,
+    "trajectory_smoothing": {
+      "enabled": true,
+      "method": "gaussian",
+      "sigma": 1.0
+    },
+    "path_metrics": [
+      "total_distance",
+      "displacement_efficiency",
+      "tortuosity",
+      "search_area_coverage",
+      "directional_efficiency"
+    ],
+    "visualization_settings": {
+      "trajectory_color_scheme": "viridis",
+      "path_width": 2.0,
+      "marker_size": 5,
+      "show_velocity_vectors": true,
+      "overlay_plume_data": true,
+      "animation_generation": false
+    },
+    "spatial_analysis": {
+      "density_mapping": true,
+      "hotspot_identification": true,
+      "boundary_interaction_analysis": true,
+      "clustering_analysis": true
+    }
+  },
+  "visualization": {
+    "output_formats": [
+      "png",
+      "pdf",
+      "svg"
+    ],
+    "figure_size": [
+      12,
+      8
+    ],
+    "dpi": 300,
+    "color_schemes": {
+      "success_rate": "RdYlGn",
+      "efficiency": "viridis",
+      "temporal": "coolwarm",
+      "comparison": "Set1"
+    },
+    "plot_types": [
+      "trajectory_overlay",
+      "performance_comparison",
+      "statistical_distribution",
+      "correlation_matrix",
+      "time_series_analysis",
+      "heatmap_analysis"
+    ],
+    "interactive_plots": false,
+    "publication_quality": true,
+    "style_configuration": {
+      "font_family": "Arial",
+      "font_size": 12,
+      "line_width": 1.5,
+      "grid_enabled": true,
+      "legend_position": "best"
+    }
+  },
+  "report_generation": {
+    "output_directory": "results/analysis_reports",
+    "report_format": "html",
+    "include_sections": [
+      "executive_summary",
+      "methodology",
+      "performance_metrics",
+      "statistical_analysis",
+      "trajectory_visualization",
+      "comparative_analysis",
+      "conclusions"
+    ],
+    "template_file": "templates/analysis_report.html",
+    "auto_generate": true,
+    "scientific_formatting": true,
+    "citation_style": "apa",
+    "include_raw_data": false
+  },
+  "validation_thresholds": {
+    "minimum_simulation_count": 100,
+    "correlation_threshold": 0.95,
+    "statistical_power": 0.8,
+    "effect_size_threshold": 0.2,
+    "reproducibility_threshold": 0.99,
+    "convergence_criteria": {
+      "relative_tolerance": 1e-6,
+      "absolute_tolerance": 1e-9,
+      "max_iterations": 1000
+    },
+    "numerical_precision": {
+      "floating_point_precision": "float64",
+      "comparison_tolerance": 1e-12,
+      "zero_threshold": 1e-15
+    }
+  },
+  "cross_format_comparison": {
+    "crimaldi_dataset_reference": true,
+    "custom_format_normalization": true,
+    "format_specific_metrics": {
+      "crimaldi": {
+        "arena_size_meters": 1.0,
+        "pixel_resolution": 0.01,
+        "temporal_resolution_hz": 50.0,
+        "intensity_units": "concentration_ppm"
+      },
+      "custom": {
+        "auto_detect_parameters": true,
+        "calibration_required": true,
+        "parameter_validation": true,
+        "consistency_checking": true
+      }
+    },
+    "equivalence_testing": {
+      "enabled": true,
+      "equivalence_margin": 0.1,
+      "tost_procedure": true,
+      "confidence_level": 0.95
+    },
+    "compatibility_assessment": {
+      "correlation_analysis": true,
+      "agreement_analysis": true,
+      "bias_detection": true,
+      "precision_comparison": true
+    }
+  },
+  "algorithm_comparison": {
+    "baseline_algorithms": [
+      "infotaxis",
+      "casting",
+      "gradient_following"
+    ],
+    "comparison_metrics": [
+      "success_rate",
+      "time_to_source",
+      "path_efficiency",
+      "computational_cost",
+      "robustness_score"
+    ],
+    "statistical_tests": [
+      "mann_whitney_u",
+      "kruskal_wallis",
+      "friedman_test"
+    ],
+    "ranking_analysis": {
+      "enabled": true,
+      "ranking_methods": [
+        "weighted_average",
+        "pareto_ranking",
+        "topsis"
+      ],
+      "metric_weights": {
+        "success_rate": 0.3,
+        "time_to_source": 0.25,
+        "path_efficiency": 0.25,
+        "robustness_score": 0.2
+      },
+      "bootstrap_ranking": true,
+      "stability_assessment": true
+    }
+  },
+  "output_configuration": {
+    "precision": 6,
+    "scientific_notation": false,
+    "units": {
+      "distance": "meters",
+      "time": "seconds",
+      "velocity": "meters_per_second",
+      "angle": "radians"
+    },
+    "file_naming": {
+      "timestamp_format": "%Y%m%d_%H%M%S",
+      "include_algorithm_name": true,
+      "include_dataset_identifier": true,
+      "include_analysis_type": true
+    },
+    "data_export": {
+      "raw_metrics": true,
+      "processed_results": true,
+      "statistical_summaries": true,
+      "visualization_data": true
+    },
+    "compression": {
+      "enabled": true,
+      "method": "gzip",
+      "level": 6
+    }
+  },
+  "quality_assurance": {
+    "validation_checks": [
+      "numerical_accuracy",
+      "statistical_validity",
+      "reproducibility_verification",
+      "cross_format_consistency"
+    ],
+    "accuracy_threshold": 1e-6,
+    "enable_checksum_validation": true,
+    "reference_comparison": true,
+    "automated_testing": {
+      "unit_tests": false,
+      "integration_tests": false,
+      "regression_tests": true,
+      "performance_benchmarks": true
+    },
+    "error_detection": {
+      "outlier_detection": true,
+      "anomaly_threshold": 3.0,
+      "consistency_checks": true,
+      "boundary_validation": true
+    }
+  },
+  "performance_optimization": {
+    "memory_management": {
+      "memory_limit_mb": 8192,
+      "memory_mapping": true,
+      "garbage_collection": "automatic",
+      "buffer_size_mb": 512
+    },
+    "parallel_processing": {
+      "enabled": true,
+      "max_workers": 4,
+      "chunk_size": "auto",
+      "load_balancing": "dynamic",
+      "thread_safety": true
+    },
+    "caching": {
+      "cache_intermediate_results": true,
+      "cache_directory": "cache/analysis",
+      "cache_size_limit_gb": 5,
+      "cache_expiry_hours": 48,
+      "compression": "lz4"
+    },
+    "processing_timeout_seconds": 1800,
+    "progress_reporting": {
+      "enabled": true,
+      "update_interval_seconds": 10,
+      "detailed_logging": true,
+      "performance_metrics": true
+    }
+  },
+  "logging_configuration": {
+    "log_level": "INFO",
+    "log_file": "logs/analysis.log",
+    "log_rotation": {
+      "max_size_mb": 100,
+      "backup_count": 5,
+      "rotation_interval": "daily"
+    },
+    "structured_logging": true,
+    "performance_logging": true,
+    "statistical_logging": true,
+    "error_tracking": {
+      "detailed_stack_traces": true,
+      "error_categorization": true,
+      "recovery_suggestions": true
+    }
+  },
+  "integration_settings": {
+    "simulation_pipeline_integration": {
+      "automatic_analysis_trigger": true,
+      "result_format_compatibility": true,
+      "metrics_alignment": true,
+      "cross_validation": true
+    },
+    "normalization_pipeline_integration": {
+      "normalized_data_validation": true,
+      "format_consistency_checks": true,
+      "calibration_parameter_verification": true
+    },
+    "external_tool_integration": {
+      "statistical_packages": [
+        "scipy",
+        "statsmodels"
+      ],
+      "visualization_libraries": [
+        "matplotlib",
+        "seaborn"
+      ],
+      "data_analysis_frameworks": [
+        "pandas",
+        "numpy"
+      ]
+    }
+  },
+  "experimental_features": {
+    "machine_learning_analysis": {
+      "enabled": false,
+      "feature_extraction": [
+        "trajectory_features",
+        "temporal_patterns",
+        "spatial_distributions"
+      ],
+      "clustering_algorithms": [
+        "kmeans",
+        "dbscan",
+        "hierarchical"
+      ],
+      "dimensionality_reduction": [
+        "pca",
+        "tsne",
+        "umap"
+      ]
+    },
+    "real_time_analysis": {
+      "enabled": false,
+      "streaming_analysis": false,
+      "online_learning": false,
+      "adaptive_thresholds": false
+    },
+    "advanced_visualization": {
+      "3d_trajectory_plots": false,
+      "interactive_dashboards": false,
+      "virtual_reality_visualization": false,
+      "augmented_reality_overlay": false
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "compatible_algorithms": [
+      "infotaxis",
+      "casting",
+      "gradient_following",
+      "plume_tracking",
+      "hybrid_strategies"
+    ],
+    "supported_metrics": [
+      "navigation_success",
+      "path_efficiency",
+      "temporal_dynamics",
+      "robustness",
+      "resource_utilization"
+    ],
+    "statistical_methods": [
+      "hypothesis_testing",
+      "correlation_analysis",
+      "bootstrap_resampling",
+      "power_analysis",
+      "equivalence_testing"
+    ],
+    "validation_requirements": [
+      "correlation_threshold_95_percent",
+      "reproducibility_threshold_99_percent",
+      "statistical_significance_validation",
+      "cross_format_consistency"
+    ],
+    "dependencies": [
+      "numpy",
+      "scipy",
+      "pandas",
+      "matplotlib",
+      "seaborn",
+      "statsmodels",
+      "scikit-learn"
+    ],
+    "configuration_dependencies": [
+      "default_simulation.json",
+      "default_normalization.json",
+      "analysis_schema.json"
+    ],
+    "documentation": "docs/user_guides/analyzing_results.md"
+  }
+}
