@@ -1,12 +1,10 @@
 #!/bin/bash
-# create_results_report.sh - Generate a summary report of all results
+# create_matlab_report.sh - Generate results summary using MATLAB
 #
-# Usage: ./create_results_report.sh
-# 
-# Analyzes all nav_results_*.mat files in the results/ directory
-# Creates a summary report with timestamp
+# Usage: ./create_matlab_report.sh
 #
-# Requires: Python with scipy installed (use conda environment)
+# Analyzes all nav_results_*.mat files in results/ directory
+# Creates a summary report with statistics
 
 RESULTS_DIR="results"
 REPORT_FILE="results_summary_$(date +%Y%m%d_%H%M%S).txt"
@@ -22,97 +20,83 @@ echo "" >> $REPORT_FILE
 
 if [ $N_FILES -eq 0 ]; then
     echo "No result files found in $RESULTS_DIR/" >> $REPORT_FILE
-    echo "Report saved to: $REPORT_FILE"
+    cat $REPORT_FILE
     exit 0
 fi
 
-# Analyze each file
-echo "Individual Results:" >> $REPORT_FILE
-echo "==================" >> $REPORT_FILE
+# Create MATLAB analysis script
+cat > temp_analyze_all.m << 'EOF'
+% Temporary script to analyze all results
+results_dir = 'results';
+files = dir(fullfile(results_dir, 'nav_results_*.mat'));
 
-for file in $RESULTS_DIR/nav_results_*.mat; do
-    echo "" >> $REPORT_FILE
-    echo "File: $(basename $file)" >> $REPORT_FILE
+fprintf('\nIndividual Results:\n');
+fprintf('==================\n');
+
+all_success_rates = [];
+all_latencies = [];
+total_agents = 0;
+
+for i = 1:length(files)
+    filepath = fullfile(files(i).folder, files(i).name);
+    fprintf('\nFile: %s\n', files(i).name);
     
-    # Quick Python analysis
-    conda run --prefix ./dev_env python << EOF >> $REPORT_FILE 2>&1
-import scipy.io
-import numpy as np
-
-try:
-    data = scipy.io.loadmat('$file', struct_as_record=False, squeeze_me=True)
-    out = data['out']
-    
-    # Get dimensions
-    if hasattr(out.x, 'shape') and len(out.x.shape) > 1:
-        n_agents = out.x.shape[1]
-    else:
-        n_agents = 1
-    
-    print(f"  Agents: {n_agents}")
-    
-    if hasattr(out, 'successrate'):
-        print(f"  Success rate: {out.successrate*100:.1f}%")
-    
-    if hasattr(out, 'latency'):
-        if np.isscalar(out.latency):
-            if not np.isnan(out.latency):
-                print(f"  Time to target: {out.latency:.1f}s")
-        else:
-            valid = out.latency[~np.isnan(out.latency)]
-            if len(valid) > 0:
-                print(f"  Mean latency: {np.mean(valid):.1f}s (n={len(valid)})")
-                
-except Exception as e:
-    print(f"  Error: {e}")
-EOF
-done
-
-# Overall statistics
-echo "" >> $REPORT_FILE
-echo "Overall Statistics:" >> $REPORT_FILE
-echo "==================" >> $REPORT_FILE
-
-conda run --prefix ./dev_env python3 << 'EOF' >> $REPORT_FILE 2>&1
-import scipy.io
-import numpy as np
-import glob
-
-all_success_rates = []
-all_latencies = []
-total_agents = 0
-
-for file in glob.glob('results/nav_results_*.mat'):
-    try:
-        data = scipy.io.loadmat(file, struct_as_record=False, squeeze_me=True)
-        out = data['out']
+    try
+        data = load(filepath);
+        out = data.out;
         
-        if hasattr(out.x, 'shape') and len(out.x.shape) > 1:
-            total_agents += out.x.shape[1]
-        else:
-            total_agents += 1
+        [n_samples, n_agents] = size(out.x);
+        total_agents = total_agents + n_agents;
         
-        if hasattr(out, 'successrate'):
-            all_success_rates.append(out.successrate)
+        fprintf('  Agents: %d\n', n_agents);
         
-        if hasattr(out, 'latency'):
-            if np.isscalar(out.latency):
-                if not np.isnan(out.latency):
-                    all_latencies.append(out.latency)
-            else:
-                all_latencies.extend(out.latency[~np.isnan(out.latency)])
-                
-    except:
-        pass
+        if isfield(out, 'successrate')
+            fprintf('  Success rate: %.1f%%\n', out.successrate * 100);
+            all_success_rates(end+1) = out.successrate;
+        end
+        
+        if isfield(out, 'latency')
+            successful = ~isnan(out.latency);
+            n_success = sum(successful);
+            if n_success > 0
+                mean_lat = mean(out.latency(successful));
+                fprintf('  Mean latency: %.1f s (n=%d)\n', mean_lat, n_success);
+                all_latencies = [all_latencies, out.latency(successful)];
+            end
+        end
+    catch ME
+        fprintf('  Error: %s\n', ME.message);
+    end
+end
 
-print(f"Total agents simulated: {total_agents}")
-if all_success_rates:
-    print(f"Mean success rate: {np.mean(all_success_rates)*100:.1f}%")
-if all_latencies:
-    print(f"Overall mean latency: {np.mean(all_latencies):.1f} seconds")
-    print(f"Fastest: {np.min(all_latencies):.1f}s, Slowest: {np.max(all_latencies):.1f}s")
+fprintf('\n\nOverall Statistics:\n');
+fprintf('==================\n');
+fprintf('Total agents simulated: %d\n', total_agents);
+
+if ~isempty(all_success_rates)
+    fprintf('Mean success rate: %.1f%%\n', mean(all_success_rates) * 100);
+    fprintf('Success rate range: %.1f%% - %.1f%%\n', ...
+            min(all_success_rates)*100, max(all_success_rates)*100);
+end
+
+if ~isempty(all_latencies)
+    fprintf('Overall mean latency: %.1f seconds\n', mean(all_latencies));
+    fprintf('Fastest: %.1f s, Slowest: %.1f s\n', ...
+            min(all_latencies), max(all_latencies));
+    fprintf('Total successful navigations: %d\n', length(all_latencies));
+end
+
+exit;
 EOF
 
-echo "" >> $REPORT_FILE
+# Run MATLAB analysis
+echo "Analyzing results with MATLAB..." >&2
+matlab -nodisplay -nosplash < temp_analyze_all.m 2>/dev/null | grep -v "^>>" | tail -n +11 >> $REPORT_FILE
+
+# Clean up
+rm -f temp_analyze_all.m
+
+# Display report
 echo "Report saved to: $REPORT_FILE"
+echo ""
 cat $REPORT_FILE
