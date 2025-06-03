@@ -38,8 +38,8 @@ function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntria
 
 tic
 % Scaling factors
-tscale = 15/50; %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
-pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual mm
+%tscale = 15/50; % Now loaded from config %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
+%pxscale = 0.74; % Now loaded from config %mm/pixel ratio to convert pixels from the plume data to actual mm
 
 
 
@@ -94,7 +94,7 @@ pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual 
 
         kup = kup/tscale;
         kdown = kdown/tscale;
-        kbil = kbil/15;         % convert to 15 frames/sec for Crimaldi data
+        kbil = kbil/plume_config.frame_rate;         % convert to 15 frames/sec for Crimaldi data
 
         turnbase = turnbase/tscale;
         tmodON = tmodON/tscale;
@@ -190,7 +190,7 @@ for i = 1:triallength
     switch environment
         
         case {'Crimaldi', 'crimaldi'}
-            plume_filename = get_plume_file();
+            %plume_filename = get_plume_file(); % Now loaded earlier
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
             xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
             yind = -round(10*y(i,:)/pxscale)+1;
@@ -203,7 +203,7 @@ for i = 1:triallength
             
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read(plume_filename,'/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read(plume_filename,dataset_name,[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
                 odorL(i,it) = odor(i,it);       % left odor is just odor at the fly
             end
             
@@ -220,7 +220,7 @@ for i = 1:triallength
             withinR=setdiff([1:ntrials],out_of_plumeR);
             odorR(i,out_of_plumeR)=0;
             for it=withinR
-                odorR(i,it)=max(0,h5read(plume_filename,'/dataset2',[xRind(it) yRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odorR(i,it)=max(0,h5read(plume_filename,dataset_name,[xRind(it) yRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
             
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
@@ -277,7 +277,7 @@ for i = 1:triallength
     % Calculate X and Y positions
     switch environment
         case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
-            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/150);  % convert mm/s to cm/samp
+            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/(10*plume_config.frame_rate));  % convert mm/s to cm/samp
         otherwise
            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/500); % convert mm/s to cm/samp (for 50Hz)
     end
@@ -316,7 +316,7 @@ switch environment
             success(i) = 1;
             switch environment
                 case {'Crimaldi','crimaldi'}
-                    latency(i) = found/15;
+                    latency(i) = found/plume_config.frame_rate;
                 case {'gaussian','Gaussian'}
                     latency(i) = found/50;
             end
