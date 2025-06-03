@@ -7,7 +7,7 @@ This repository accompanies the paper **"Elementary sensory-motor transformation
 - **Code/** – MATLAB scripts for analyzing behavior and running the navigation model. This folder also contains an `import functions feb2017` subfolder for reading binary tracking data produced with the Miniature Manhattan wind tunnels.
 - **Arena 4f/** – Laser cut design files (AI format) and instructions describing how to assemble the behavioral arena.
 - **WalkingArenaLoopLongerIRtime2/** – Arduino sketch for controlling arena lighting, odor valves and camera triggers.
-- **configs/** – Central location for configuration files. Each subproject should store its own files in a subfolder here (e.g. `configs/navigation_model/`, `configs/arduino/`).
+- **configs/** – Central location for configuration files. Each subproject should store its own files in a subfolder here (e.g. `configs/navigation_model/`, `configs/arduino/`). The default plume selection for the navigation model is located at `configs/navigation_model/navigation_model_default.json`.
 - **FlyTracker 3.6.vi**, **Get Frame Timestamp.vi**, **SelectBackground.vi** – LabVIEW VIs used for dSMOKE:
   mean: 0.359
   median: 0.498
