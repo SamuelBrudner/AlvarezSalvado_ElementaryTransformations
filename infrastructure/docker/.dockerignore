@@ -1,0 +1,365 @@
+# .dockerignore for Plume Navigation Simulation System
+# Optimizes Docker build context for scientific computing containers
+# Supports multi-stage builds with security hardening and performance optimization
+# Designed for 4000+ simulation batch processing in containerized environments
+
+# =============================================================================
+# Version Control System Artifacts
+# =============================================================================
+# Version control system artifacts
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+.svn/
+.hg/
+.bzr/
+CVS/
+
+# =============================================================================
+# Development Environment and IDE Files
+# =============================================================================
+# Development environment and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+.project
+.settings/
+.classpath
+*.sublime-*
+.atom/
+
+# =============================================================================
+# Documentation and User Guides
+# =============================================================================
+# Documentation and user guides (not needed in container)
+docs/
+*.md
+*.rst
+*.txt
+LICENSE
+CHANGELOG.md
+CONTRIBUTING.md
+README.md
+
+# =============================================================================
+# Testing and Quality Assurance Artifacts
+# =============================================================================
+# Testing artifacts and quality assurance files
+src/test/
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.tox/
+.nox/
+nosetests.xml
+test-results/
+test_output/
+test_temp/
+*.test
+*.result
+
+# =============================================================================
+# Benchmarking and Performance Testing Files
+# =============================================================================
+# Benchmarking and performance testing files
+benchmarks/
+benchmark_output/
+performance_results/
+memory_profiles/
+timing_data/
+benchmark_temp/
+*.prof
+*.profile
+
+# =============================================================================
+# Build and Deployment Artifacts
+# =============================================================================
+# Build and deployment artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+*.tar.gz
+*.zip
+*.rar
+*.7z
+deployment/
+deploy_temp/
+
+# =============================================================================
+# Python Compilation and Cache Artifacts
+# =============================================================================
+# Python compilation and cache artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+develop-eggs/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+share/python-wheels/
+.installed.cfg
+*.egg
+MANIFEST
+
+# =============================================================================
+# Cache and Temporary Directories
+# =============================================================================
+# Cache and temporary directories
+.cache/
+cache/
+tmp/
+temp/
+.tmp/
+.temp/
+memory_cache/
+disk_cache/
+result_cache/
+.joblib/
+joblib_cache/
+.npy_cache/
+processed_data_cache/
+backend_cache/
+algorithm_cache/
+simulation_cache/
+analysis_cache/
+
+# =============================================================================
+# Large Scientific Data Files and Simulation Outputs
+# =============================================================================
+# Large scientific data files and simulation outputs
+data/output/
+data/processed/
+data/normalized/
+results/
+simulation_results/
+analysis_results/
+batch_output/
+trajectory_data/
+*.trajectory
+*.simulation
+*.avi
+*.mp4
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+
+# =============================================================================
+# Numerical Computation Artifacts
+# =============================================================================
+# Numerical computation artifacts
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.mat
+*.pkl
+*.pickle
+array_cache/
+matrix_cache/
+computation_temp/
+numerical_output/
+backend_arrays/
+computation_cache/
+
+# =============================================================================
+# Log Files and Monitoring Data
+# =============================================================================
+# Log files and monitoring data
+*.log
+logs/
+.logs/
+log/
+*.out
+*.err
+performance_logs/
+error_logs/
+simulation_logs/
+analysis_logs/
+monitoring/
+profiling_data/
+backend_logs/
+execution_logs/
+
+# =============================================================================
+# Local and Environment-Specific Configurations
+# =============================================================================
+# Local and environment-specific configurations
+config/local_*.json
+config/dev_*.json
+config/test_*.json
+config/user_*.json
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+local_config.json
+user_config.json
+*.local
+backend_local_config.json
+
+# =============================================================================
+# Security-Sensitive Files
+# =============================================================================
+# Security-sensitive files
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+secrets/
+.secrets/
+credentials/
+.credentials/
+api_keys.json
+database.db
+*.sqlite
+*.sqlite3
+passwords.txt
+auth.json
+backend_secrets/
+
+# =============================================================================
+# Backup and Recovery Files
+# =============================================================================
+# Backup and recovery files
+*.orig
+*.rej
+*.bak
+*.backup
+*.save
+core
+*.core
+.gdb_history
+backup/
+recovery/
+backend_backup/
+
+# =============================================================================
+# Container-Specific Exclusions
+# =============================================================================
+# Container-specific exclusions
+docker-compose.override.yml
+docker-compose.local.yml
+Dockerfile.local
+Dockerfile.dev
+.dockerignore.local
+docker/
+containers/
+
+# =============================================================================
+# Parallel Processing Artifacts
+# =============================================================================
+# Parallel processing artifacts
+joblib_temp/
+parallel_cache/
+worker_output/
+process_*.log
+thread_*.log
+multiprocessing_temp/
+parallel_output/
+backend_parallel/
+
+# =============================================================================
+# Video Processing Temporary Files
+# =============================================================================
+# Video processing temporary files
+*.avi.tmp
+*.mp4.tmp
+processed_videos/
+normalized_videos/
+temp_frames/
+extracted_frames/
+*.frame
+video_cache/
+format_conversion_temp/
+backend_video_temp/
+
+# =============================================================================
+# Analysis and Visualization Artifacts
+# =============================================================================
+# Analysis and visualization artifacts
+plots/
+figures/
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.pdf
+visualization_output/
+statistical_output/
+report_temp/
+backend_analysis/
+metrics_output/
+
+# =============================================================================
+# Package Management Artifacts
+# =============================================================================
+# Package management artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pip-log.txt
+pip-delete-this-directory.txt
+.pip_cache/
+
+# =============================================================================
+# Cross-Platform Specific Artifacts
+# =============================================================================
+# Cross-platform specific artifacts
+*.exe
+*.dll
+*.pdb
+ehthumbs.db
+*.dylib
+._*
+.AppleDouble
+.LSOverride
+.directory
+core.*
+
+# =============================================================================
+# Essential Files Explicitly Preserved (NOT ignored)
+# =============================================================================
+
+# Essential files explicitly preserved (NOT ignored)
+!src/backend/
+!src/backend/**/*.py
+!src/backend/config/default_*.json
+!src/backend/config/schema/
+!src/backend/config/schema/*.json
+!src/backend/requirements.txt
+!src/backend/pyproject.toml
+!src/backend/setup.py
+!src/backend/__init__.py
+!src/backend/__main__.py
+!src/backend/cli.py
+!infrastructure/config/
+!infrastructure/config/*.json
+!infrastructure/docker/requirements.txt
+!infrastructure/docker/entrypoint.sh
