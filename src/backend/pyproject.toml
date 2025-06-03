@@ -1,0 +1,460 @@
+[build-system]
+# Modern Python packaging standards (PEP 517/518) with scientific computing optimization
+requires = [
+    "setuptools>=65.0.0",  # Modern packaging standards and PEP 621 compliance
+    "wheel>=0.38.0",       # Binary distribution support for scientific libraries
+    "setuptools-scm[toml]>=7.0.0"  # Automatic version management from git tags
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+# Core project metadata for scientific computing framework
+name = "plume-simulation-backend"
+description = "Scientific computing framework for olfactory navigation algorithm evaluation and cross-format plume data processing with automated normalization, batch simulation execution, and performance analysis capabilities"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {text = "MIT"}
+authors = [
+    {name = "Plume Simulation Research Team", email = "research-team@institution.edu"}
+]
+maintainers = [
+    {name = "Plume Simulation Research Team", email = "research-team@institution.edu"}
+]
+
+# Scientific computing and research domain keywords for package discovery
+keywords = [
+    "plume-navigation",
+    "olfactory-simulation", 
+    "scientific-computing",
+    "algorithm-evaluation",
+    "batch-processing",
+    "cross-format-compatibility",
+    "fluid-dynamics",
+    "bio-inspired-robotics",
+    "performance-analysis",
+    "statistical-validation",
+    "reproducible-research",
+    "video-processing",
+    "data-normalization",
+    "parallel-processing"
+]
+
+# Comprehensive PyPI classifiers for scientific computing and research categorization
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Natural Language :: English",
+    "Typing :: Typed"
+]
+
+# Python version requirement for scientific computing compatibility
+requires-python = ">=3.9"
+
+# Core scientific computing dependencies with precise version constraints for reproducibility
+dependencies = [
+    "numpy>=2.1.3",        # Numerical accuracy and performance for scientific computing
+    "scipy>=1.15.3",       # Advanced scientific computing functions and statistical validation
+    "pandas>=2.2.0",       # Data analysis and result management with efficient memory usage
+    "opencv-python>=4.11.0",  # Video processing and cross-format compatibility
+    "joblib>=1.6.0",       # Parallel processing supporting 4000+ simulations
+    "matplotlib>=3.9.0",   # Scientific visualization and plotting
+    "seaborn>=0.13.2",     # Statistical data visualization
+    "jsonschema>=4.23.0",  # Configuration validation and data integrity
+    "pydantic>=2.5.0",     # Data validation and settings management
+    "tqdm>=4.65.0",        # Progress bars for batch processing operations
+    "rich>=13.7.0",        # Enhanced terminal output and formatting
+    "colorlog>=6.8.0",     # Colored logging for better debugging
+    "psutil>=5.9.0",       # System and process monitoring
+    "h5py>=3.8.0",         # HDF5 file format support for large datasets
+    "click>=8.1.0"         # Command-line interface framework
+]
+
+# Optional dependency groups for different use cases and development environments
+[project.optional-dependencies]
+# Development tools with comprehensive testing and code quality
+dev = [
+    "pytest>=8.3.5",        # Testing framework with scientific computing support
+    "pytest-cov>=4.0.0",    # Coverage reporting for quality assurance
+    "pytest-xdist>=3.3.0",  # Parallel test execution
+    "pytest-benchmark>=4.0.0",  # Performance benchmarking validation
+    "pytest-timeout>=2.1.0",    # Test timeout management
+    "pytest-mock>=3.11.0",      # Mocking framework for unit tests
+    "black>=23.0.0",         # Code formatting for scientific readability
+    "isort>=5.12.0",         # Import organization with scientific library categorization
+    "flake8>=6.0.0",         # Code quality enforcement
+    "mypy>=1.5.0",           # Strict type checking for scientific accuracy
+    "pre-commit>=3.4.0",     # Git hooks for code quality
+    "bandit>=1.7.5"          # Security scanning for scientific environments
+]
+
+# Documentation generation tools
+docs = [
+    "sphinx>=7.1.0",              # Documentation generation framework
+    "sphinx-rtd-theme>=1.3.0",    # ReadTheDocs theme for scientific documentation
+    "sphinx-autodoc-typehints>=1.24.0",  # Type hints in documentation
+    "myst-parser>=2.0.0",         # Markdown support in Sphinx
+    "nbsphinx>=0.9.0",            # Jupyter notebook integration
+    "sphinx-gallery>=0.14.0"      # Example gallery generation
+]
+
+# Performance optimization and profiling tools
+performance = [
+    "numba>=0.58.0",           # JIT compilation for numerical functions
+    "cython>=3.0.0",           # C extensions for performance optimization
+    "line-profiler>=4.1.0",    # Line-by-line profiling
+    "memory-profiler>=0.61.0", # Memory usage analysis
+    "py-spy>=0.3.14"           # Sampling profiler for production
+]
+
+# Advanced visualization and interactive analysis
+visualization = [
+    "plotly>=5.15.0",      # Interactive plotting for scientific analysis
+    "bokeh>=3.2.0",        # Web-based visualization
+    "ipywidgets>=8.1.0",   # Interactive Jupyter widgets
+    "jupyter>=1.0.0",      # Jupyter notebook environment
+    "notebook>=7.0.0"      # Jupyter notebook server
+]
+
+# Extended scientific computing libraries
+scientific = [
+    "zarr>=2.16.0",         # Chunked, compressed array storage
+    "xarray>=2023.8.0",     # N-dimensional labeled arrays
+    "netcdf4>=1.6.4",       # NetCDF file format support
+    "scikit-image>=0.21.0", # Image processing algorithms
+    "scikit-learn>=1.3.0"   # Machine learning algorithms
+]
+
+# All optional dependencies combined for complete development environment
+all = [
+    # Development tools
+    "pytest>=8.3.5",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.3.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-timeout>=2.1.0",
+    "pytest-mock>=3.11.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.4.0",
+    "bandit>=1.7.5",
+    # Documentation
+    "sphinx>=7.1.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-autodoc-typehints>=1.24.0",
+    "myst-parser>=2.0.0",
+    "nbsphinx>=0.9.0",
+    "sphinx-gallery>=0.14.0",
+    # Performance
+    "numba>=0.58.0",
+    "cython>=3.0.0",
+    "line-profiler>=4.1.0",
+    "memory-profiler>=0.61.0",
+    "py-spy>=0.3.14",
+    # Visualization
+    "plotly>=5.15.0",
+    "bokeh>=3.2.0",
+    "ipywidgets>=8.1.0",
+    "jupyter>=1.0.0",
+    "notebook>=7.0.0",
+    # Scientific
+    "zarr>=2.16.0",
+    "xarray>=2023.8.0",
+    "netcdf4>=1.6.4",
+    "scikit-image>=0.21.0",
+    "scikit-learn>=1.3.0"
+]
+
+# Automatic version management from git tags
+dynamic = ["version"]
+
+# Command-line scripts for scientific computing workflows
+[project.scripts]
+plume-simulation = "backend.cli:main"                              # Main CLI interface
+plume-batch = "backend.scripts.run_batch_simulation:main"          # Batch processing execution
+plume-validate = "backend.scripts.validate_environment:main"       # Environment validation
+plume-report = "backend.scripts.generate_report:main"             # Analysis report generation
+plume-clean = "backend.scripts.clean_cache:main"                  # Cache management
+
+# Project URLs for scientific computing community
+[project.urls]
+Homepage = "https://github.com/research-team/plume-simulation"
+Documentation = "https://plume-simulation.readthedocs.io/"
+Repository = "https://github.com/research-team/plume-simulation.git"
+"Bug Tracker" = "https://github.com/research-team/plume-simulation/issues"
+Changelog = "https://github.com/research-team/plume-simulation/blob/main/CHANGELOG.md"
+
+# Setuptools configuration for package discovery and data inclusion
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+exclude = ["tests*", "examples*", "scripts*"]
+
+# Package data inclusion for configuration files and resources
+[tool.setuptools.package-data]
+backend = [
+    "config/*.json",           # Configuration files
+    "config/schema/*.json",    # JSON schema definitions
+    "examples/data/*.json",    # Example data files
+    "scripts/*.sh",            # Shell scripts
+    "py.typed"                 # Type information marker
+]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+# Setuptools-scm configuration for automatic version management
+[tool.setuptools_scm]
+write_to = "backend/_version.py"
+version_scheme = "post-release"
+local_scheme = "dirty-tag"
+fallback_version = "1.0.0"
+
+# Comprehensive pytest configuration for scientific computing validation
+[tool.pytest.ini_options]
+# Test discovery paths focusing on core scientific computing modules
+testpaths = [
+    "src/backend/core",
+    "src/backend/utils", 
+    "src/backend/algorithms",
+    "src/backend/io",
+    "src/backend/cache",
+    "src/backend/monitoring"
+]
+
+# Test file and function naming patterns
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*", "*Test", "*TestSuite"]
+python_functions = ["test_*"]
+
+# Comprehensive testing options with performance validation
+addopts = [
+    "-v",                               # Verbose output
+    "--strict-markers",                 # Strict marker validation
+    "--strict-config",                  # Strict configuration validation
+    "--tb=short",                       # Short traceback format
+    "--maxfail=10",                     # Maximum failures before stopping
+    "--durations=20",                   # Show slowest 20 tests
+    "--cov=src/backend",                # Coverage measurement
+    "--cov-report=html:htmlcov",        # HTML coverage report
+    "--cov-report=term-missing",        # Terminal coverage with missing lines
+    "--cov-report=xml",                 # XML coverage for CI/CD
+    "--cov-fail-under=90",              # Minimum 90% coverage requirement
+    "--benchmark-only",                 # Performance benchmarking
+    "--benchmark-sort=mean",            # Sort benchmarks by mean time
+    "--benchmark-columns=min,max,mean,stddev,median,iqr,outliers,ops,rounds",
+    "--benchmark-histogram=benchmarks/histograms/",
+    "--benchmark-json=benchmarks/results/benchmark_results.json",
+    "--timeout=600",                    # 10-minute timeout for long tests
+    "--timeout-method=thread"           # Thread-based timeout method
+]
+
+# Test execution timeout configuration
+timeout = 600
+timeout_method = "thread"
+
+# Comprehensive test markers for scientific computing workflows
+markers = [
+    "unit: Unit tests for individual components",
+    "integration: Integration tests for pipeline workflows", 
+    "performance: Performance validation tests",
+    "slow: Tests that take longer than 30 seconds",
+    "fast: Tests that complete within 5 seconds",
+    "crimaldi: Tests specific to Crimaldi dataset format",
+    "custom: Tests specific to custom AVI format",
+    "cross_format: Tests validating cross-format compatibility",
+    "accuracy: Tests validating >95% correlation requirement",
+    "speed: Tests validating <7.2 seconds per simulation requirement",
+    "batch: Tests validating 4000+ simulation batch processing",
+    "memory: Tests validating memory usage efficiency",
+    "parallel: Tests validating parallel processing capabilities",
+    "normalization: Tests for data normalization pipeline",
+    "simulation: Tests for simulation execution engine",
+    "analysis: Tests for performance analysis pipeline",
+    "error_handling: Tests for error detection and recovery",
+    "reproducibility: Tests validating >0.99 reproducibility coefficient",
+    "backend: Tests specific to backend components",
+    "scientific: Tests for scientific computing accuracy",
+    "algorithms: Tests for navigation algorithm implementations",
+    "io: Tests for input/output operations",
+    "cache: Tests for caching mechanisms",
+    "monitoring: Tests for performance monitoring"
+]
+
+# Files and directories to ignore during test collection
+collect_ignore = [
+    "setup.py",
+    "__pycache__",
+    "*.pyc",
+    ".pytest_cache",
+    "examples",
+    "scripts"
+]
+
+# Pytest cache configuration
+cache_dir = ".pytest_cache"
+tmp_path_retention_count = 3
+tmp_path_retention_policy = "failed"
+
+# Coverage configuration for scientific computing code quality
+[tool.coverage.run]
+source = ["src/backend"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/setup.py",
+    "*/.pytest_cache/*",
+    "*/examples/*",
+    "*/scripts/*"
+]
+branch = true    # Branch coverage for comprehensive analysis
+parallel = true  # Parallel coverage collection
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]
+precision = 2        # Two decimal places for coverage percentages
+show_missing = true  # Show lines not covered
+skip_covered = false # Don't skip files with 100% coverage
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "Plume Simulation Backend Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# Black code formatting configuration for scientific readability
+[tool.black]
+line-length = 88  # Standard line length for scientific code readability
+target-version = ["py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | examples
+    | scripts
+  )/
+)
+'''
+force-exclude = '^/(examples|scripts)/.*\.py$'
+
+# Import sorting configuration with scientific library categorization
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["backend"]
+known_third_party = [
+    "numpy", "scipy", "pandas", "opencv", "joblib",
+    "matplotlib", "seaborn", "jsonschema", "pydantic",
+    "tqdm", "rich", "colorlog", "psutil", "h5py", "click"
+]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+skip = ["__init__.py"]
+skip_glob = ["examples/*", "scripts/*"]
+
+# MyPy static type checking for scientific computing accuracy
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+show_column_numbers = true
+ignore_missing_imports = false
+follow_imports = "normal"
+namespace_packages = true
+explicit_package_bases = true
+exclude = [
+    "examples/",
+    "scripts/",
+    "build/",
+    "dist/"
+]
+
+# Scientific library type stubs configuration
+[[tool.mypy.overrides]]
+module = [
+    "numpy.*",
+    "scipy.*", 
+    "pandas.*",
+    "cv2.*",
+    "joblib.*",
+    "matplotlib.*",
+    "seaborn.*",
+    "tqdm.*",
+    "rich.*",
+    "colorlog.*",
+    "psutil.*",
+    "h5py.*"
+]
+ignore_missing_imports = true
+
+# Flake8 linting configuration for scientific computing best practices
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503", "E501"]  # Compatible with Black formatting
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist", 
+    "examples",
+    "scripts",
+    ".pytest_cache",
+    ".mypy_cache"
+]
+per-file-ignores = [
+    "__init__.py:F401"  # Allow unused imports in __init__.py files
+]
+max-complexity = 10
+
+# Bandit security scanning for scientific computing environments
+[tool.bandit]
+exclude_dirs = ["tests", "examples", "scripts"]
+skips = ["B101", "B601"]  # Allow assert statements and shell usage in scripts
