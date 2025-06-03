@@ -189,7 +189,7 @@ for i = 1:triallength
             odor(i,out_of_plume)=0;
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read(plume_filename,'/dataset_1',[yind(it) xind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read(plume_filename,'/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
             odor(i,:) = odormax*OLodorlib.(environment).data(i);

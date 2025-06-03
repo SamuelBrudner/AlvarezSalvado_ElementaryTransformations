@@ -203,7 +203,7 @@ for i = 1:triallength
             
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read(plume_filename,'/dataset_1',[yind(it) xind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read(plume_filename,'/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
                 odorL(i,it) = odor(i,it);       % left odor is just odor at the fly
             end
             
@@ -220,7 +220,7 @@ for i = 1:triallength
             withinR=setdiff([1:ntrials],out_of_plumeR);
             odorR(i,out_of_plumeR)=0;
             for it=withinR
-                odorR(i,it)=max(0,h5read(plume_filename,'/dataset_1',[yRind(it) xRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odorR(i,it)=max(0,h5read(plume_filename,'/dataset2',[xRind(it) yRind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
             
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
