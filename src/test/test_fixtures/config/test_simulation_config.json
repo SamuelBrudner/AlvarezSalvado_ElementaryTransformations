@@ -1,0 +1,565 @@
+{
+  "test_metadata": {
+    "configuration_name": "test_simulation_config",
+    "version": "1.0.0",
+    "schema_version": "1.0",
+    "created_date": "2024-01-01",
+    "last_updated": "2024-01-01",
+    "description": "Test configuration for simulation engine validation with comprehensive test scenarios and performance validation",
+    "test_framework": "pytest",
+    "compatible_algorithms": [
+      "infotaxis",
+      "casting",
+      "gradient_following",
+      "plume_tracking",
+      "hybrid_strategies",
+      "reference_implementation"
+    ],
+    "supported_formats": [
+      "crimaldi",
+      "custom_avi",
+      "normalized_numpy"
+    ],
+    "validation_requirements": [
+      "numerical_accuracy",
+      "performance_benchmarks",
+      "batch_processing",
+      "error_handling",
+      "reproducibility"
+    ],
+    "dependencies": [
+      "numpy",
+      "scipy",
+      "joblib",
+      "pytest",
+      "h5py"
+    ],
+    "reference_configs": [
+      "test_algorithm_config.json",
+      "test_normalization_config.json"
+    ],
+    "performance_targets": {
+      "max_simulation_time_seconds": 7.2,
+      "batch_completion_time_hours": 8,
+      "correlation_threshold": 0.95,
+      "reproducibility_coefficient": 0.99
+    }
+  },
+  "test_scenarios": [
+    {
+      "scenario_name": "basic_simulation_validation",
+      "description": "Basic simulation engine validation with standard parameters and single algorithm",
+      "test_type": "functionality_validation",
+      "algorithm_type": "infotaxis",
+      "simulation_count": 10,
+      "expected_completion_time": 72.0,
+      "validation_criteria": {
+        "success_rate_threshold": 1.0,
+        "average_execution_time": 7.2,
+        "accuracy_correlation": 0.95
+      }
+    },
+    {
+      "scenario_name": "batch_processing_validation",
+      "description": "Batch processing validation with multiple simulations and parallel execution",
+      "test_type": "batch_validation",
+      "algorithm_type": "infotaxis",
+      "simulation_count": 100,
+      "batch_size": 10,
+      "parallel_workers": 4,
+      "expected_completion_time": 180.0,
+      "validation_criteria": {
+        "batch_completion_rate": 1.0,
+        "parallel_efficiency": 0.8,
+        "resource_utilization": 0.8
+      }
+    },
+    {
+      "scenario_name": "performance_stress_testing",
+      "description": "Performance stress testing with large batch sizes approaching production targets",
+      "test_type": "performance_validation",
+      "algorithm_type": "infotaxis",
+      "simulation_count": 1000,
+      "batch_size": 50,
+      "parallel_workers": 8,
+      "expected_completion_time": 7200.0,
+      "validation_criteria": {
+        "max_execution_time_seconds": 7.2,
+        "memory_usage_limit_mb": 2048,
+        "accuracy_maintenance_required": true,
+        "throughput_target": 0.5
+      }
+    },
+    {
+      "scenario_name": "cross_algorithm_compatibility",
+      "description": "Cross-algorithm compatibility testing with multiple navigation strategies",
+      "test_type": "compatibility_validation",
+      "algorithms": [
+        "infotaxis",
+        "casting",
+        "gradient_following"
+      ],
+      "simulation_count": 30,
+      "validation_criteria": {
+        "algorithm_execution_success": 1.0,
+        "cross_algorithm_consistency": 0.9,
+        "parameter_validation_success": 1.0
+      }
+    },
+    {
+      "scenario_name": "error_handling_validation",
+      "description": "Error handling validation with various failure scenarios and recovery testing",
+      "test_type": "error_handling_validation",
+      "error_scenarios": [
+        "timeout",
+        "memory_exhaustion",
+        "algorithm_divergence",
+        "invalid_parameters"
+      ],
+      "simulation_count": 20,
+      "validation_criteria": {
+        "error_detection_rate": 1.0,
+        "graceful_degradation": true,
+        "recovery_success_rate": 0.8,
+        "error_reporting_completeness": 1.0
+      }
+    },
+    {
+      "scenario_name": "reproducibility_validation",
+      "description": "Reproducibility validation with deterministic parameters and multiple runs",
+      "test_type": "reproducibility_validation",
+      "algorithm_type": "infotaxis",
+      "simulation_count": 50,
+      "repeat_runs": 3,
+      "random_seed": 42,
+      "validation_criteria": {
+        "reproducibility_coefficient": 0.99,
+        "trajectory_similarity": 0.95,
+        "performance_consistency": 0.98
+      }
+    },
+    {
+      "scenario_name": "resource_management_testing",
+      "description": "Resource management testing with memory and CPU constraints",
+      "test_type": "resource_validation",
+      "algorithm_type": "infotaxis",
+      "simulation_count": 200,
+      "resource_constraints": {
+        "memory_limit_gb": 4,
+        "cpu_limit_cores": 4,
+        "disk_space_limit_gb": 2
+      },
+      "validation_criteria": {
+        "resource_compliance": true,
+        "performance_degradation_threshold": 0.1,
+        "resource_cleanup_success": 1.0
+      }
+    }
+  ],
+  "simulation_engine_test_config": {
+    "enabled": true,
+    "max_simulations": 1000,
+    "target_completion_time_hours": 2,
+    "target_time_per_simulation_seconds": 7.2,
+    "execution_mode": "batch",
+    "parallel_processing": {
+      "enabled": true,
+      "max_workers": 4,
+      "worker_allocation_strategy": "dynamic",
+      "load_balancing": "round_robin",
+      "task_distribution": "chunk_based",
+      "chunk_size": 10,
+      "thread_safety": true,
+      "memory_per_worker_gb": 1
+    },
+    "serial_processing": {
+      "data_dependent_tasks": [
+        "normalization_validation",
+        "result_aggregation"
+      ],
+      "checkpoint_operations": [
+        "progress_saving",
+        "error_state_recovery"
+      ],
+      "resource_cleanup": [
+        "memory_deallocation",
+        "cache_management"
+      ]
+    },
+    "timeout_configuration": {
+      "simulation_timeout_seconds": 15,
+      "batch_timeout_hours": 3,
+      "algorithm_execution_timeout_seconds": 12,
+      "resource_allocation_timeout_seconds": 2
+    }
+  },
+  "algorithm_test_configuration": {
+    "supported_algorithms": [
+      "infotaxis",
+      "casting",
+      "gradient_following",
+      "reference_implementation"
+    ],
+    "default_algorithm": "infotaxis",
+    "test_parameters": {
+      "infotaxis": {
+        "entropy_threshold": 0.1,
+        "search_radius_meters": 0.25,
+        "step_size_meters": 0.01,
+        "max_steps": 1000,
+        "information_gain_weight": 1.0,
+        "exploration_factor": 0.1
+      },
+      "casting": {
+        "cast_width_meters": 0.1,
+        "cast_frequency_hz": 2.0,
+        "upwind_velocity_mps": 0.025,
+        "crosswind_velocity_mps": 0.01,
+        "detection_threshold": 0.01,
+        "max_cast_cycles": 50
+      },
+      "gradient_following": {
+        "gradient_estimation_method": "finite_difference",
+        "step_size_adaptive": true,
+        "initial_step_size_meters": 0.005,
+        "gradient_threshold": 1e-06,
+        "momentum_factor": 0.9,
+        "learning_rate": 0.01
+      }
+    },
+    "algorithm_validation": {
+      "parameter_bounds_checking": true,
+      "convergence_criteria_validation": true,
+      "numerical_stability_checks": true,
+      "performance_baseline_comparison": true
+    }
+  },
+  "simulation_parameters_test": {
+    "environment_settings": {
+      "arena_size_meters": {
+        "width": 0.5,
+        "height": 0.5
+      },
+      "source_location": {
+        "x": 0.4,
+        "y": 0.25
+      },
+      "agent_start_location": {
+        "x": 0.05,
+        "y": 0.25
+      },
+      "wind_conditions": {
+        "mean_velocity_mps": 0.05,
+        "turbulence_intensity": 0.05,
+        "direction_degrees": 0
+      },
+      "plume_characteristics": {
+        "diffusion_coefficient": 0.0005,
+        "source_strength": 0.5,
+        "background_concentration": 0.0,
+        "intermittency_factor": 0.2
+      }
+    },
+    "agent_properties": {
+      "sensor_range_meters": 0.005,
+      "sensor_sensitivity": 0.001,
+      "sensor_noise_variance": 1e-05,
+      "movement_speed_mps": 0.01,
+      "turning_rate_rad_per_sec": 0.5,
+      "decision_frequency_hz": 5.0
+    },
+    "termination_criteria": {
+      "max_simulation_time_seconds": 150,
+      "source_detection_threshold_meters": 0.025,
+      "success_criteria": "source_localization",
+      "failure_criteria": [
+        "timeout",
+        "boundary_exit"
+      ],
+      "early_termination_enabled": true
+    }
+  },
+  "batch_execution_test": {
+    "batch_size": 10,
+    "batch_scheduling": "fifo",
+    "inter_batch_delay_seconds": 0.5,
+    "batch_retry_policy": {
+      "max_retries": 2,
+      "retry_delay_seconds": 2,
+      "exponential_backoff": true,
+      "retry_on_failure_types": [
+        "timeout",
+        "transient_error"
+      ]
+    },
+    "progress_monitoring": {
+      "enabled": true,
+      "update_interval_seconds": 5,
+      "detailed_logging": true,
+      "real_time_metrics": [
+        "completion_rate",
+        "average_time_per_simulation",
+        "error_rate"
+      ],
+      "progress_checkpoints": [
+        25,
+        50,
+        75,
+        90,
+        100
+      ]
+    },
+    "resource_management": {
+      "memory_limit_gb": 4,
+      "cpu_utilization_target": 0.8,
+      "disk_space_threshold_gb": 2,
+      "automatic_cleanup": true,
+      "resource_monitoring_interval_seconds": 10
+    }
+  },
+  "data_management_test": {
+    "input_data_validation": {
+      "format_verification": true,
+      "normalization_status_check": true,
+      "data_integrity_validation": true,
+      "calibration_parameter_verification": true
+    },
+    "intermediate_data_handling": {
+      "cache_simulation_states": false,
+      "cache_directory": "cache/test_simulation",
+      "cache_size_limit_gb": 1,
+      "cache_compression": "none",
+      "cache_expiry_hours": 1
+    },
+    "result_collection": {
+      "output_directory": "test_output/simulations",
+      "result_format": "numpy",
+      "compression": "none",
+      "metadata_inclusion": true,
+      "trajectory_sampling_rate_hz": 10,
+      "performance_metrics_collection": true
+    }
+  },
+  "error_handling_test": {
+    "error_detection": {
+      "algorithm_divergence_detection": true,
+      "numerical_instability_monitoring": true,
+      "resource_exhaustion_detection": true,
+      "timeout_monitoring": true
+    },
+    "error_recovery": {
+      "automatic_retry": true,
+      "graceful_degradation": true,
+      "partial_batch_completion": true,
+      "checkpoint_recovery": false
+    },
+    "error_reporting": {
+      "detailed_error_logs": true,
+      "error_categorization": true,
+      "failure_analysis": true,
+      "recovery_recommendations": true
+    }
+  },
+  "performance_optimization_test": {
+    "memory_optimization": {
+      "memory_mapping": false,
+      "garbage_collection_strategy": "generational",
+      "object_pooling": false,
+      "lazy_loading": false
+    },
+    "computational_optimization": {
+      "vectorized_operations": true,
+      "just_in_time_compilation": false,
+      "algorithm_specific_optimizations": true,
+      "numerical_precision": "float64"
+    },
+    "io_optimization": {
+      "asynchronous_io": false,
+      "buffer_size_mb": 32,
+      "read_ahead_enabled": false,
+      "write_batching": false
+    }
+  },
+  "quality_assurance_test": {
+    "validation_checks": {
+      "algorithm_implementation_validation": true,
+      "parameter_consistency_checks": true,
+      "numerical_accuracy_validation": true,
+      "result_reproducibility_checks": true
+    },
+    "benchmarking": {
+      "reference_algorithm_comparison": true,
+      "performance_baseline_validation": true,
+      "cross_platform_consistency_checks": false,
+      "statistical_validation": true
+    },
+    "testing_integration": {
+      "unit_test_execution": true,
+      "integration_test_validation": true,
+      "performance_regression_detection": true,
+      "automated_quality_gates": true
+    }
+  },
+  "logging_configuration_test": {
+    "log_level": "DEBUG",
+    "log_file": "logs/test_simulation.log",
+    "structured_logging": true,
+    "performance_logging": true,
+    "algorithm_execution_logging": true,
+    "resource_usage_logging": true,
+    "log_rotation": {
+      "max_size_mb": 50,
+      "backup_count": 3,
+      "rotation_interval": "daily"
+    }
+  },
+  "integration_settings_test": {
+    "normalization_pipeline_integration": {
+      "require_normalized_data": true,
+      "validation_against_normalization_config": true,
+      "cross_format_compatibility_checks": true
+    },
+    "analysis_pipeline_integration": {
+      "automatic_analysis_trigger": false,
+      "result_format_compatibility": true,
+      "metrics_alignment": true
+    },
+    "external_tool_integration": {
+      "statistical_analysis_packages": [
+        "scipy",
+        "numpy"
+      ],
+      "visualization_libraries": [
+        "matplotlib"
+      ],
+      "numerical_computation_frameworks": [
+        "numpy"
+      ]
+    }
+  },
+  "test_validation_criteria": {
+    "numerical_accuracy": {
+      "correlation_threshold": 0.95,
+      "numerical_tolerance": 1e-06,
+      "reproducibility_tolerance": 1e-10,
+      "statistical_significance": 0.05
+    },
+    "performance_requirements": {
+      "max_processing_time_seconds": 7.2,
+      "memory_limit_mb": 2048,
+      "batch_completion_rate": 1.0,
+      "parallel_efficiency_threshold": 0.8,
+      "throughput_target_simulations_per_hour": 500
+    },
+    "batch_processing_validation": {
+      "completion_rate_threshold": 1.0,
+      "error_rate_threshold": 0.01,
+      "resource_utilization_efficiency": 0.8,
+      "scalability_validation": true
+    },
+    "algorithm_validation": {
+      "parameter_validation_success": 1.0,
+      "convergence_validation": true,
+      "numerical_stability": true,
+      "cross_algorithm_consistency": 0.9
+    },
+    "error_handling_validation": {
+      "error_detection_rate": 1.0,
+      "graceful_degradation_success": true,
+      "recovery_success_rate": 0.8,
+      "fail_fast_validation": true
+    },
+    "quality_assurance": {
+      "reference_comparison_accuracy": 0.95,
+      "statistical_validation_significance": 0.05,
+      "reproducibility_coefficient": 0.99,
+      "performance_regression_threshold": 0.05
+    }
+  },
+  "test_data_specifications": {
+    "simulation_test_data": {
+      "crimaldi_test_data": "test_fixtures/crimaldi_sample.avi",
+      "custom_test_data": "test_fixtures/custom_sample.avi",
+      "normalized_test_data": "test_fixtures/reference_results/normalization_benchmark.npy",
+      "reference_simulation_results": "test_fixtures/reference_results/simulation_benchmark.npy",
+      "reference_analysis_results": "test_fixtures/reference_results/analysis_benchmark.npy"
+    },
+    "algorithm_test_configurations": {
+      "basic_infotaxis": "test_fixtures/config/test_algorithm_config.json",
+      "normalization_parameters": "test_fixtures/config/test_normalization_config.json"
+    },
+    "performance_benchmarks": {
+      "execution_time_baseline": 7.2,
+      "memory_usage_baseline": 512,
+      "accuracy_baseline": 0.95,
+      "throughput_baseline": 0.5
+    }
+  },
+  "test_environment_configuration": {
+    "random_seed": 42,
+    "deterministic_processing": true,
+    "isolated_environment": true,
+    "temporary_directory_cleanup": true,
+    "resource_monitoring": true,
+    "performance_profiling": true,
+    "validation_caching": false,
+    "error_injection_testing": true,
+    "parallel_test_execution": false,
+    "test_timeout_seconds": 300
+  },
+  "integration_test_scenarios": [
+    {
+      "scenario_name": "end_to_end_simulation_pipeline",
+      "description": "Complete end-to-end simulation pipeline test with validation",
+      "input_files": [
+        "crimaldi_sample.avi",
+        "custom_sample.avi"
+      ],
+      "expected_outputs": [
+        "simulation_results.npy",
+        "performance_metrics.json"
+      ],
+      "validation_steps": [
+        "input_validation",
+        "execution_validation",
+        "output_validation",
+        "performance_validation"
+      ]
+    },
+    {
+      "scenario_name": "batch_processing_integration",
+      "description": "Batch processing integration test with multiple algorithms and formats",
+      "input_files": [
+        "batch_test_samples"
+      ],
+      "expected_outputs": [
+        "batch_simulation_results"
+      ],
+      "validation_steps": [
+        "batch_setup",
+        "parallel_execution",
+        "result_aggregation",
+        "performance_analysis"
+      ]
+    },
+    {
+      "scenario_name": "error_recovery_integration",
+      "description": "Error recovery and fault tolerance integration testing",
+      "input_files": [
+        "corrupted_sample.avi",
+        "invalid_config.json"
+      ],
+      "expected_outputs": [
+        "error_reports",
+        "recovery_logs",
+        "partial_results"
+      ],
+      "validation_steps": [
+        "error_injection",
+        "recovery_validation",
+        "system_stability",
+        "data_integrity"
+      ]
+    }
+  ]
+}
