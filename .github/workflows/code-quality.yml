@@ -1,0 +1,442 @@
+# GitHub Actions workflow for comprehensive code quality validation of the plume navigation simulation system
+# Implements automated code quality checks including static analysis, formatting validation, type checking,
+# documentation validation, security scanning, and scientific computing standards enforcement
+# Ensures >95% correlation accuracy requirements through rigorous code quality gates and scientific computing best practices
+
+name: Code Quality Validation
+
+on:
+  push:
+    branches: ['main', 'develop', 'feature/*', 'hotfix/*']
+    paths:
+      - 'src/**/*.py'
+      - '*.py'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'requirements.txt'
+      - '.github/workflows/code-quality.yml'
+  
+  pull_request:
+    branches: ['main', 'develop']
+    paths:
+      - 'src/**/*.py'
+      - '*.py'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'requirements.txt'
+      - '.github/workflows/code-quality.yml'
+  
+  workflow_dispatch:
+    inputs:
+      quality_check_type:
+        description: 'Type of code quality check to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'formatting'
+          - 'linting'
+          - 'type-checking'
+          - 'complexity'
+          - 'documentation'
+      
+      fail_on_issues:
+        description: 'Fail workflow on code quality issues'
+        required: false
+        default: 'true'
+        type: boolean
+      
+      strict_mode:
+        description: 'Enable strict mode for enhanced validation'
+        required: false
+        default: 'true'
+        type: boolean
+
+# Global environment variables for scientific computing code quality validation
+env:
+  PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/src/backend
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+  BLACK_LINE_LENGTH: '88'
+  ISORT_PROFILE: 'black'
+  FLAKE8_MAX_LINE_LENGTH: '88'
+  MYPY_STRICT_MODE: 'true'
+  SCIENTIFIC_COMPUTING_MODE: '1'
+
+jobs:
+  # Code formatting validation with black and isort for scientific readability
+  code-formatting-validation:
+    name: Code Formatting Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Cache code quality tools
+        uses: actions/cache@v3  # github-actions v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-code-quality-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-code-quality-
+      
+      - name: Install code formatting tools
+        run: |
+          pip install black>=23.0.0 isort>=5.12.0
+      
+      - name: Check code formatting with black
+        run: |
+          black --check --diff --line-length 88 --target-version py39 src/backend/ --exclude '(examples|scripts)'
+      
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only --diff --profile black --line-length 88 src/backend/ --skip examples --skip scripts
+      
+      - name: Generate formatting report
+        if: failure()
+        run: |
+          black --check --diff --line-length 88 src/backend/ > formatting-issues.txt 2>&1 || true
+          isort --check-only --diff --profile black src/backend/ >> formatting-issues.txt 2>&1 || true
+      
+      - name: Upload formatting report
+        if: failure()
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: formatting-issues-report
+          path: formatting-issues.txt
+          retention-days: 30
+
+  # Static analysis and linting with comprehensive code quality tools
+  static-analysis-linting:
+    name: Static Analysis and Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install backend dependencies
+        run: |
+          pip install -r src/backend/requirements.txt
+      
+      - name: Install linting tools
+        run: |
+          pip install flake8>=6.0.0 pylint>=3.0.0 pydocstyle>=6.3.0 mccabe>=0.7.0
+      
+      - name: Run flake8 linting
+        run: |
+          flake8 src/backend/ --max-line-length=88 --extend-ignore=E203,W503 --exclude=examples,scripts --statistics --tee --output-file=flake8-report.txt
+      
+      - name: Run pylint analysis
+        run: |
+          pylint src/backend/ --rcfile=.pylintrc --output-format=text --reports=yes --score=yes > pylint-report.txt || true
+      
+      - name: Run pydocstyle documentation validation
+        run: |
+          pydocstyle src/backend/ --convention=numpy --add-ignore=D100,D104 > pydocstyle-report.txt || true
+      
+      - name: Run complexity analysis
+        run: |
+          python -m mccabe --min 10 src/backend/ > complexity-report.txt || true
+      
+      - name: Validate linting results
+        run: |
+          python -c "
+          import sys
+          flake8_lines = len(open('flake8-report.txt').readlines())
+          print(f'Flake8 issues: {flake8_lines}')
+          sys.exit(1 if flake8_lines > 50 else 0)
+          "
+      
+      - name: Upload linting reports
+        if: always()
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: linting-analysis-reports
+          path: '*-report.txt'
+          retention-days: 30
+
+  # Type checking validation with mypy for scientific computing accuracy
+  type-checking-validation:
+    name: Type Checking Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install backend dependencies
+        run: |
+          pip install -r src/backend/requirements.txt
+      
+      - name: Install type checking tools
+        run: |
+          pip install mypy>=1.5.0 types-requests types-setuptools types-toml
+      
+      - name: Run mypy type checking
+        run: |
+          mypy src/backend/ --config-file pyproject.toml --show-error-codes --show-column-numbers --pretty --html-report mypy-html-report --txt-report mypy-txt-report
+      
+      - name: Validate type checking results
+        run: |
+          python -c "
+          import os
+          report_files = [f for f in os.listdir('mypy-txt-report') if f.endswith('.txt')]
+          total_errors = sum(len(open(f'mypy-txt-report/{f}').readlines()) for f in report_files)
+          print(f'MyPy type errors: {total_errors}')
+          exit(1 if total_errors > 10 else 0)
+          "
+      
+      - name: Upload type checking reports
+        if: always()
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: type-checking-reports
+          path: mypy-*-report/
+          retention-days: 30
+
+  # Documentation quality validation for scientific computing standards
+  documentation-validation:
+    name: Documentation Quality Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install documentation tools
+        run: |
+          pip install pydocstyle>=6.3.0 interrogate>=1.5.0 docformatter>=1.7.0
+      
+      - name: Check docstring coverage
+        run: |
+          interrogate src/backend/ --verbose --ignore-init-method --ignore-magic --ignore-module --ignore-nested-functions --fail-under=80 > docstring-coverage-report.txt
+      
+      - name: Validate docstring formatting
+        run: |
+          docformatter --check --diff src/backend/ > docstring-format-report.txt || true
+      
+      - name: Check scientific documentation standards
+        run: |
+          python .github/scripts/validate_scientific_docs.py src/backend/ > scientific-docs-report.txt
+      
+      - name: Upload documentation reports
+        if: always()
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: documentation-validation-reports
+          path: '*-report.txt'
+          retention-days: 30
+
+  # Security and quality scanning for scientific computing environments
+  security-and-quality-scan:
+    name: Security and Quality Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install security and quality tools
+        run: |
+          pip install bandit[toml]>=1.7.5 safety>=3.0.0 vulture>=2.7.0
+      
+      - name: Run bandit security analysis
+        run: |
+          bandit -r src/backend/ -f json -o bandit-security-report.json -ll --severity-level medium || true
+      
+      - name: Run safety dependency check
+        run: |
+          safety check --json --output safety-dependency-report.json || true
+      
+      - name: Run vulture dead code detection
+        run: |
+          vulture src/backend/ --min-confidence 80 > vulture-deadcode-report.txt || true
+      
+      - name: Validate security scan results
+        run: |
+          python -c "
+          import json
+          bandit = json.load(open('bandit-security-report.json'))
+          high_issues = len([i for i in bandit.get('results', []) if i.get('issue_severity') == 'HIGH'])
+          print(f'High security issues: {high_issues}')
+          exit(1 if high_issues > 0 else 0)
+          "
+      
+      - name: Upload security and quality reports
+        if: always()
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: security-quality-reports
+          path: '*-report.*'
+          retention-days: 30
+
+  # Scientific computing standards validation for plume navigation accuracy
+  scientific-computing-standards:
+    name: Scientific Computing Standards Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # github-actions v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install backend dependencies
+        run: |
+          pip install -r src/backend/requirements.txt
+      
+      - name: Validate numerical precision standards
+        run: |
+          python .github/scripts/validate_numerical_precision.py src/backend/ > numerical-precision-report.txt
+      
+      - name: Check scientific computing best practices
+        run: |
+          python .github/scripts/validate_scientific_practices.py src/backend/ > scientific-practices-report.txt
+      
+      - name: Validate algorithm interface consistency
+        run: |
+          python .github/scripts/validate_algorithm_interfaces.py src/backend/ > algorithm-interface-report.txt
+      
+      - name: Check reproducibility requirements
+        run: |
+          python .github/scripts/validate_reproducibility_standards.py src/backend/ > reproducibility-standards-report.txt
+      
+      - name: Upload scientific standards reports
+        if: always()
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: scientific-standards-reports
+          path: '*-report.txt'
+          retention-days: 30
+
+  # Comprehensive code quality summary and validation
+  code-quality-summary:
+    name: Code Quality Summary
+    runs-on: ubuntu-latest
+    needs: [
+      'code-formatting-validation',
+      'static-analysis-linting', 
+      'type-checking-validation',
+      'documentation-validation',
+      'security-and-quality-scan',
+      'scientific-computing-standards'
+    ]
+    if: always()
+    
+    steps:
+      - name: Download all quality reports
+        uses: actions/download-artifact@v3  # github-actions v3
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4  # github-actions v4
+        with:
+          python-version: '3.9'
+      
+      - name: Generate comprehensive quality report
+        run: |
+          python .github/scripts/generate_quality_summary.py \
+            --formatting-threshold 0 \
+            --linting-threshold 50 \
+            --type-errors-threshold 10 \
+            --security-threshold 0 \
+            --documentation-threshold 80
+      
+      - name: Validate overall code quality
+        run: |
+          python -c "
+          import json
+          report = json.load(open('code-quality-summary.json'))
+          overall_score = report['overall_quality_score']
+          formatting_pass = report['formatting_validation']
+          linting_pass = report['linting_validation']
+          typing_pass = report['type_checking_validation']
+          security_pass = report['security_validation']
+          docs_pass = report['documentation_validation']
+          scientific_pass = report['scientific_standards_validation']
+          
+          print(f'Code Quality Score: {overall_score}')
+          print(f'Formatting: {formatting_pass}, Linting: {linting_pass}')
+          print(f'Typing: {typing_pass}, Security: {security_pass}')
+          print(f'Docs: {docs_pass}, Scientific: {scientific_pass}')
+          
+          exit(0 if overall_score >= 85 and all([
+              formatting_pass, linting_pass, typing_pass, 
+              security_pass, docs_pass, scientific_pass
+          ]) else 1)
+          "
+      
+      - name: Upload comprehensive quality summary
+        uses: actions/upload-artifact@v3  # github-actions v3
+        with:
+          name: code-quality-summary-report
+          path: code-quality-summary.*
+          retention-days: 90
+      
+      - name: Comment quality results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6  # github-actions v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('code-quality-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Code Quality Analysis Results\n\n${summary}`
+            });
