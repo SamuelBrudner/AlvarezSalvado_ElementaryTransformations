@@ -3,7 +3,8 @@
 This diagram lists the discovered dependencies among all scripts located in the repository root. Arrows indicate that a script directly references or calls another script. A dependency on `Code` means the script adds the `Code` directory to the MATLAB path or otherwise directly invokes functions stored there.
 
 ```mermaid
-graph TD
+flowchart TD
+
     nav_job_paths_fixed_slurm --> Code
     complete_test_slurm --> test_both_plumes_complete_m
     complete_test_slurm --> generate_clean_configs_m
