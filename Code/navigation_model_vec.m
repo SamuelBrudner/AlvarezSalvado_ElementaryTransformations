@@ -71,21 +71,57 @@ else
     triallength = double(triallength);
 end
 
-% Scaling factors
+% Scaling factors and plume configuration
 
-tscale = 15/50; %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
-pxscale = 0.74; %mm/pixel ratio to convert pixels from the plume data to actual mm
+tscale = 15/50;  % Default 15Hz/50Hz ratio
+pxscale = 0.74;  % Default mm/pixel ratio
 
-% Override with config values for Crimaldi
+% Initialize plume_config with defaults
+plume_config = struct();
+plume_config.frame_rate = 15;
+
+% Load the correct config for Crimaldi environment
 if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
     try
-        [plume_filename, plume_config] = get_plume_file();
-        tscale = plume_config.time_scale_50hz;
-        pxscale = plume_config.pixel_scale;
-        fprintf('Loaded config: %.1f Hz, %.3f mm/px\n', plume_config.frame_rate, pxscale);
-    catch
-        fprintf('Config failed, using defaults\n');
-        plume_config.frame_rate = 15;
+        env_plume = getenv('MATLAB_PLUME_FILE');
+        config_override = getenv('PLUME_CONFIG');
+
+        if ~isempty(config_override)
+            cfg_path = config_override;
+            fprintf('Using PLUME_CONFIG override: %s\n', cfg_path);
+        elseif contains(env_plume, 'smoke')
+            cfg_path = fullfile('configs', 'plumes', 'smoke_1a_backgroundsubtracted.json');
+        else
+            cfg_path = fullfile('configs', 'plumes', 'crimaldi_10cms_bounded.json');
+        end
+
+        fprintf('Reading plume config from %s\n', cfg_path);
+        cfg = jsondecode(fileread(cfg_path));
+
+        if isempty(env_plume)
+            plume_filename = cfg.data_path.path;
+        else
+            plume_filename = env_plume;
+        end
+
+        % Extract values from config
+        plume_config.frame_rate = cfg.temporal.frame_rate;
+        tscale = cfg.temporal.frame_rate / 50.0;
+        pxscale = cfg.spatial.mm_per_pixel;
+        plume_config.dataset_name = cfg.data_path.dataset_name;
+
+        % Use model_params if available
+        if isfield(cfg, 'model_params')
+            tscale = cfg.model_params.tscale;
+            pxscale = cfg.model_params.pxscale;
+        end
+
+        fprintf('Loaded config: %.1f Hz, tscale=%.3f, pxscale=%.3f\n', ...
+                plume_config.frame_rate, tscale, pxscale);
+
+    catch ME
+        fprintf('Config loading failed: %s\n', ME.message);
+        plume_filename = 'data/plumes/10302017_10cms_bounded.hdf5';
     end
 end
 
@@ -229,8 +265,13 @@ ws=1;
 
 % Load plume file once before the simulation loop
 if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
-    plume_filename = get_plume_file();
-    dataset_name = '/dataset2';  % or get from config
+    if exist('plume_filename', 'var')
+        dataset_name = plume_config.dataset_name;
+        fprintf('Using dataset: %s\n', dataset_name);
+    else
+        plume_filename = get_plume_file();
+        dataset_name = '/dataset2';
+    end
 end
 
 for i = 1:triallength
@@ -247,7 +288,7 @@ for i = 1:triallength
             odor(i,out_of_plume)=0;
             %this will be vectorizable if the dataset is loaded into memory
             for it=within
-                odor(i,it)=max(0,h5read(plume_filename,'/dataset2',[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
+                odor(i,it)=max(0,h5read(plume_filename, dataset_name,[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
             odor(i,:) = odormax*OLodorlib.(environment).data(i);
