@@ -42,7 +42,7 @@ echo "Working directory: $(pwd)"
 echo ""
 
 # Create MATLAB script in temp file
-TEMP_MATLAB=$(mktemp /tmp/smoke_nav_$$.m)
+TEMP_MATLAB=$(mktemp /tmp/smoke_nav_XXXXXX.m)
 cat > "$TEMP_MATLAB" << 'MATLAB_EOF'
 % Smoke plume navigation simulation
 try
@@ -77,7 +77,7 @@ try
     
     % Verify configuration
     [plume_file, plume_config] = get_plume_file();
-    fprintf('\nActive plume: %s\n', plume_config.plume_id);
+    fprintf('\nActive plume: smoke (configured)\n');
     fprintf('Frame rate: %.1f Hz\n', plume_config.temporal.frame_rate);
     fprintf('Pixel scale: %.3f mm/px\n', plume_config.spatial.mm_per_pixel);
     

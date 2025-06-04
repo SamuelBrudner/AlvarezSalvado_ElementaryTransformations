@@ -1,0 +1,58 @@
+Test parameters:
+  Agents: 50
+  Init zone: X ∈ [-8.0, 8.0], Y ∈ [-26.4, -21.4] cm
+  Success radius: 2.0 cm
+
+1. Testing Crimaldi plume...
+   Duration: 240 seconds (3600 frames at 15 Hz)
+Loaded config: 15.0 Hz, tscale=0.300, pxscale=0.740
+Using dataset: /dataset2
+Elapsed time is 825.271772 seconds.
+   ✓ Completed in 825.3 seconds
+   Success rate: 60.0% (30/50 agents)
+   Average latency: 103.4 seconds
+
+2. Testing Smoke plume...
+   Duration: 60 seconds (3600 frames at 60 Hz)
+Loaded config: 60.0 Hz, tscale=1.200, pxscale=0.153
+Using dataset: /dataset2
+Elapsed time is 1.978975 seconds.
+   ✓ Completed in 2.0 seconds
+   Success rate: 0.0% (0/50 agents)
+   Average latency: NaN seconds
+
+3. Saving results...
+   ✓ Saved .mat files
+
+4. Creating visualizations...
+[Warning: MATLAB has disabled some advanced graphics rendering features by
+switching to software OpenGL. For more information, click <a
+href="matlab:opengl('problems')">here</a>.] 
+   ✓ Saved visualizations
+
+=== Test Summary ===
+Both plumes tested with 50 agents
+Initialization zone: Y ∈ [-26.4, -21.4] cm
+
+Results:
+  Crimaldi: 60.0% success, 103.4 s avg latency
+  Smoke:    0.0% success, NaN s avg latency
+
+Saved outputs:
+  - results/crimaldi_test_results.mat
+  - results/smoke_test_results.mat
+  - results/trajectory_comparison.png
+  - results/statistics_comparison.png
+  - results/example_trajectories.png
+
+✓ Test complete!
+Test parameters:
+  Agents: 50
+  Init zone: X ∈ [-8.0, 8.0], Y ∈ [-26.4, -21.4] cm
+  Success radius: 2.0 cm
+
+1. Testing Crimaldi plume...
+   Duration: 240 seconds (3600 frames at 15 Hz)
+Loaded config: 15.0 Hz, tscale=0.300, pxscale=0.740
+Initializing agents for 'Crimaldi' (using crimaldi_10cms_bounded config): X range [-8.00, 8.00] cm, Y range [-26.40, -21.40] cm
+Using dataset: /dataset2

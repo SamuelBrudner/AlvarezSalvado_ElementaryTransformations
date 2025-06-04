@@ -1,0 +1,16 @@
+Comparative Batch 20250604_124651
+==============================
+Submitted: Wed Jun  4 12:46:51 EDT 2025
+Agents per plume: 10
+Tasks per plume: 1
+
+Crimaldi results: results/nav_results_0*
+Smoke results: results/smoke_nav_results_10*
+
+Quick comparison:
+  matlab -batch "
+    c = load('results/nav_results_0000.mat');
+    s = load('results/smoke_nav_results_1000.mat');
+    fprintf('Crimaldi: %.1f%%\n', c.out.successrate*100);
+    fprintf('Smoke: %.1f%%\n', s.out.successrate*100);
+  "
