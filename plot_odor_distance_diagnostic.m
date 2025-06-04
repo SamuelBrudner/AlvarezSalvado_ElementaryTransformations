@@ -9,6 +9,11 @@ if nargin < 1
     n_agents_to_show = 5;  % Default to showing 5 agents
 end
 
+if ~exist('results','dir')
+    fprintf('Creating results directory...\n');
+    mkdir('results');
+end
+
 fprintf('Creating odor/distance diagnostic plots...\n');
 
 %% Load data
@@ -18,6 +23,7 @@ try
 catch ME
     error('Could not load results. Run test_both_plumes_complete.m first!');
 end
+fprintf('Loaded diagnostic result files.\n');
 
 crim_out = crim_data.out_crim;
 smoke_out = smoke_data.out_smoke;
@@ -28,7 +34,9 @@ n_agents_smoke = min(n_agents_to_show, size(smoke_out.x, 2));
 
 % Get time vectors
 t_crim = (0:size(crim_out.x,1)-1) / crim_data.crim_cfg.temporal.frame_rate;
+t_crim = t_crim(:); % ensure column vector for fill()
 t_smoke = (0:size(smoke_out.x,1)-1) / smoke_data.smoke_cfg.temporal.frame_rate;
+t_smoke = t_smoke(:); % ensure column vector
 
 % Calculate distances to source
 dist_crim = sqrt(crim_out.x.^2 + crim_out.y.^2);
@@ -37,6 +45,7 @@ dist_smoke = sqrt(smoke_out.x.^2 + smoke_out.y.^2);
 success_radius = crim_data.crim_cfg.simulation.success_radius_cm;
 
 %% Figure 1: Individual agent plots for Crimaldi
+fprintf('Generating Crimaldi individual plots...\n');
 figure('Position', [50 50 1400 900]);
 sgtitle('Crimaldi Plume - Odor Intensity & Distance to Source', 'FontSize', 16);
 
@@ -77,9 +86,11 @@ for i = 1:n_agents_crim
     xlim([0 max(t_crim)]);
 end
 
+fprintf('Saving Crimaldi figure...\n');
 saveas(gcf, 'results/odor_distance_crimaldi.png');
 
 %% Figure 2: Individual agent plots for Smoke
+fprintf('Generating Smoke individual plots...\n');
 figure('Position', [100 100 1400 900]);
 sgtitle('Smoke Plume - Odor Intensity & Distance to Source', 'FontSize', 16);
 
@@ -120,9 +131,11 @@ for i = 1:n_agents_smoke
     xlim([0 max(t_smoke)]);
 end
 
+fprintf('Saving Smoke figure...\n');
 saveas(gcf, 'results/odor_distance_smoke.png');
 
 %% Figure 3: Overlay plot showing all agents together
+fprintf('Generating overlay comparison...\n');
 figure('Position', [150 150 1400 700]);
 
 % Crimaldi overlay
@@ -164,6 +177,8 @@ legend({'Failed trajectories', 'Successful trajectories', 'Odor (scaled)', 'Succ
 subplot(1,2,2);
 hold on;
 
+colors_smoke = lines(n_agents_smoke);
+
 % Plot distance for all agents (thin lines)
 for i = 1:size(smoke_out.x, 2)
     if ~isnan(smoke_out.latency(i))
@@ -182,7 +197,7 @@ for i = 1:n_agents_smoke
     else
         odor_scaled = smoke_out.odor(:,i);  % Keep as is if no odor
     end
-    plot(t_smoke, odor_scaled, '-', 'Color', [colors(i,:) 0.7], 'LineWidth', 2);
+    plot(t_smoke, odor_scaled, '-', 'Color', [colors_smoke(i,:) 0.7], 'LineWidth', 2);
 end
 
 plot([0 max(t_smoke)], [success_radius success_radius], 'g--', 'LineWidth', 2);
@@ -193,9 +208,11 @@ ylim([0 40]);
 grid on;
 
 sgtitle('Distance & Odor Trajectories - All Agents', 'FontSize', 16);
+fprintf('Saving overlay figure...\n');
 saveas(gcf, 'results/odor_distance_overlay.png');
 
 %% Figure 4: Statistical summary plot
+fprintf('Generating statistical summary...\n');
 figure('Position', [200 200 1200 800]);
 
 % Crimaldi statistics
@@ -294,6 +311,7 @@ ylim([-1 1]);
 grid on;
 
 sgtitle('Statistical Analysis of Odor Response', 'FontSize', 16);
+fprintf('Saving statistics figure...\n');
 saveas(gcf, 'results/odor_distance_statistics.png');
 
 %% Summary output
