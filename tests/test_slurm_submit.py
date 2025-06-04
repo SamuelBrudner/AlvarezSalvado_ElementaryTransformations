@@ -30,6 +30,8 @@ def test_slurm_submit_creates_batch_file(tmp_path):
     content = output.read_text()
     assert '#SBATCH --array=0-15%100' in content
     assert '#SBATCH --job-name=test_sim' in content
+    assert '#SBATCH --output=slurm_logs/test/test_logs_%A_%a.out' in content
+    assert '#SBATCH --error=slurm_logs/test/test_logs_%A_%a.err' in content
 
 
 def test_slurm_submit_usage_option():
