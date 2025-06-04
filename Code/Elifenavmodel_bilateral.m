@@ -275,6 +275,21 @@ if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
         fprintf('Using default dataset: %s\n', dataset_name);
     end
 end
+% Get plume dimensions for coordinate conversion
+if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
+    plume_info = h5info(plume_filename, dataset_name);
+    plume_dims = plume_info.Dataspace.Size;
+    x_center_offset = round(plume_dims(1) / 2);  % Dynamic center instead of hardcoded 108
+    fprintf('Using dynamic offset: %d (plume width: %d)\n', x_center_offset, plume_dims(1));
+    
+    % Also update plume limits dynamically
+    plume_xlims = [1 plume_dims(1)];
+    plume_ylims = [1 plume_dims(2)];
+else
+    x_center_offset = 108;  % Default for non-Crimaldi environments
+    plume_xlims = [1 216];
+    plume_ylims = [1 406];
+end
 
 for i = 1:triallength
 
@@ -291,13 +306,13 @@ for i = 1:triallength
         case {'Crimaldi', 'crimaldi'}
             %plume_filename = get_plume_file(); % Now loaded earlier
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
-            xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
+            xind = round(10*x(i,:)/pxscale)+x_center_offset; % Dynamic offset based on plume
             yind = -round(10*y(i,:)/pxscale)+1;
             out_of_plume=union(union(find(xind<plume_xlims(1)),find(xind>plume_xlims(2))),union(find(yind<plume_ylims(1)),find(yind>plume_ylims(2))));
             within=setdiff([1:ntrials],out_of_plume);
             odor(i,out_of_plume)=0;   
             odorL(i,out_of_plume)=0; 
-            xL(i,:) = (xind-108)*pxscale/10;
+            xL(i,:) = (xind-x_center_offset)*pxscale/10;
             yL(i,:) = -(yind-1)*pxscale/10;
             
             %this will be vectorizable if the dataset is loaded into memory
@@ -307,10 +322,10 @@ for i = 1:triallength
             end
             
             if L<(pxscale/10)       % right odor is the minimum of L or 1 pixel away from the fly 
-                xRind = round((1/L)*rx)+xind; xR(i,:) = (xRind-108)*pxscale/10;
+                xRind = round((1/L)*rx)+xind; xR(i,:) = (xRind-x_center_offset)*pxscale/10;
                 yRind = -round((1/L)*ry)+yind; yR(i,:) = -(yRind-1)*pxscale/10;
             else
-                xRind = round(rx/(pxscale/10))+xind; xR(i,:) = (xRind-108)*pxscale/10;
+                xRind = round(rx/(pxscale/10))+xind; xR(i,:) = (xRind-x_center_offset)*pxscale/10;
                 yRind = -round(ry/(pxscale/10))+yind; yR(i,:) = -(yRind-1)*pxscale/10;
             end   
             
