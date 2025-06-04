@@ -4,6 +4,7 @@ This diagram lists the discovered dependencies among all scripts located in the 
 
 ```mermaid
 flowchart TD
+
     nav_job_paths_fixed_slurm --> Code
     complete_test_slurm --> test_both_plumes_complete_m
     complete_test_slurm --> generate_clean_configs_m
