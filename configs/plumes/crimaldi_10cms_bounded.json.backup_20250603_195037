@@ -35,17 +35,6 @@
   },
   "simulation": {
     "duration_seconds": 300.0,
-    "comment": "5 minutes",
-    "success_radius_cm": 2.0,
-    "agent_initialization": {
-      "x_range_cm": [-8.0, 8.0],
-      "y_range_cm": [-30.0, -25.0],
-      "n_agents_per_job": 10,
-      "heading_range_deg": [0, 360]
-    },
-    "source_position": {
-      "x_cm": 0.0,
-      "y_cm": 0.0
-    }
+    "comment": "5 minutes"
   }
 }

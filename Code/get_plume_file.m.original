@@ -1,24 +1,21 @@
 function [plume_file, plume_config] = get_plume_file()
-%GET_PLUME_FILE Return plume HDF5 filename from stored paths configuration
+%GET_PLUME_FILE Return plume HDF5 filename from configuration
 
-% Load stored paths
-try
-    paths = load_paths();
-    plume_file = paths.plume_file;
-    config_path = paths.plume_config;
-catch
-    % Fallback to environment variables
-    plume_file = getenv('MATLAB_PLUME_FILE');
-    config_path = getenv('PLUME_CONFIG');
-    
-    if isempty(plume_file) || isempty(config_path)
-        error('No paths configuration found. Run setup_env_paths.sh first!');
+% Simple approach - use environment or defaults
+config_path = getenv('PLUME_CONFIG');
+if isempty(config_path)
+    % Use explicit path for HPC
+    if exist('/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations', 'dir')
+        config_path = '/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations/configs/plumes/crimaldi_10cms_bounded.json';
+    else
+        % Fallback to relative path
+        config_path = 'configs/plumes/crimaldi_10cms_bounded.json';
     end
 end
 
-fprintf('Using plume file: %s\n', plume_file);
+fprintf('Loading plume config from %s\n', config_path);
 
-% Initialize default config
+% Initialize defaults
 plume_config = struct();
 plume_config.mm_per_pixel = 0.74;
 plume_config.pixel_scale = 0.74;
@@ -29,12 +26,21 @@ plume_config.plume_xlims = [1, 216];
 plume_config.plume_ylims = [1, 406];
 plume_config.dataset_name = '/dataset2';
 
-% Load config file
+% Load config if it exists
 if exist(config_path, 'file')
     try
         cfg = jsondecode(fileread(config_path));
         
-        % Update config from file
+        % Extract plume file path
+        if isfield(cfg, 'data_path') && isfield(cfg.data_path, 'path')
+            plume_file = cfg.data_path.path;
+        elseif isfield(cfg, 'plume_file')
+            plume_file = cfg.plume_file;
+        else
+            plume_file = 'data/plumes/10302017_10cms_bounded.hdf5';
+        end
+        
+        % Update config parameters
         if isfield(cfg, 'spatial')
             if isfield(cfg.spatial, 'mm_per_pixel')
                 plume_config.mm_per_pixel = cfg.spatial.mm_per_pixel;
@@ -66,9 +72,27 @@ if exist(config_path, 'file')
         
     catch err
         warning('Could not parse config file: %s', err.message);
+        plume_file = 'data/plumes/10302017_10cms_bounded.hdf5';
     end
 else
-    warning('Config file not found: %s', config_path);
+    warning('Config file not found, using defaults');
+    plume_file = 'data/plumes/10302017_10cms_bounded.hdf5';
+end
+
+% Make path absolute if needed
+if exist(plume_file, 'file')
+    % File exists as is
+elseif plume_file(1) ~= '/'
+    % Try with explicit base path
+    if exist('/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations', 'dir')
+        plume_file = fullfile('/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations', plume_file);
+    end
+end
+
+% Environment override
+env_plume = getenv('MATLAB_PLUME_FILE');
+if ~isempty(env_plume)
+    plume_file = env_plume;
 end
 
 if nargout < 2
