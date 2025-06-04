@@ -179,23 +179,68 @@ D = -sin(2*pi*(1:360)/360);
 
 %% INITIAL POSITION AND HEADING --------------------------------------------
 
+% Define fallback default initialization values
+% These are used if the JSON config doesn't specify them or if cfg is not available.
+default_init_x_cm = [-8, 8]; % Standard X range
+user_desired_init_y_cm = [-26.4, -21.4]; % Desired Y range, as from generate_clean_configs.m
+
 % Determine initial position and heading
 switch environment
-    case {'Crimaldi', 'crimaldi'} % Real plume data from the Crimaldi lab
-        % USE NEXT TWO LINES INSTEAD IF RUNNING MULTIPLE SIMULATIONS TO
-        % COMPARE: It will use the same starting positions in every simulation
-%         load('startpositions plume.mat');
-%         x(1,:) = iniX(1:ntrials); y(1,:) = iniY(1:ntrials);
-        % ------------------------------------------------------
-        x(1,:) = (rand(1,ntrials).*16)-8; %rand(1,ntrials)*10-5; % random distribution of initial X positions centered around 0, with sigma=16
-        y(1,:) = rand(1,ntrials)*5-30; % random distribution of initial Y positions, between -25 and -30
+    case {'Crimaldi', 'crimaldi'} % Handles real plume data from Crimaldi or Smoke (selected via env var and loaded into 'cfg')
+        current_init_x_range = default_init_x_cm; 
+        current_init_y_range = user_desired_init_y_cm; % Default to user-desired Y
+
+        % Check if 'cfg' (loaded JSON based on env_plume for smoke/crimaldi) exists and has the necessary fields
+        if exist('cfg', 'var') && isstruct(cfg)
+            if isfield(cfg, 'simulation') && isfield(cfg.simulation, 'agent_initialization')
+                agent_init_cfg = cfg.simulation.agent_initialization;
+                if isfield(agent_init_cfg, 'x_range_cm')
+                    current_init_x_range = agent_init_cfg.x_range_cm;
+                else
+                    fprintf('Info: x_range_cm not in cfg.simulation.agent_initialization, using default X range: [%.2f, %.2f]\n', ...
+                            default_init_x_cm(1), default_init_x_cm(2));
+                end
+                if isfield(agent_init_cfg, 'y_range_cm')
+                    current_init_y_range = agent_init_cfg.y_range_cm; % Use Y from JSON if present
+                else
+                    fprintf('Info: y_range_cm not in cfg.simulation.agent_initialization, using preferred Y range: [%.2f, %.2f]\n', ...
+                            user_desired_init_y_cm(1), user_desired_init_y_cm(2));
+                end
+            else
+                fprintf('Info: cfg.simulation.agent_initialization block not found, using preferred Y range: [%.2f, %.2f] and default X range.\n', ...
+                        user_desired_init_y_cm(1), user_desired_init_y_cm(2));
+            end
+        else
+            % This case might be hit if 'environment' is 'Crimaldi' but 'cfg' wasn't loaded due to an issue or different script path.
+            fprintf('Warning: JSON config variable ''cfg'' not found or not a struct. Using preferred Y range: [%.2f, %.2f] and default X range for ''%s''.\n', ...
+                    user_desired_init_y_cm(1), user_desired_init_y_cm(2), environment);
+        end
+        
+        fprintf('Initializing agents for ''%s'' (using %s config): X range [%.2f, %.2f] cm, Y range [%.2f, %.2f] cm\n', ...
+                environment, cfg.plume_id, current_init_x_range(1), current_init_x_range(2), current_init_y_range(1), current_init_y_range(2));
+
+        x_width = current_init_x_range(2) - current_init_x_range(1);
+        x(1,:) = rand(1,ntrials) * x_width + current_init_x_range(1);
+        
+        y_height = current_init_y_range(2) - current_init_y_range(1);
+        y(1,:) = rand(1,ntrials) * y_height + current_init_y_range(1);
+
     case {'openlooppulse15','openlooppulsewb15'} % Single odor pulses at 15 Hz
-        x(1,:)= 0; y(1,:)= 0; triallength = 1050;
+        x(1,:)= 0; y(1,:)= 0; % triallength is an input argument
     case {'openlooppulse','openlooppulsewb','openloopslope'} % Single odor pulses at 50 Hz
-        x(1,:) = 0; y(1,:) = 0; triallength = 3500;
+        x(1,:) = 0; y(1,:) = 0; % triallength is an input argument
     case {'gaussian', 'Gaussian'} % Gaussian odor gradient without any wind
-        x(1,:) = 20*rand(1,ntrials)-10;
-        y(1,:) = 20*rand(1,ntrials)-10;
+        % Using original hardcoded values for Gaussian as its not typically driven by the plume JSONs
+        gauss_init_x_range = [-10, 10];
+        gauss_init_y_range = [-10, 10];
+        fprintf('Initializing agents for ''%s'': X range [%.2f, %.2f] cm, Y range [%.2f, %.2f] cm\n', ...
+                environment, gauss_init_x_range(1), gauss_init_x_range(2), gauss_init_y_range(1), gauss_init_y_range(2));
+        
+        x_width = gauss_init_x_range(2) - gauss_init_x_range(1);
+        x(1,:) = rand(1,ntrials) * x_width + gauss_init_x_range(1);
+        
+        y_height = gauss_init_y_range(2) - gauss_init_y_range(1);
+        y(1,:) = rand(1,ntrials) * y_height + gauss_init_y_range(1);
 end
 heading = 360*rand(1,ntrials); % starts with a random heading
 
