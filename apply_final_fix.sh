@@ -1,4 +1,31 @@
 #!/bin/bash
+# apply_final_fix.sh - Apply final clean SLURM script and check results
+
+echo "=== Applying Final SLURM Script Fix ==="
+echo ""
+
+# First, let's check what results we already have
+echo "1. Checking existing results:"
+if [ -f "results/nav_results_0000.mat" ]; then
+    echo "   ✓ Found nav_results_0000.mat"
+    ls -lh results/nav_results_0000.mat
+else
+    echo "   No results found yet"
+fi
+
+echo ""
+echo "2. Recent successful jobs:"
+grep -l "Task.*COMPLETE\|Task.*Complete" logs/nav-*.out 2>/dev/null | tail -5
+
+echo ""
+echo "3. Creating final clean SLURM script..."
+
+# Backup current version
+cp nav_job_paths.slurm nav_job_paths.slurm.backup_final
+
+# Create the final clean version
+cat > nav_job_paths.slurm << 'EOF'
+#!/bin/bash
 #SBATCH --job-name=nav_model
 #SBATCH --partition=day
 #SBATCH --time=6:00:00
@@ -96,3 +123,28 @@ catch ME
     rethrow(ME);
 end
 "
+EOF
+
+chmod +x nav_job_paths.slurm
+
+echo "✓ Final SLURM script created"
+echo ""
+echo "4. Key improvements in final version:"
+echo "   - Uses 'matlab -batch' for clean execution"
+echo "   - No interactive prompts"
+echo "   - No temporary files"
+echo "   - Clean error handling with rethrow"
+echo "   - Concise output"
+echo ""
+echo "5. Check if results already exist:"
+find results -name "nav_results_*.mat" -type f | head -10
+
+echo ""
+echo "To submit remaining jobs (1-99):"
+echo "  sbatch --array=1-99%20 nav_job_paths.slurm"
+echo ""
+echo "To check all results:"
+echo "  ls -la results/nav_results_*.mat | wc -l"
+echo ""
+echo "To analyze results:"
+echo "  ./matlab_results_check.sh results/nav_results_0000.mat"

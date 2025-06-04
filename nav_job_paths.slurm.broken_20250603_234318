@@ -1,11 +1,4 @@
 #!/bin/bash
-# fix_nav_job_slurm.sh - Fix the nav_job_paths.slurm script
-
-echo "Fixing nav_job_paths.slurm..."
-
-# Create corrected version
-cat > nav_job_paths_fixed.slurm << 'EOF'
-#!/bin/bash
 #SBATCH --job-name=nav_model
 #SBATCH --partition=day
 #SBATCH --time=6:00:00
@@ -55,26 +48,3 @@ catch ME
 end
 exit(0);
 "
-EOF
-
-# Backup old version
-if [ -f "nav_job_paths.slurm" ]; then
-    mv nav_job_paths.slurm nav_job_paths.slurm.broken
-fi
-
-# Install fixed version
-mv nav_job_paths_fixed.slurm nav_job_paths.slurm
-
-echo "✓ Fixed nav_job_paths.slurm"
-echo ""
-echo "The problem was: trying to 'source' a JSON file"
-echo "The fix: removed that line and just set PROJECT_ROOT directly"
-
-# Also check the config
-echo ""
-echo "Checking simulation duration in config:"
-grep -A2 "simulation" configs/plumes/crimaldi_10cms_bounded.json | grep duration
-
-echo ""
-echo "To test a single job:"
-echo "  sbatch --array=0-0 nav_job_paths.slurm"
