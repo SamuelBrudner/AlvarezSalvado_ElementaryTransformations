@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Fix the script
+sed -i '
+# Fix the Step 4 section completely
+/^# Step 4: Run comprehensive analysis$/,/^echo "✓ MATLAB analysis completed successfully"$/ {
+    s/^# Step 4: Run comprehensive analysis$/# Step 4: Run analysis based on user choice/
+    s/^echo ""/if [[ "$RUN_ANALYSIS" != "n" ]]; then\n    echo ""/
+    s/^echo "Step 4: Running comprehensive plume analysis..."$/echo "Step 4: Running plume analysis..."/
+    s/echo "  This will sample 100 random frames and calculate statistics..."/    # Set parameters based on analysis mode\n    if [[ "$RUN_ANALYSIS" == "quick" ]]; then\n        echo "  Mode: QUICK (sampling only 10 frames)..."\n        N_SAMPLE_FRAMES=10\n        TIMEOUT_SECONDS=120  # 2 minutes for quick analysis\n    else\n        echo "  Mode: FULL (sampling 100 frames)..."\n        N_SAMPLE_FRAMES=100\n        TIMEOUT_SECONDS=600  # 10 minutes for full analysis\n    fi/
+}
+
+# Fix the wrapper script timeout variable
+/^TIMEOUT_SECONDS=300  # 5 minutes timeout$/d
+
+# Fix the timeout command in wrapper - escape the dollar sign properly
+s/timeout \${TIMEOUT_SECONDS}s matlab/timeout '"'"'${TIMEOUT_SECONDS}'"'"'s matlab/g
+
+# Fix n_samples in MATLAB script
+s/n_samples = min(100, n_frames);/n_samples = min('"'"'$N_SAMPLE_FRAMES'"'"', n_frames);/
+
+# Add the else clause at the end of Step 4
+/^echo "✓ MATLAB analysis completed successfully"$/ a\
+else\
+    echo ""\
+    echo "Step 4: Skipping analysis (using defaults)"\
+fi
+
+# Remove duplicate output messages
+/^echo "Starting MATLAB analysis (timeout: 300s)..."$/ s/300/${TIMEOUT_SECONDS}/
+
+' setup_smoke_plume_config.sh
+
+# Also need to fix how the variable is passed to the wrapper
+perl -i -pe '
+s/^cat > "\$TEMP_DIR\/run_analysis.sh" << '\''WRAPPER_EOF'\''$/cat > "\$TEMP_DIR\/run_analysis.sh" << WRAPPER_EOF/;
+' setup_smoke_plume_config.sh
+
+echo "Patch applied!"

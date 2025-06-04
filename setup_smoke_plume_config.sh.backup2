@@ -1,0 +1,1147 @@
+#!/bin/bash
+# setup_smoke_plume_config.sh - Complete setup for smoke plume simulations
+#
+# This script does EVERYTHING:
+# 1. Creates smoke plume config from template
+# 2. Updates paths.json
+# 3. Analyzes 100 random frames for intensity statistics
+# 4. Detects likely source position
+# 5. Calculates parameter scaling
+# 6. Updates config with all values
+# 7. Creates test scripts
+
+set -euo pipefail
+
+echo "=== Complete Smoke Plume Configuration Setup ==="
+echo ""
+
+# Store the project root directory (where this script is run from)
+PROJECT_ROOT="$(pwd)"
+echo "Project root: $PROJECT_ROOT"
+
+# Configuration files
+CONFIG_DIR="configs/plumes"
+TEMPLATE_CONFIG="$CONFIG_DIR/crimaldi_10cms_bounded.json"
+SMOKE_CONFIG="$CONFIG_DIR/smoke_1a_backgroundsubtracted.json"
+PATHS_CONFIG="configs/paths.json"
+
+# Check if template exists
+if [ ! -f "$TEMPLATE_CONFIG" ]; then
+    echo "ERROR: Template config not found at: $TEMPLATE_CONFIG"
+    exit 1
+fi
+
+# Check if smoke config exists and has wrong parameters
+if [ -f "$SMOKE_CONFIG" ]; then
+    echo "⚠️  Existing smoke config found. Checking parameters..."
+    python3 << 'EOF'
+import json
+with open('configs/plumes/smoke_1a_backgroundsubtracted.json', 'r') as f:
+    config = json.load(f)
+    
+mm_per_pixel = config.get('spatial', {}).get('mm_per_pixel', 0)
+fps = config.get('temporal', {}).get('frame_rate', 0)
+
+if abs(mm_per_pixel - 0.74) < 0.01 or abs(fps - 15) < 1:
+    print("  ⚠️  WARNING: Existing config has Crimaldi plume parameters!")
+    print(f"     Current: {mm_per_pixel} mm/px, {fps} Hz")
+    print(f"     These will be corrected to: 0.153 mm/px, 60 Hz")
+EOF
+fi
+
+# Step 1: Set correct parameters for smoke plume
+echo "Step 1: Setting smoke plume parameters..."
+
+# These are the CORRECT parameters for the smoke plume
+# Always use these, regardless of what might be in an existing config
+MM_PER_PIXEL=0.15299877600979192  # ~0.153 mm/pixel
+FPS=60.0                           # 60 Hz sampling rate
+
+# Try to read HDF5 path from existing config, or use default
+if [ -f "$SMOKE_CONFIG" ]; then
+    echo "  Reading HDF5 path from existing smoke config..."
+    # Extract just the HDF5 path and dataset name
+    read SMOKE_HDF5 DATASET_NAME < <(python3 << 'EOF'
+import json
+with open('configs/plumes/smoke_1a_backgroundsubtracted.json', 'r') as f:
+    config = json.load(f)
+hdf5_path = config.get('data_path', {}).get('path', 'data/plumes/smoke_1a_orig_backgroundsubtracted_rotated.h5')
+dataset_name = config.get('data_path', {}).get('dataset_name', '/dataset2')
+print(hdf5_path, dataset_name)
+EOF
+)
+else
+    echo "  Using default paths..."
+    # For scratch location, update this path as needed
+    SMOKE_HDF5="/vast/palmer/scratch/emonet/snb6/plume/smoke_1a_orig_backgroundsubtracted_rotated.h5"
+    # Or use local path if file is copied locally:
+    # SMOKE_HDF5="data/plumes/smoke_1a_orig_backgroundsubtracted_rotated.h5"
+    DATASET_NAME="/dataset2"
+fi
+
+echo "  ⚠️  Forcing correct parameters for smoke plume:"
+echo "     mm_per_pixel: $MM_PER_PIXEL (NOT 0.74)"
+echo "     fps: $FPS Hz (NOT 15 Hz)"
+
+# Convert relative path to absolute if needed
+if [[ ! "$SMOKE_HDF5" = /* ]]; then
+    SMOKE_HDF5="$PROJECT_ROOT/$SMOKE_HDF5"
+fi
+
+echo "Parameters:"
+echo "  mm_per_pixel: $MM_PER_PIXEL"
+echo "  fps: $FPS Hz"
+echo "  hdf5_path: $SMOKE_HDF5"
+echo "  dataset_name: $DATASET_NAME"
+echo ""
+
+# Check if HDF5 file exists
+if [ ! -f "$SMOKE_HDF5" ]; then
+    echo "ERROR: Smoke plume HDF5 not found at: $SMOKE_HDF5"
+    echo "Please ensure the file exists or update the path in the config"
+    exit 1
+fi
+
+# Quick sanity check on file size (smoke plume should be larger than Crimaldi)
+SMOKE_SIZE=$(stat -f%z "$SMOKE_HDF5" 2>/dev/null || stat -c%s "$SMOKE_HDF5" 2>/dev/null || echo "0")
+
+# Calculate size in GB if bc is available
+if command -v bc &> /dev/null; then
+    SMOKE_SIZE_GB=$(echo "scale=2; $SMOKE_SIZE / 1024 / 1024 / 1024" | bc)
+else
+    SMOKE_SIZE_GB=$(( SMOKE_SIZE / 1024 / 1024 / 1024 ))
+fi
+
+echo ""
+echo "HDF5 file info:"
+echo "  Path: $SMOKE_HDF5"
+echo "  Size: ${SMOKE_SIZE_GB} GB"
+
+if [ "$SMOKE_SIZE" -gt 10737418240 ]; then  # > 10 GB
+    echo "  ⚠️  Large file detected! Analysis may take several minutes."
+fi
+
+# Ask if user wants to run full analysis
+echo ""
+echo "The analysis step samples the HDF5 file to determine arena dimensions and source position."
+echo "For large files on network/scratch storage, this can be slow."
+echo ""
+read -p "Run full analysis? (y/n/quick) [y]: " RUN_ANALYSIS
+RUN_ANALYSIS=${RUN_ANALYSIS:-y}
+
+if [[ "$RUN_ANALYSIS" == "n" ]]; then
+    echo "Skipping analysis. Using default values..."
+    # Set reasonable defaults
+    width=1024
+    height=1024
+    frames=36000  # 10 minutes at 60 Hz
+    dataset="/dataset2"
+    data_min=0.0
+    data_max=1.0
+    data_mean=0.1
+    data_std=0.1
+    source_x_cm=0.0
+    source_y_cm=0.0
+    
+    # Calculate arena dimensions
+    if command -v bc &> /dev/null; then
+        arena_width_cm=$(echo "scale=1; $width * $MM_PER_PIXEL / 10" | bc)
+        arena_height_cm=$(echo "scale=1; $height * $MM_PER_PIXEL / 10" | bc)
+    else
+        # Fallback using awk
+        arena_width_cm=$(awk "BEGIN {printf \"%.1f\", $width * $MM_PER_PIXEL / 10}")
+        arena_height_cm=$(awk "BEGIN {printf \"%.1f\", $height * $MM_PER_PIXEL / 10}")
+    fi
+    
+    temporal_scale=4.0
+    spatial_scale=0.207
+    beta_suggestion=0.01
+    normalized=1
+    
+    echo "Using default dimensions: ${width}×${height}, ${frames} frames"
+elif [[ "$RUN_ANALYSIS" == "quick" ]]; then
+    QUICK_ANALYSIS=1
+else
+    QUICK_ANALYSIS=0
+fi
+
+# Step 2: Create/update smoke config from template
+echo "Step 2: Creating smoke plume config from template..."
+if [ -f "$SMOKE_CONFIG" ]; then
+    echo "  Backing up existing config..."
+    cp "$SMOKE_CONFIG" "${SMOKE_CONFIG}.backup_$(date +%Y%m%d_%H%M%S)"
+fi
+
+# Read template config and create new smoke config
+python3 << EOF
+import json
+
+# Load template config
+with open('$TEMPLATE_CONFIG', 'r') as f:
+    config = json.load(f)
+
+# Update basic fields
+config['plume_id'] = 'smoke_1a_backgroundsubtracted'
+config['description'] = 'Smoke plume 1a with background subtraction and rotation (60 Hz, 0.153 mm/px)'
+
+# Update data path
+config['data_path']['path'] = '$SMOKE_HDF5'
+config['data_path']['dataset_name'] = '$DATASET_NAME'
+
+# CRITICAL: Force correct parameters for smoke plume
+config['spatial']['mm_per_pixel'] = $MM_PER_PIXEL  # 0.153, NOT 0.74
+config['temporal']['frame_rate'] = $FPS             # 60 Hz, NOT 15 Hz
+
+# These will be updated after analysis, but set reasonable defaults
+# Note: Arena bounds and resolution will be calculated from the actual data
+config['spatial']['resolution']['width'] = 1024   # Will be updated
+config['spatial']['resolution']['height'] = 1024  # Will be updated
+
+# Save initial config
+with open('$SMOKE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=2)
+
+print("  ✓ Created smoke config with CORRECT parameters:")
+print(f"    - mm_per_pixel: {config['spatial']['mm_per_pixel']} mm/px")
+print(f"    - frame_rate: {config['temporal']['frame_rate']} Hz")
+EOF
+
+# Step 3: Update paths.json
+echo ""
+echo "Step 3: Updating paths.json..."
+
+# Backup
+cp "$PATHS_CONFIG" "${PATHS_CONFIG}.backup_$(date +%Y%m%d_%H%M%S)"
+echo "  ✓ Backed up paths.json"
+
+# Update
+FULL_SMOKE_CONFIG=$(realpath "$SMOKE_CONFIG")
+
+python3 << EOF
+import json
+
+with open('$PATHS_CONFIG', 'r') as f:
+    paths = json.load(f)
+
+paths['plume_config'] = '$FULL_SMOKE_CONFIG'
+
+with open('$PATHS_CONFIG', 'w') as f:
+    json.dump(paths, f, indent=2)
+
+print("  ✓ Updated plume_config path")
+EOF
+
+# Step 4: Run analysis based on user choice
+if [[ "$RUN_ANALYSIS" != "n" ]]; then
+    echo ""
+    echo "Step 4: Running plume analysis..."
+    
+    # Set parameters based on analysis mode
+    if [[ "$QUICK_ANALYSIS" == "1" ]]; then
+        echo "  Mode: QUICK (sampling only 10 frames)..."
+        N_SAMPLE_FRAMES=10
+        TIMEOUT_SECONDS=120  # 2 minutes for quick analysis
+    else
+        echo "  Mode: FULL (sampling 100 frames)..."
+        N_SAMPLE_FRAMES=100
+        TIMEOUT_SECONDS=600  # 10 minutes for full analysis
+    fi
+echo ""
+echo "Step 4: Running comprehensive plume analysis..."
+# Removed hardcoded message
+
+# Check if MATLAB is available
+if ! command -v matlab &> /dev/null; then
+    echo "ERROR: MATLAB not found in PATH"
+    echo "Please ensure MATLAB is installed and available"
+    exit 1
+fi
+
+# Create temp directory for MATLAB scripts
+TEMP_DIR="$PROJECT_ROOT/temp_matlab_$"
+mkdir -p "$TEMP_DIR"
+
+# Create a wrapper script to handle timeouts and errors
+cat > "$TEMP_DIR/run_analysis.sh" << 'WRAPPER_EOF'
+#!/bin/bash
+MATLAB_SCRIPT="$1"
+TIMEOUT_SECONDS=$TIMEOUT_SECONDS  # Set above based on mode
+
+echo "Running MATLAB analysis with ${TIMEOUT_SECONDS}s timeout..."
+echo "  Mode: $(if [ "$QUICK_ANALYSIS" == "1" ]; then echo "QUICK (10 frames)"; else echo "FULL (100 frames)"; fi)"
+
+# Run MATLAB with timeout
+if command -v timeout &> /dev/null; then
+    # GNU coreutils timeout available
+    timeout ${TIMEOUT_SECONDS}s matlab -nodisplay -nosplash -r "run('${MATLAB_SCRIPT}')" 2>&1
+    MATLAB_EXIT=$?
+else
+    # Use perl for timeout if GNU timeout not available
+    perl -e "alarm ${TIMEOUT_SECONDS}; exec @ARGV" matlab -nodisplay -nosplash -r "run('${MATLAB_SCRIPT}')" 2>&1
+    MATLAB_EXIT=$?
+fi
+
+if [ $MATLAB_EXIT -eq 124 ] || [ $MATLAB_EXIT -eq 142 ]; then
+    echo ""
+    echo "ERROR: MATLAB analysis timed out after ${TIMEOUT_SECONDS} seconds!"
+    echo "Possible causes:"
+    echo "  - HDF5 file is too large or on slow storage"
+    echo "  - MATLAB is waiting for user input"
+    echo "  - Code directory not found"
+    exit 1
+elif [ $MATLAB_EXIT -ne 0 ]; then
+    echo ""
+    echo "ERROR: MATLAB exited with code $MATLAB_EXIT"
+    exit $MATLAB_EXIT
+fi
+WRAPPER_EOF
+
+chmod +x "$TEMP_DIR/run_analysis.sh"
+
+# Create MATLAB analysis script with better error handling
+cat > "$TEMP_DIR/analyze_plume_full.m" << MATLAB_EOF
+% Comprehensive analysis script with error handling
+try
+    % Change to project root to ensure all relative paths work
+    project_root = '$PROJECT_ROOT';
+    cd(project_root);
+    fprintf('Changed to project root: %s\\n', pwd);
+    
+    % Check if Code directory exists
+    if ~exist('Code', 'dir')
+        error('Code directory not found in %s', pwd);
+    end
+    
+    % Add Code directory to path
+    addpath(genpath('Code'));
+    fprintf('Added Code directory to path\\n');
+    
+    % Use the CORRECT parameters for smoke plume
+    % These are passed from the shell script to ensure consistency
+    mm_per_pixel = $MM_PER_PIXEL;  % 0.153 mm/px
+    fps = $FPS;                     % 60 Hz
+    
+    % Read configuration from JSON for other parameters
+    fprintf('\\nReading smoke config from JSON...\\n');
+    config_file = '$SMOKE_CONFIG';
+    
+    if ~exist(config_file, 'file')
+        error('Config file not found: %s', config_file);
+    end
+    
+    % Read JSON config using MATLAB
+    fid = fopen(config_file, 'r');
+    raw = fread(fid, inf);
+    str = char(raw');
+    fclose(fid);
+    
+    % Extract data path
+    path_match = regexp(str, '"path"\\s*:\\s*"([^"]+)"', 'tokens');
+    if isempty(path_match)
+        error('Could not extract data path from config');
+    end
+    plume_file = path_match{1}{1};
+    
+    % Extract dataset name
+    dataset_match = regexp(str, '"dataset_name"\\s*:\\s*"([^"]+)"', 'tokens');
+    if isempty(dataset_match)
+        error('Could not extract dataset name from config');
+    end
+    dataset_name = dataset_match{1}{1};
+    
+    fprintf('Configuration:\\n');
+    fprintf('  mm_per_pixel: %.6f (FORCED CORRECT VALUE)\\n', mm_per_pixel);
+    fprintf('  fps: %.1f Hz (FORCED CORRECT VALUE)\\n', fps);
+    fprintf('  HDF5 file: %s\\n', plume_file);
+    fprintf('  Dataset: %s\\n', dataset_name);
+    
+    % Verify file exists
+    if ~exist(plume_file, 'file')
+        error('HDF5 file not found: %s', plume_file);
+    end
+    
+    fprintf('\\nChecking HDF5 file...\\n');
+    
+    % Get file info with error handling
+    try
+        info = h5info(plume_file);
+        fprintf('  File opened successfully\\n');
+    catch ME
+        error('Failed to open HDF5 file: %s\\nError: %s', plume_file, ME.message);
+    end
+    
+    % Verify dataset exists
+    try
+        ds_info = h5info(plume_file, dataset_name);
+    catch ME
+        % Try to list available datasets
+        fprintf('\\nERROR: Dataset "%s" not found\\n', dataset_name);
+        fprintf('Available datasets:\\n');
+        for i = 1:length(info.Datasets)
+            fprintf('  /%s\\n', info.Datasets(i).Name);
+        end
+        error('Dataset not found. Check dataset_name in config.');
+    end
+    
+    width = ds_info.Dataspace.Size(1);
+    height = ds_info.Dataspace.Size(2);
+    n_frames = ds_info.Dataspace.Size(3);
+    
+    fprintf('  Dimensions: %d x %d x %d\\n', width, height, n_frames);
+    
+    % Check if dimensions make sense
+    if width <= 0 || height <= 0 || n_frames <= 0
+        error('Invalid dimensions: %d x %d x %d', width, height, n_frames);
+    end
+    
+    % Sample frames based on analysis mode
+    fprintf('\\nSampling frames...\\n');
+    rng(42);
+    n_samples = min($N_SAMPLE_FRAMES, n_frames);
+    sample_indices = sort(randperm(n_frames, n_samples));
+    
+    fprintf('  Will sample %d frames from total of %d\\n', n_samples, n_frames);
+    
+    all_values = [];
+    mean_map = zeros(width, height);
+    
+    % Progress indicator
+    fprintf('  Progress: ');
+    
+    for i = 1:length(sample_indices)
+        if mod(i, 10) == 0
+            fprintf('%d%% ', round(i/length(sample_indices)*100));
+        end
+        
+        try
+            frame = h5read(plume_file, dataset_name, ...
+                           [1 1 sample_indices(i)], [inf inf 1]);
+        catch ME
+            error('Failed to read frame %d: %s', sample_indices(i), ME.message);
+        end
+        
+        all_values = [all_values; frame(:)];
+        
+        if i <= 20
+            mean_map = mean_map + double(frame);
+        end
+    end
+    fprintf('Done!\\n');
+    
+    mean_map = mean_map / min(20, length(sample_indices));
+    
+    % Calculate statistics
+    fprintf('\\nCalculating statistics...\\n');
+    data_min = min(all_values);
+    data_max = max(all_values);
+    data_mean = mean(all_values);
+    data_std = std(all_values);
+    pct_zeros = sum(all_values == 0) / length(all_values) * 100;
+    
+    fprintf('\\nIntensity statistics:\\n');
+    fprintf('  Range: [%.6f, %.6f]\\n', data_min, data_max);
+    fprintf('  Mean: %.6f (±%.6f)\\n', data_mean, data_std);
+    fprintf('  Zeros: %.1f%%\\n', pct_zeros);
+    
+    % Find source position
+    [max_val, max_idx] = max(mean_map(:));
+    [max_x, max_y] = ind2sub(size(mean_map), max_idx);
+    
+    center_x_px = width / 2;
+    center_y_px = height / 2;
+    source_x_cm = (max_x - center_x_px) * mm_per_pixel / 10;
+    source_y_cm = -(max_y - center_y_px) * mm_per_pixel / 10;
+    
+    fprintf('\\nSource position:\\n');
+    fprintf('  Pixels: (%d, %d)\\n', max_x, max_y);
+    fprintf('  Centered cm: (%.2f, %.2f)\\n', source_x_cm, source_y_cm);
+    
+    % Calculate arena bounds
+    arena_width_cm = width * mm_per_pixel / 10;
+    arena_height_cm = height * mm_per_pixel / 10;
+    
+    % Calculate scaling relative to Crimaldi plume
+    % Use known correct values for both plumes
+    crimaldi_mm_per_pixel = 0.74;   % Crimaldi plume pixel size
+    crimaldi_fps = 15.0;            % Crimaldi plume frame rate
+    
+    temporal_scale = fps / crimaldi_fps;              % 60/15 = 4x
+    spatial_scale = mm_per_pixel / crimaldi_mm_per_pixel;  % 0.153/0.74 = 0.207x
+    
+    fprintf('\\nScaling factors:\\n');
+    fprintf('  Temporal: %.1fx (%.0f Hz / %.0f Hz)\\n', temporal_scale, fps, crimaldi_fps);
+    fprintf('  Spatial: %.3fx (%.3f / %.2f mm/px)\\n', spatial_scale, mm_per_pixel, crimaldi_mm_per_pixel);
+    
+    % Determine beta
+    if data_max <= 1.0 && data_min >= 0
+        beta_suggestion = 0.01;
+    else
+        beta_suggestion = data_mean * 0.1;
+    end
+    
+    % Save results to file in temp directory
+    results_file = fullfile('$TEMP_DIR', 'analysis_results.txt');
+    fid = fopen(results_file, 'w');
+    if fid == -1
+        error('Could not create results file: %s', results_file);
+    end
+    
+    fprintf(fid, 'width=%d\\n', width);
+    fprintf(fid, 'height=%d\\n', height);
+    fprintf(fid, 'frames=%d\\n', n_frames);
+    fprintf(fid, 'dataset=%s\\n', dataset_name);
+    fprintf(fid, 'data_min=%.6f\\n', data_min);
+    fprintf(fid, 'data_max=%.6f\\n', data_max);
+    fprintf(fid, 'data_mean=%.6f\\n', data_mean);
+    fprintf(fid, 'data_std=%.6f\\n', data_std);
+    fprintf(fid, 'source_x_cm=%.3f\\n', source_x_cm);
+    fprintf(fid, 'source_y_cm=%.3f\\n', source_y_cm);
+    fprintf(fid, 'arena_width_cm=%.3f\\n', arena_width_cm);
+    fprintf(fid, 'arena_height_cm=%.3f\\n', arena_height_cm);
+    fprintf(fid, 'temporal_scale=%.3f\\n', temporal_scale);
+    fprintf(fid, 'spatial_scale=%.3f\\n', spatial_scale);
+    fprintf(fid, 'beta_suggestion=%.6f\\n', beta_suggestion);
+    fprintf(fid, 'normalized=%d\\n', data_max <= 1.0 && data_min >= 0);
+    fclose(fid);
+    
+    fprintf('\\n✓ Analysis complete\\n');
+    fprintf('Results saved to: %s\\n', results_file);
+    
+    % Exit cleanly
+    exit(0);
+    
+catch ME
+    % Error handling
+    fprintf('\\n\\nERROR in MATLAB analysis:\\n');
+    fprintf('  Message: %s\\n', ME.message);
+    fprintf('  Identifier: %s\\n', ME.identifier);
+    
+    if ~isempty(ME.stack)
+        fprintf('\\nStack trace:\\n');
+        for i = 1:length(ME.stack)
+            fprintf('  In %s (line %d)\\n', ME.stack(i).name, ME.stack(i).line);
+        end
+    end
+    
+    % Exit with error code
+    exit(1);
+end
+MATLAB_EOF
+
+# Run MATLAB analysis from project root with timeout and better output handling
+cd "$PROJECT_ROOT"
+echo "Starting MATLAB analysis (timeout: ${TIMEOUT_SECONDS}s)..."
+echo "  If this hangs, check:"
+echo "  - HDF5 file path is correct and accessible"
+echo "  - MATLAB can read the file (permissions, format)"
+echo "  - 'Code' directory exists in project root"
+echo ""
+
+# Run the wrapper script and capture output
+if ! "$TEMP_DIR/run_analysis.sh" "$TEMP_DIR/analyze_plume_full.m" | tee "$TEMP_DIR/matlab_output.log"; then
+    echo ""
+    echo "ERROR: MATLAB analysis failed!"
+    echo ""
+    echo "Last 20 lines of output:"
+    tail -n 20 "$TEMP_DIR/matlab_output.log" 2>/dev/null || echo "  (no output captured)"
+    echo ""
+    echo "Troubleshooting:"
+    echo "  1. Check if the HDF5 file exists and is readable:"
+    echo "     ls -la $SMOKE_HDF5"
+    echo "  2. Try opening the file manually in MATLAB:"
+    echo "     h5info('$SMOKE_HDF5')"
+    echo "  3. Check if 'Code' directory exists:"
+    echo "     ls -la $PROJECT_ROOT/Code"
+    echo ""
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Check if analysis succeeded
+if [ ! -f "$TEMP_DIR/analysis_results.txt" ]; then
+    echo ""
+    echo "ERROR: Analysis completed but no results file created"
+    echo "Check the MATLAB output above for errors"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+echo "✓ MATLAB analysis completed successfully"
+else
+    echo ""
+    echo "Step 4: Skipping analysis (using defaults)"
+fi
+
+echo ""
+echo "Step 5: Updating configuration with parameters..."
+
+# Update config with all parameters
+python3 << EOF
+import json
+
+# Load current config
+with open('$SMOKE_CONFIG', 'r') as f:
+    config = json.load(f)
+
+# Spatial parameters
+config['spatial']['resolution']['width'] = $width
+config['spatial']['resolution']['height'] = $height
+config['spatial']['arena_bounds']['x_min'] = -$arena_width_cm/2
+config['spatial']['arena_bounds']['x_max'] = $arena_width_cm/2
+config['spatial']['arena_bounds']['y_min'] = -$arena_height_cm/2
+config['spatial']['arena_bounds']['y_max'] = $arena_height_cm/2
+
+# Temporal parameters
+config['temporal']['total_frames'] = $frames
+config['temporal']['duration'] = $frames / $FPS
+
+# Source position
+config['simulation']['source_position']['x_cm'] = $source_x_cm
+config['simulation']['source_position']['y_cm'] = $source_y_cm
+
+# Agent initialization (adaptive based on arena size)
+init_width = min(20, $arena_width_cm * 0.4)
+init_y_start = -$arena_height_cm * 0.4
+init_y_end = init_y_start + 5
+
+config['simulation']['agent_initialization']['x_range_cm'] = [-init_width/2, init_width/2]
+config['simulation']['agent_initialization']['y_range_cm'] = [init_y_start, init_y_end]
+
+# Add analysis metadata
+config['analysis'] = {
+    'intensity_range': [$data_min, $data_max],
+    'intensity_mean': $data_mean,
+    'intensity_std': $data_std,
+    'beta_suggestion': $beta_suggestion,
+    'data_normalized': bool($normalized),
+    'temporal_scale_factor': $temporal_scale,
+    'spatial_scale_factor': $spatial_scale,
+    'analysis_mode': '$RUN_ANALYSIS',
+    'parameter_notes': {
+        'time_constants_need_scaling': 'Multiply by %.1f for %d Hz' % ($temporal_scale, $FPS),
+        'tau_Aon_scaled': int(490 * $temporal_scale),
+        'tau_Aoff_scaled': int(504 * $temporal_scale),
+        'tau_ON_scaled': int(36 * $temporal_scale),
+        'tau_OFF1_scaled': int(31 * $temporal_scale),
+        'tau_OFF2_scaled': int(242 * $temporal_scale)
+    }
+}
+
+# Save updated config
+with open('$SMOKE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=2)
+
+print("  ✓ Configuration updated with all parameters")
+
+# Display what was set
+print("")
+print("  Arena dimensions: %.1f × %.1f cm" % ($arena_width_cm, $arena_height_cm))
+print("  Source position: (%.1f, %.1f) cm" % ($source_x_cm, $source_y_cm))
+print("  Total frames: %d (%.1f minutes at %.0f Hz)" % ($frames, $frames/$FPS/60, $FPS))
+if '$RUN_ANALYSIS' == 'n':
+    print("  ⚠️  Using default values (analysis was skipped)")
+elif '$RUN_ANALYSIS' == 'quick':
+    print("  ⚠️  Values based on quick analysis (10 frames)")
+EOF
+
+# Step 6: Validate final configuration
+echo ""
+echo "Step 6: Validating final configuration..."
+
+python3 << EOF
+import json
+
+with open('$SMOKE_CONFIG', 'r') as f:
+    config = json.load(f)
+
+# Check critical parameters
+mm_per_pixel = config['spatial']['mm_per_pixel']
+frame_rate = config['temporal']['frame_rate']
+
+errors = []
+if abs(mm_per_pixel - $MM_PER_PIXEL) > 0.001:
+    errors.append(f"mm_per_pixel is {mm_per_pixel}, should be $MM_PER_PIXEL")
+
+if abs(frame_rate - $FPS) > 0.1:
+    errors.append(f"frame_rate is {frame_rate}, should be $FPS")
+
+if errors:
+    print("  ⚠️  VALIDATION ERRORS:")
+    for error in errors:
+        print(f"     - {error}")
+    exit(1)
+else:
+    print("  ✓ Configuration validated successfully")
+    print(f"     - mm_per_pixel: {mm_per_pixel} mm/px ✓")
+    print(f"     - frame_rate: {frame_rate} Hz ✓")
+EOF
+
+# Step 7: Create visualization script that reads from config
+echo ""
+echo "Step 7: Creating visualization script..."
+
+cat > visualize_smoke_plume.m << MATLAB_EOF
+% visualize_smoke_plume.m - Visualize the configured smoke plume
+% This script reads all parameters from the JSON config
+
+% Store current directory and switch to script directory
+original_dir = pwd;
+script_dir = fileparts(mfilename('fullpath'));
+if isempty(script_dir)
+    script_dir = pwd;
+end
+
+% Assume script is in project root
+cd(script_dir);
+
+fprintf('Loading smoke plume configuration...\\n');
+fprintf('Running from: %s\\n', pwd);
+
+% Add Code directory to path
+if exist('Code', 'dir')
+    addpath(genpath('Code'));
+else
+    warning('Code directory not found in current path');
+end
+
+try
+    % Load config using get_plume_file (which reads from paths.json)
+    [plume_file, plume_config] = get_plume_file();
+    
+    % Display config info
+    fprintf('\\nLoaded config: %s\\n', plume_config.plume_id);
+    fprintf('Description: %s\\n', plume_config.description);
+    fprintf('Data file: %s\\n', plume_file);
+    fprintf('Dataset: %s\\n', plume_config.data_path.dataset_name);
+    
+    % Read some frames
+    fprintf('\\nReading sample frames...\\n');
+    total_frames = plume_config.temporal.total_frames;
+    frames_to_show = [1, round(total_frames / 2), total_frames];
+    
+    figure('Position', [100 100 1200 400]);
+    for i = 1:3
+        subplot(1, 3, i);
+        frame = h5read(plume_file, plume_config.data_path.dataset_name, ...
+                       [1 1 frames_to_show(i)], [inf inf 1]);
+        imagesc(frame');
+        colormap(hot);
+        colorbar;
+        title(sprintf('Frame %d (t=%.1fs)', frames_to_show(i), ...
+                      (frames_to_show(i)-1)/plume_config.temporal.frame_rate));
+        axis equal tight;
+    end
+    
+    sgtitle(sprintf('%s: %.1f×%.1f cm arena, %d Hz', ...
+            plume_config.plume_id, ...
+            plume_config.spatial.arena_bounds.x_max * 2, ...
+            plume_config.spatial.arena_bounds.y_max * 2, ...
+            plume_config.temporal.frame_rate));
+    
+    fprintf('\\nConfiguration summary:\\n');
+    fprintf('  Arena: %.1f × %.1f cm\\n', ...
+            plume_config.spatial.arena_bounds.x_max * 2, ...
+            plume_config.spatial.arena_bounds.y_max * 2);
+    fprintf('  Resolution: %d × %d pixels\\n', ...
+            plume_config.spatial.resolution.width, ...
+            plume_config.spatial.resolution.height);
+    fprintf('  Pixel size: %.3f mm/px\\n', plume_config.spatial.mm_per_pixel);
+    fprintf('  Source: (%.1f, %.1f) cm\\n', ...
+            plume_config.simulation.source_position.x_cm, ...
+            plume_config.simulation.source_position.y_cm);
+    fprintf('  Duration: %.1f seconds (%.1f minutes)\\n', ...
+            plume_config.temporal.duration, ...
+            plume_config.temporal.duration / 60);
+    fprintf('  Frame rate: %.1f Hz\\n', plume_config.temporal.frame_rate);
+    
+    if isfield(plume_config, 'analysis')
+        fprintf('\\nAnalysis results:\\n');
+        fprintf('  Intensity range: [%.3f, %.3f]\\n', ...
+                plume_config.analysis.intensity_range(1), ...
+                plume_config.analysis.intensity_range(2));
+        fprintf('  Mean intensity: %.3f\\n', plume_config.analysis.intensity_mean);
+        fprintf('  Data normalized: %s\\n', ...
+                iif(plume_config.analysis.data_normalized, 'Yes', 'No'));
+        fprintf('  Temporal scaling: %.1f× (relative to 15 Hz)\\n', ...
+                plume_config.analysis.temporal_scale_factor);
+    end
+    
+catch ME
+    fprintf('Error: %s\\n', ME.message);
+    cd(original_dir);
+    rethrow(ME);
+end
+
+% Return to original directory
+cd(original_dir);
+
+function r = iif(c,t,f)
+    if c, r=t; else, r=f; end
+end
+MATLAB_EOF
+
+echo "  ✓ Created visualize_smoke_plume.m"
+
+# Step 8: Create quick test script
+cat > test_smoke_simulation.m << MATLAB_EOF
+% test_smoke_simulation.m - Quick test of smoke plume simulation
+% This script reads config and runs a short simulation
+
+% Store current directory and switch to script directory
+original_dir = pwd;
+script_dir = fileparts(mfilename('fullpath'));
+if isempty(script_dir)
+    script_dir = pwd;
+end
+
+% Assume script is in project root
+cd(script_dir);
+
+% Add Code directory to path
+if exist('Code', 'dir')
+    addpath(genpath('Code'));
+else
+    warning('Code directory not found in current path');
+end
+
+fprintf('\\n=== Testing Smoke Plume Simulation ===\\n\\n');
+fprintf('Running from: %s\\n', pwd);
+
+% Load current plume config
+try
+    [plume_file, plume_config] = get_plume_file();
+    fprintf('Active plume: %s\\n', plume_config.plume_id);
+    fprintf('Frame rate: %.1f Hz\\n', plume_config.temporal.frame_rate);
+    
+    % Calculate frames for 10 second test
+    test_duration_s = 10;
+    test_frames = round(test_duration_s * plume_config.temporal.frame_rate);
+    
+    fprintf('\\nRunning %d-second test (%d frames)...\\n', test_duration_s, test_frames);
+    
+    out = navigation_model_vec(test_frames, 'Crimaldi', 0, 2);  % 2 agents
+    fprintf('✓ Success! Generated %d time points\\n', size(out.x, 1));
+    
+    if isfield(out, 'successrate')
+        fprintf('  Success rate: %.1f%%\\n', out.successrate * 100);
+    end
+    
+    % Quick visualization
+    figure;
+    plot(out.x(:,1), out.y(:,1), 'b-', 'LineWidth', 2);
+    if size(out.x, 2) > 1
+        hold on;
+        plot(out.x(:,2), out.y(:,2), 'r-', 'LineWidth', 2);
+    end
+    xlabel('X (cm)'); ylabel('Y (cm)');
+    title(sprintf('Test Trajectories - %s', plume_config.plume_id));
+    axis equal; grid on;
+    
+    % Show arena bounds
+    hold on;
+    rectangle('Position', [plume_config.spatial.arena_bounds.x_min, ...
+                          plume_config.spatial.arena_bounds.y_min, ...
+                          plume_config.spatial.arena_bounds.x_max - plume_config.spatial.arena_bounds.x_min, ...
+                          plume_config.spatial.arena_bounds.y_max - plume_config.spatial.arena_bounds.y_min], ...
+              'EdgeColor', 'k', 'LineStyle', '--', 'LineWidth', 1);
+    
+    % Mark source
+    plot(plume_config.simulation.source_position.x_cm, ...
+         plume_config.simulation.source_position.y_cm, ...
+         'r*', 'MarkerSize', 15, 'LineWidth', 2);
+    
+catch ME
+    fprintf('✗ Error: %s\\n', ME.message);
+    cd(original_dir);
+    rethrow(ME);
+end
+
+% Return to original directory
+cd(original_dir);
+MATLAB_EOF
+
+echo "  ✓ Created test_smoke_simulation.m"
+
+# Step 9: Generate comparison report
+echo ""
+echo "Step 9: Generating detailed comparison with Crimaldi plume..."
+
+# Create comparison script
+cat > compare_plumes.py << 'EOF'
+import json
+import os
+
+# Load both configs
+smoke_config_path = 'configs/plumes/smoke_1a_backgroundsubtracted.json'
+crimaldi_config_path = 'configs/plumes/crimaldi_10cms_bounded.json'
+
+if not os.path.exists(smoke_config_path):
+    print(f"ERROR: Smoke config not found at {smoke_config_path}")
+    exit(1)
+
+if not os.path.exists(crimaldi_config_path):
+    print(f"ERROR: Crimaldi config not found at {crimaldi_config_path}")
+    exit(1)
+
+with open(smoke_config_path, 'r') as f:
+    smoke_config = json.load(f)
+    
+with open(crimaldi_config_path, 'r') as f:
+    crimaldi_config = json.load(f)
+
+print("\n" + "="*70)
+print("DETAILED PLUME COMPARISON")
+print("="*70)
+
+# Helper function to format calculations
+def show_calc(label, value, calc=""):
+    if calc:
+        return f"{label:<25} {value:>12} {calc}"
+    else:
+        return f"{label:<25} {value:>12}"
+
+print("\n1. CONFIGURATION FILES")
+print("-" * 70)
+print(f"{'Smoke plume:':<25} {smoke_config['plume_id']}")
+print(f"{'Crimaldi plume:':<25} {crimaldi_config['plume_id']}")
+
+# Check if parameters are correct
+smoke_mm = smoke_config['spatial']['mm_per_pixel']
+smoke_fps = smoke_config['temporal']['frame_rate']
+if abs(smoke_mm - 0.153) > 0.01 or abs(smoke_fps - 60) > 1:
+    print("\n⚠️  WARNING: Smoke config may have incorrect parameters!")
+    print(f"   Found: {smoke_mm} mm/px, {smoke_fps} Hz")
+    print(f"   Expected: 0.153 mm/px, 60 Hz")
+
+print("\n2. DATA SOURCES")
+print("-" * 70)
+print(f"{'Parameter':<25} {'Smoke Plume':>25} {'Crimaldi Plume':>25}")
+print("-" * 70)
+
+# Extract filenames from paths
+smoke_file = os.path.basename(smoke_config['data_path']['path'])
+crimaldi_file = os.path.basename(crimaldi_config['data_path']['path'])
+
+print(f"{'HDF5 file:':<25} {smoke_file[:24]:>25} {crimaldi_file[:24]:>25}")
+print(f"{'Dataset:':<25} {smoke_config['data_path']['dataset_name']:>25} {crimaldi_config['data_path']['dataset_name']:>25}")
+
+print("\n3. SPATIAL PARAMETERS")
+print("-" * 70)
+
+# Smoke plume
+s_width_px = smoke_config['spatial']['resolution']['width']
+s_height_px = smoke_config['spatial']['resolution']['height']
+s_mm_per_px = smoke_config['spatial']['mm_per_pixel']
+s_width_mm = s_width_px * s_mm_per_px
+s_height_mm = s_height_px * s_mm_per_px
+s_width_cm = s_width_mm / 10
+s_height_cm = s_height_mm / 10
+
+# Crimaldi plume
+c_width_px = crimaldi_config['spatial']['resolution']['width']
+c_height_px = crimaldi_config['spatial']['resolution']['height']
+c_mm_per_px = crimaldi_config['spatial']['mm_per_pixel']
+c_width_mm = c_width_px * c_mm_per_px
+c_height_mm = c_height_px * c_mm_per_px
+c_width_cm = c_width_mm / 10
+c_height_cm = c_height_mm / 10
+
+print(f"{'Parameter':<25} {'Smoke Plume':>20} {'Crimaldi Plume':>20}")
+print("-" * 70)
+
+# Resolution
+print(f"{'Resolution (pixels)':<25} {f'{s_width_px}×{s_height_px}':>20} {f'{c_width_px}×{c_height_px}':>20}")
+print(f"{'Pixel size (mm/px)':<25} {f'{s_mm_per_px:.3f}':>20} {f'{c_mm_per_px:.3f}':>20}")
+
+# Arena size calculations
+print(f"\n{'Arena Width:':<25}")
+print(f"{'  pixels × mm/px':<25} {f'{s_width_px} × {s_mm_per_px:.3f}':>20} {f'{c_width_px} × {c_mm_per_px:.3f}':>20}")
+print(f"{'  = mm':<25} {f'{s_width_mm:.1f}':>20} {f'{c_width_mm:.1f}':>20}")
+print(f"{'  = cm':<25} {f'{s_width_cm:.1f}':>20} {f'{c_width_cm:.1f}':>20}")
+
+print(f"\n{'Arena Height:':<25}")
+print(f"{'  pixels × mm/px':<25} {f'{s_height_px} × {s_mm_per_px:.3f}':>20} {f'{c_height_px} × {c_mm_per_px:.3f}':>20}")
+print(f"{'  = mm':<25} {f'{s_height_mm:.1f}':>20} {f'{c_height_mm:.1f}':>20}")
+print(f"{'  = cm':<25} {f'{s_height_cm:.1f}':>20} {f'{c_height_cm:.1f}':>20}")
+
+print(f"\n{'Total Arena (cm)':<25} {f'{s_width_cm:.1f} × {s_height_cm:.1f}':>20} {f'{c_width_cm:.1f} × {c_height_cm:.1f}':>20}")
+
+# Scaling
+pixel_ratio = s_mm_per_px / c_mm_per_px
+area_ratio = (s_width_cm * s_height_cm) / (c_width_cm * c_height_cm)
+
+print(f"\n{'Pixel size ratio':<25} {f'{pixel_ratio:.3f}×':>20} (smoke/crimaldi)")
+print(f"{'Arena area ratio':<25} {f'{area_ratio:.3f}×':>20} (smoke/crimaldi)")
+
+print("\n\n4. TEMPORAL PARAMETERS")
+print("-" * 70)
+
+s_fps = smoke_config['temporal']['frame_rate']
+s_frames = smoke_config['temporal']['total_frames']
+s_duration = smoke_config['temporal']['duration']
+
+c_fps = crimaldi_config['temporal']['frame_rate']
+c_frames = crimaldi_config['temporal']['total_frames']
+c_duration = crimaldi_config['temporal']['duration']
+
+print(f"{'Parameter':<25} {'Smoke Plume':>20} {'Crimaldi Plume':>20}")
+print("-" * 70)
+print(f"{'Frame rate (Hz)':<25} {f'{s_fps:.1f}':>20} {f'{c_fps:.1f}':>20}")
+print(f"{'Total frames':<25} {f'{s_frames:,}':>20} {f'{c_frames:,}':>20}")
+print(f"{'Duration (seconds)':<25} {f'{s_duration:.1f}':>20} {f'{c_duration:.1f}':>20}")
+print(f"{'Duration (minutes)':<25} {f'{s_duration/60:.1f}':>20} {f'{c_duration/60:.1f}':>20}")
+
+temporal_ratio = s_fps / c_fps
+print(f"\n{'Temporal ratio':<25} {f'{temporal_ratio:.1f}×':>20} (smoke/crimaldi)")
+
+print("\n\n5. SOURCE POSITION")
+print("-" * 70)
+
+s_source_x = smoke_config['simulation']['source_position']['x_cm']
+s_source_y = smoke_config['simulation']['source_position']['y_cm']
+c_source_x = crimaldi_config['simulation']['source_position']['x_cm']
+c_source_y = crimaldi_config['simulation']['source_position']['y_cm']
+
+# Calculate source position as percentage of arena
+s_source_x_pct = (s_source_x / (s_width_cm/2)) * 100 if s_width_cm > 0 else 0
+s_source_y_pct = (s_source_y / (s_height_cm/2)) * 100 if s_height_cm > 0 else 0
+c_source_x_pct = (c_source_x / (c_width_cm/2)) * 100 if c_width_cm > 0 else 0
+c_source_y_pct = (c_source_y / (c_height_cm/2)) * 100 if c_height_cm > 0 else 0
+
+print(f"{'Parameter':<25} {'Smoke Plume':>20} {'Crimaldi Plume':>20}")
+print("-" * 70)
+print(f"{'Source X (cm)':<25} {f'{s_source_x:.2f}':>20} {f'{c_source_x:.2f}':>20}")
+print(f"{'Source Y (cm)':<25} {f'{s_source_y:.2f}':>20} {f'{c_source_y:.2f}':>20}")
+print(f"{'X as % of half-width':<25} {f'{s_source_x_pct:.1f}%':>20} {f'{c_source_x_pct:.1f}%':>20}")
+print(f"{'Y as % of half-height':<25} {f'{s_source_y_pct:.1f}%':>20} {f'{c_source_y_pct:.1f}%':>20}")
+
+# Distance from center
+s_source_dist = (s_source_x**2 + s_source_y**2)**0.5
+c_source_dist = (c_source_x**2 + c_source_y**2)**0.5
+print(f"{'Distance from center':<25} {f'{s_source_dist:.2f} cm':>20} {f'{c_source_dist:.2f} cm':>20}")
+
+print("\n\n6. AGENT INITIALIZATION")
+print("-" * 70)
+
+s_agent_x = smoke_config['simulation']['agent_initialization']['x_range_cm']
+s_agent_y = smoke_config['simulation']['agent_initialization']['y_range_cm']
+c_agent_x = crimaldi_config['simulation']['agent_initialization']['x_range_cm']
+c_agent_y = crimaldi_config['simulation']['agent_initialization']['y_range_cm']
+
+s_agent_width = s_agent_x[1] - s_agent_x[0]
+s_agent_height = s_agent_y[1] - s_agent_y[0]
+c_agent_width = c_agent_x[1] - c_agent_x[0]
+c_agent_height = c_agent_y[1] - c_agent_y[0]
+
+print(f"{'Parameter':<25} {'Smoke Plume':>20} {'Crimaldi Plume':>20}")
+print("-" * 70)
+print(f"{'X range (cm)':<25} {f'[{s_agent_x[0]:.1f}, {s_agent_x[1]:.1f}]':>20} {f'[{c_agent_x[0]:.1f}, {c_agent_x[1]:.1f}]':>20}")
+print(f"{'Y range (cm)':<25} {f'[{s_agent_y[0]:.1f}, {s_agent_y[1]:.1f}]':>20} {f'[{c_agent_y[0]:.1f}, {c_agent_y[1]:.1f}]':>20}")
+print(f"{'Zone width (cm)':<25} {f'{s_agent_width:.1f}':>20} {f'{c_agent_width:.1f}':>20}")
+print(f"{'Zone height (cm)':<25} {f'{s_agent_height:.1f}':>20} {f'{c_agent_height:.1f}':>20}")
+print(f"{'Zone area (cm²)':<25} {f'{s_agent_width*s_agent_height:.1f}':>20} {f'{c_agent_width*c_agent_height:.1f}':>20}")
+
+# Distance from source to agent zone center
+s_agent_center_x = (s_agent_x[0] + s_agent_x[1]) / 2
+s_agent_center_y = (s_agent_y[0] + s_agent_y[1]) / 2
+c_agent_center_x = (c_agent_x[0] + c_agent_x[1]) / 2
+c_agent_center_y = (c_agent_y[0] + c_agent_y[1]) / 2
+
+s_dist_to_source = ((s_agent_center_x - s_source_x)**2 + (s_agent_center_y - s_source_y)**2)**0.5
+c_dist_to_source = ((c_agent_center_x - c_source_x)**2 + (c_agent_center_y - c_source_y)**2)**0.5
+
+print(f"\n{'Agent zone center (cm)':<25} {f'({s_agent_center_x:.1f}, {s_agent_center_y:.1f})':>20} {f'({c_agent_center_x:.1f}, {c_agent_center_y:.1f})':>20}")
+print(f"{'Distance to source (cm)':<25} {f'{s_dist_to_source:.1f}':>20} {f'{c_dist_to_source:.1f}':>20}")
+
+print("\n\n7. DATA PROPERTIES")
+print("-" * 70)
+
+if 'analysis' in smoke_config:
+    s_range = smoke_config['analysis']['intensity_range']
+    s_mean = smoke_config['analysis']['intensity_mean']
+    s_normalized = smoke_config['analysis']['data_normalized']
+    s_mode = smoke_config['analysis'].get('analysis_mode', 'unknown')
+    
+    print(f"{'Parameter':<25} {'Smoke Plume':>20} {'Crimaldi Plume':>20}")
+    print("-" * 70)
+    print(f"{'Intensity range':<25} {f'[{s_range[0]:.3f}, {s_range[1]:.3f}]':>20} {'[0.0, ~1.0]':>20}")
+    print(f"{'Mean intensity':<25} {f'{s_mean:.3f}':>20} {'~0.06':>20}")
+    print(f"{'Data normalized?':<25} {str(s_normalized):>20} {'Yes':>20}")
+    
+    if s_mode == 'n':
+        print(f"{'Analysis mode':<25} {'SKIPPED (defaults)':>20}")
+    elif s_mode == 'quick':
+        print(f"{'Analysis mode':<25} {'QUICK (10 frames)':>20}")
+    else:
+        print(f"{'Analysis mode':<25} {'FULL (100 frames)':>20}")
+else:
+    print("No analysis data available in smoke config")
+
+print("\n\n8. MODEL PARAMETER SCALING")
+print("-" * 70)
+
+if 'analysis' in smoke_config:
+    print(f"{'Parameter':<25} {'Factor':>20} {'Reason':>30}")
+    print("-" * 70)
+    print(f"{'Temporal scaling':<25} {f"{smoke_config['analysis']['temporal_scale_factor']:.1f}×":>20} {f'{s_fps:.0f} Hz / {c_fps:.0f} Hz':>30}")
+    print(f"{'Spatial scaling':<25} {f"{smoke_config['analysis']['spatial_scale_factor']:.3f}×":>20} {f'{s_mm_per_px:.3f} / {c_mm_per_px:.2f} mm/px':>30}")
+    
+    if 'parameter_notes' in smoke_config['analysis']:
+        print("\n\nScaled time constants for smoke plume:")
+        notes = smoke_config['analysis']['parameter_notes']
+        print(f"  τ_Aon:  {notes['tau_Aon_scaled']} frames")
+        print(f"  τ_Aoff: {notes['tau_Aoff_scaled']} frames")
+        print(f"  τ_ON:   {notes['tau_ON_scaled']} frames")
+        print(f"  τ_OFF1: {notes['tau_OFF1_scaled']} frames")
+        print(f"  τ_OFF2: {notes['tau_OFF2_scaled']} frames")
+else:
+    # Calculate scaling manually
+    temporal_ratio = s_fps / c_fps
+    pixel_ratio = s_mm_per_px / c_mm_per_px
+    
+    print(f"{'Parameter':<25} {'Factor':>20} {'Reason':>30}")
+    print("-" * 70)
+    print(f"{'Temporal scaling':<25} {f'{temporal_ratio:.1f}×':>20} {f'{s_fps:.0f} Hz / {c_fps:.0f} Hz':>30}")
+    print(f"{'Spatial scaling':<25} {f'{pixel_ratio:.3f}×':>20} {f'{s_mm_per_px:.3f} / {c_mm_per_px:.2f} mm/px':>30}")
+
+print("\n" + "="*70)
+print("✓ ANALYSIS COMPLETE")
+print("="*70)
+EOF
+
+python3 compare_plumes.py
+rm compare_plumes.py
+
+# Final summary
+echo ""
+echo "=== Setup Complete! ==="
+echo ""
+echo "Key findings:"
+echo "  ✓ Config file: $SMOKE_CONFIG"
+echo "  ✓ Smoke plume: ${width}×${height} pixels, ${frames} frames"
+echo "  ✓ Physical arena: ${arena_width_cm}×${arena_height_cm} cm"
+echo "  ✓ Source position: (${source_x_cm}, ${source_y_cm}) cm"
+echo "  ✓ Correct parameters set: 0.153 mm/px, 60 Hz"
+
+if [[ "$RUN_ANALYSIS" == "n" ]]; then
+    echo ""
+    echo "⚠ NOTE: Analysis was skipped. Using default values."
+    echo "  To run full analysis later, use:"
+    echo "    matlab -r \"h5info('$SMOKE_HDF5')\""
+elif [[ "$RUN_ANALYSIS" == "quick" ]]; then
+    echo ""
+    echo "⚠ NOTE: Quick analysis mode was used (only 10 frames sampled)."
+    echo "  Results should be accurate but you can run full analysis if needed."
+fi
+
+echo ""
+echo "⚠ IMPORTANT: The model time constants need scaling by ${temporal_scale}x for 60 Hz."
+echo "  See the analysis section in the config for scaled values."
+echo ""
+echo "To visualize the plume:"
+echo "  matlab -r \"run('visualize_smoke_plume.m')\""
+echo ""
+echo "To run a test simulation:"
+echo "  matlab -r \"run('test_smoke_simulation.m')\""
+echo ""
+echo "✓ Your smoke plume is now the active plume for all simulations!"
