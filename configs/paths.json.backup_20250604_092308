@@ -4,7 +4,7 @@
   "data_dir": "/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations/data",
   "config_dir": "/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations/configs",
   "plume_file": "/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations/data/plumes/10302017_10cms_bounded.hdf5",
-  "plume_config": "/vast/palmer/home.grace/snb6/Documents/AlvarezSalvado_ElementaryTransformations/configs/plumes/smoke_1a_backgroundsubtracted.json",
+  "plume_config": "/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations/configs/plumes/crimaldi_10cms_bounded.json",
   "paths_generated": "2025-06-03T23:23:54Z",
   "generated_by": "snb6@r918u32n02.grace.ycrc.yale.edu",
   "comment": "Auto-generated paths preserving symlinks - DO NOT EDIT MANUALLY"
