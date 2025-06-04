@@ -5,8 +5,8 @@
 #SBATCH --mem=82G
 #SBATCH --cpus-per-task=1
 #SBATCH --array=0-399%100
-#SBATCH --output=logs/slurm-%A_%a.out
-#SBATCH --error=logs/slurm-%A_%a.err
+#SBATCH --output=slurm_logs/nav_model_logs/slurm-%A_%a.out
+#SBATCH --error=slurm_logs/nav_model_logs/slurm-%A_%a.err
 
 # Load MATLAB module (required on Grace)
 module load MATLAB/2023b
@@ -45,3 +45,5 @@ catch ME
 end
 
 exit(0);
+EOF
+

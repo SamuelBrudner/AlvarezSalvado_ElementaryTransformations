@@ -3,8 +3,8 @@
 #SBATCH --time=02:00:00
 #SBATCH --mem=8G
 #SBATCH --partition=compute
-#SBATCH --output=slurm-%j.out
-#SBATCH --error=slurm-%j.err
+#SBATCH --output=slurm_logs/run_simulation_logs/slurm-%j.out
+#SBATCH --error=slurm_logs/run_simulation_logs/slurm-%j.err
 
 # Usage: sbatch run_simulation.slurm /path/to/matlab/Code
 
@@ -31,6 +31,7 @@ matlab -nodisplay -nosplash -r "
     % Save results  
     save('results_${SLURM_JOB_ID}.mat', 'out', '-v7.3');
     fprintf('Results saved to: results_${SLURM_JOB_ID}.mat\n');
-    
+
     exit;
 "
+

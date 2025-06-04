@@ -76,3 +76,12 @@ def test_slurm_submit_logs(tmp_path):
     assert 'array_upper' in stderr or 'array upper' in stderr.lower()
     assert str(output) in stderr
 
+
+def test_slurm_scripts_have_valid_directives():
+    root = Path(__file__).resolve().parents[1]
+    for name in ['nav_job_final.slurm', 'run_simulation.slurm']:
+        script = root / name
+        text = script.read_text()
+        assert text.endswith('\n')
+        assert '#SBATCH' in text
+        assert 'slurm_logs/' in text
