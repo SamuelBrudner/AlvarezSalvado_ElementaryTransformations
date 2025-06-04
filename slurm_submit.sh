@@ -40,7 +40,9 @@ JOBS_PER_COND=$(( (AGENTS_PER_CONDITION + AGENTS_PER_JOB -1)/AGENTS_PER_JOB ))
 TOTAL_JOBS=$(( JOBS_PER_COND * CONDITIONS ))
 ARRAY_UPPER=$(( TOTAL_JOBS - 1 ))
 
-mkdir -p "$(dirname "$OUTPUT")"
+LOG_DIR="slurm_logs/${EXP_NAME}"
+
+mkdir -p "$(dirname "$OUTPUT")" "$LOG_DIR"
 
 cat > "$OUTPUT" <<EOF2
 #!/bin/bash
@@ -48,6 +50,8 @@ cat > "$OUTPUT" <<EOF2
 #SBATCH --partition=${PARTITION}
 #SBATCH --time=${TIME_LIMIT}
 #SBATCH --mem=${MEM_PER_TASK}
+#SBATCH --output=${LOG_DIR}/${EXP_NAME}_logs_%A_%a.out
+#SBATCH --error=${LOG_DIR}/${EXP_NAME}_logs_%A_%a.err
 #SBATCH --array=0-${ARRAY_UPPER}%${MAX_CONCURRENT}
 
 $(cat slurm_job_template.slurm)
