@@ -1,0 +1,6 @@
+{
+  "plume_file": "data/plumes/10302017_10cms_bounded.hdf5",
+  "dataset_name": "/dataset2",
+  "mm_per_pixel": 0.74,
+  "frame_rate": 15
+}
