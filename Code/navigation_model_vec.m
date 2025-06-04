@@ -227,13 +227,18 @@ OLodorlib.openloopslope.ws=1;
 
 ws=1;
 
+% Load plume file once before the simulation loop
+if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
+    plume_filename = get_plume_file();
+    dataset_name = '/dataset2';  % or get from config
+end
+
 for i = 1:triallength
 
     % Get odor concentration
     switch environment
         
         case {'Crimaldi', 'crimaldi'}
-            plume_filename = get_plume_file();
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
             xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
             yind = -round(10*y(i,:)/pxscale)+1;

@@ -23,14 +23,16 @@ module load MATLAB/2023b
 # Get array task ID
 TASK_ID=${SLURM_ARRAY_TASK_ID:-0}
 
-# Run MATLAB in batch mode with inline script
-# The -batch flag is cleaner than here-docs for newer MATLAB versions
-matlab -batch "
-% Navigation model task $TASK_ID
-fprintf('\n=== Navigation Model Task $TASK_ID ===\n');
+# Create temporary MATLAB script
+TEMP_MATLAB=$(mktemp /tmp/nav_${SLURM_JOB_ID}_${TASK_ID}_XXXXXX.m)
+
+# Write MATLAB code using here-doc
+cat > "$TEMP_MATLAB" << MATLAB_CODE
+% Navigation model task ${TASK_ID}
+fprintf('\n=== Navigation Model Task ${TASK_ID} ===\n');
 
 % Setup
-cd('$PROJECT_ROOT');
+cd('${PROJECT_ROOT}');
 addpath(genpath('Code'));
 
 % Load configuration
@@ -42,7 +44,7 @@ catch
 end
 
 % Task parameters
-task_id = $TASK_ID;
+task_id = ${TASK_ID};
 
 try
     % Load plume config
@@ -93,6 +95,21 @@ catch ME
     for i = 1:length(ME.stack)
         fprintf('  %s (line %d)\n', ME.stack(i).name, ME.stack(i).line);
     end
-    rethrow(ME);
+    exit(1);
 end
-"
+
+% Exit successfully
+exit(0);
+MATLAB_CODE
+
+# Run MATLAB with the temporary script
+matlab -nodisplay -nosplash -r "run('$TEMP_MATLAB')"
+
+# Capture MATLAB exit code
+MATLAB_EXIT=$?
+
+# Clean up
+rm -f "$TEMP_MATLAB"
+
+# Exit with MATLAB's exit code
+exit $MATLAB_EXIT
