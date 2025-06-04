@@ -92,5 +92,95 @@ flowchart TD
     setup_validation_workflow_sh["setup_validation_workflow.sh"] --> validate_and_submit_sh["validate_and_submit.sh"]
     setup_validation_workflow_sh["setup_validation_workflow.sh"] --> manage_sessions_sh["manage_sessions.sh"]
     run_test_sh["run_test.sh"] --> Code
-```
+=======
+```mermaid
+flowchart TD
+
+    nav_job_paths_fixed_slurm --> Code
+    complete_test_slurm --> test_both_plumes_complete_m
+    complete_test_slurm --> generate_clean_configs_m
+    run_simulation_slurm --> Code
+    hpc_batch_submit_sh --> nav_job_smoke_slurm
+    hpc_batch_submit_sh --> nav_job_crimaldi_slurm
+    fix_wrapper_section_sh --> setup_smoke_plume_config_sh
+    fix_wrapper_section_sh --> Code
+    test_simple_m --> Code
+    fix_matlab_cmd_sh --> setup_smoke_plume_config_sh
+    nav_job_smoke_slurm --> Code
+    fix_heredoc_sh --> setup_smoke_plume_config_sh
+    get_plume_file_m --> setup_env_paths_sh
+    run_plume_sim_sh --> hpc_batch_submit_sh
+    run_plume_sim_sh --> nav_job_smoke_slurm
+    run_plume_sim_sh --> validate_and_submit_plume_sh
+    run_plume_sim_sh --> hpc_monitor_results_sh
+    submit_range_sh --> Code
+    inspect_smoke_hdf5_m --> setup_smoke_plume_config_sh
+    debug_and_fix_sh --> setup_smoke_plume_config_sh
+    debug_and_fix_sh --> create_new_wrapper_sh
+    setup_smoke_plume_config_sh --> Code
+    deploy_hpc_tools_sh --> nav_job_smoke_slurm
+    deploy_hpc_tools_sh --> run_plume_sim_sh
+    deploy_hpc_tools_sh --> nav_job_crimaldi_slurm
+    deploy_hpc_tools_sh --> validate_and_submit_plume_sh
+    deploy_hpc_tools_sh --> hpc_monitor_results_sh
+    deploy_hpc_tools_sh --> cleanup_results_sh
+    deploy_hpc_tools_sh --> Code
+    generated_job_slurm --> Code
+    diagnose_model_state_m --> get_plume_file_m
+    diagnose_model_state_m --> Code
+    run_direct_sh --> test_simple_m
+    run_direct_sh --> Code
+    plot_odor_distance_diagnostic_m --> test_both_plumes_complete_m
+    nav_job_final_slurm --> Code
+    add_startup_confirmation_sh --> setup_smoke_plume_config_sh
+    test_wrapper_matlab_sh --> run_test_sh
+    simple_fix_sh --> setup_smoke_plume_config_sh
+    create_new_wrapper_sh --> setup_smoke_plume_config_sh
+    nav_job_slurm_sh --> nav_job_smoke_slurm
+    nav_job_slurm_sh --> Code
+    add_matlab_logging_sh --> setup_smoke_plume_config_sh
+    add_matlab_logging_sh --> Code
+    slurm_submit_sh --> slurm_job_template_slurm
+    unbuffer_output_sh --> setup_smoke_plume_config_sh
+    fix_analysis_logic_sh --> setup_smoke_plume_config_sh
+    run_matlab_safe_sh --> Code
+    setup_complete_workflow_sh --> quick_validate_sh
+    setup_complete_workflow_sh --> submit_range_sh
+    setup_complete_workflow_sh --> view_results_py
+    setup_complete_workflow_sh --> create_results_report_sh
+    setup_complete_workflow_sh --> validate_and_submit_sh
+    setup_complete_workflow_sh --> setup_validation_workflow_sh
+    setup_complete_workflow_sh --> manage_sessions_sh
+    setup_complete_workflow_sh --> Code
+    run_nav_model_sh --> nav_job_final_slurm
+    nav_job_crimaldi_slurm --> Code
+    fix_timeout_issue_sh --> setup_smoke_plume_config_sh
+    fix_timeout_issue_sh --> Code
+    setup_hpc_scripts_sh --> hpc_batch_submit_sh
+    setup_hpc_scripts_sh --> nav_job_smoke_slurm
+    setup_hpc_scripts_sh --> run_plume_sim_sh
+    setup_hpc_scripts_sh --> setup_smoke_plume_config_sh
+    setup_hpc_scripts_sh --> nav_job_crimaldi_slurm
+    setup_hpc_scripts_sh --> validate_and_submit_plume_sh
+    setup_hpc_scripts_sh --> hpc_monitor_results_sh
+    fix_quick_mode_sh --> setup_smoke_plume_config_sh
+    setup_env_paths_sh --> get_plume_file_m
+    setup_env_paths_sh --> startup_m
+    setup_env_paths_sh --> Code
+    smoke_simple_slurm --> Code
+    validate_and_submit_sh --> Code
+    cleanup_junk_files_sh --> plot_both_plumes_m
+    cleanup_junk_files_sh --> generate_clean_configs_m
+    cleanup_junk_files_sh --> Code
+    fix_wrapper_syntax_sh --> setup_smoke_plume_config_sh
+    validate_and_submit_plume_sh --> nav_job_smoke_slurm
+    validate_and_submit_plume_sh --> nav_job_crimaldi_slurm
+    validate_and_submit_plume_sh --> Code
+    startup_m --> Code
+    setup_validation_workflow_sh --> quick_validate_sh
+    setup_validation_workflow_sh --> submit_range_sh
+    setup_validation_workflow_sh --> validate_and_submit_sh
+    setup_validation_workflow_sh --> manage_sessions_sh
+    run_test_sh --> Code
+
 
