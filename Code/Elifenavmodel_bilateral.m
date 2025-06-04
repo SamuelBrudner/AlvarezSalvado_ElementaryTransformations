@@ -1,5 +1,3 @@
-
-
 function out = Elifenavmodel_bilateral(triallength, environment, plotting, ntrials) 
 
 % Disable plotting if no display available
@@ -42,11 +40,51 @@ end
 
 
 tic
-% Scaling factors
-%tscale = 15/50; % Now loaded from config %15Hz/50Hz ratio to convert parameters for the plume data (parameters are expressed in samples at 50 Hz in this code)
-%pxscale = 0.74; % Now loaded from config %mm/pixel ratio to convert pixels from the plume data to actual mm
 
+% Initialize scaling factors and plume_config with defaults
+tscale = 15/50;  % Default: 15Hz/50Hz ratio for parameter conversion
+pxscale = 0.74;  % Default: mm/pixel ratio for plume data
 
+% Initialize plume_config struct (needed later in the code)
+plume_config = struct();
+plume_config.frame_rate = 15;
+
+% Load the correct config for Crimaldi environment
+if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
+    try
+        % Determine which config to load based on environment variable
+        env_plume = getenv('MATLAB_PLUME_FILE');
+        
+        if contains(env_plume, 'smoke')
+            % Smoke plume
+            cfg = jsondecode(fileread('configs/plumes/smoke_1a_backgroundsubtracted.json'));
+            plume_filename = env_plume;
+        else
+            % Crimaldi plume (default)
+            cfg = jsondecode(fileread('configs/plumes/crimaldi_10cms_bounded.json'));
+            plume_filename = cfg.data_path.path;
+        end
+        
+        % Extract values from config
+        plume_config.frame_rate = cfg.temporal.frame_rate;
+        tscale = cfg.temporal.frame_rate / 50.0;
+        pxscale = cfg.spatial.mm_per_pixel;
+        plume_config.dataset_name = cfg.data_path.dataset_name;
+        
+        % Use model_params if available
+        if isfield(cfg, 'model_params')
+            tscale = cfg.model_params.tscale;
+            pxscale = cfg.model_params.pxscale;
+        end
+        
+        fprintf('Loaded config: %.1f Hz, tscale=%.3f, pxscale=%.3f\n', ...
+                plume_config.frame_rate, tscale, pxscale);
+        
+    catch ME
+        fprintf('Config loading failed: %s\n', ME.message);
+        plume_filename = 'data/plumes/10302017_10cms_bounded.hdf5';
+    end
+end
 
 
 %% MODEL PARAMETERS ---------------------------------------------------------
@@ -181,6 +219,17 @@ OLodorlib.openlooppulsewb.ws=0;
 
 
 %% SIMULATE DIFFERENTIAL EQUATIONS -----------------------------------------
+
+% Extract dataset_name for use in the simulation loop
+if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
+    if exist('plume_config', 'var') && isfield(plume_config, 'dataset_name')
+        dataset_name = plume_config.dataset_name;
+        fprintf('Using dataset: %s\n', dataset_name);
+    else
+        dataset_name = '/dataset2';  % Default
+        fprintf('Using default dataset: %s\n', dataset_name);
+    end
+end
 
 for i = 1:triallength
 
