@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add a new plume configuration and update pipeline paths."""
+"""Add a new plume configuration and update pipeline configuration."""
 import argparse
 import json
 import logging
@@ -51,6 +51,21 @@ def update_paths(paths_file: Path, hdf5_path: Path, config_path: Path) -> None:
     logger.info("Updated %s", paths_file)
 
 
+def update_pipeline_config(pipeline_file: Path, plume_id: str) -> None:
+    """Append plume_id to pipeline configuration if not already present."""
+    if not pipeline_file.exists():
+        data = {"plumes": []}
+    else:
+        data = json.loads(pipeline_file.read_text())
+        if "plumes" not in data:
+            data["plumes"] = []
+    if plume_id not in data["plumes"]:
+        data["plumes"].append(plume_id)
+        pipeline_file.parent.mkdir(parents=True, exist_ok=True)
+        pipeline_file.write_text(json.dumps(data, indent=2))
+        logger.info("Updated %s", pipeline_file)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ingest a new plume dataset")
     parser.add_argument("plume_id", help="Identifier for the plume")
@@ -60,6 +75,11 @@ def main() -> None:
     parser.add_argument("--dataset", default=DEFAULT_DATASET)
     parser.add_argument("--config-dir", default="configs/plumes")
     parser.add_argument("--paths-file", default="configs/paths.json")
+    parser.add_argument(
+        "--pipeline-config",
+        default="configs/pipeline/pipeline_plumes.json",
+        help="Pipeline configuration file to update",
+    )
     args = parser.parse_args()
 
     hdf5_path = Path(args.hdf5_file)
@@ -73,6 +93,7 @@ def main() -> None:
     logger.info("Wrote %s", output_path)
 
     update_paths(Path(args.paths_file), hdf5_path, output_path)
+    update_pipeline_config(Path(args.pipeline_config), args.plume_id)
 
 
 if __name__ == "__main__":

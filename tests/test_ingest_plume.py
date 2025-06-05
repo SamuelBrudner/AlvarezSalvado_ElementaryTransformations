@@ -46,3 +46,30 @@ def test_ingest_plume_creates_config_and_updates_paths(tmp_path):
     paths = json.loads(paths_file.read_text())
     assert paths['plume_file'] == str(h5_file)
     assert paths['plume_config'] == str(cfg_path)
+
+
+def test_ingest_plume_updates_pipeline_config(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    script = root / 'ingest_plume.py'
+
+    h5_file = tmp_path / 'plume.h5'
+    with h5py.File(h5_file, 'w') as f:
+        f.create_dataset('dataset2', data=np.zeros((2, 3, 4)))
+
+    config_dir = tmp_path / 'configs' / 'plumes'
+    config_dir.mkdir(parents=True)
+    pipeline_file = tmp_path / 'configs' / 'pipeline' / 'pipeline_plumes.json'
+    pipeline_file.parent.mkdir(parents=True)
+    pipeline_file.write_text(json.dumps({"plumes": ["existing"]}))
+
+    subprocess.run([
+        'python', str(script),
+        'new_plume', str(h5_file),
+        '--mm-per-pixel', '0.1',
+        '--fps', '25',
+        '--config-dir', str(config_dir),
+        '--pipeline-config', str(pipeline_file)
+    ], check=True)
+
+    data = json.loads(pipeline_file.read_text())
+    assert 'new_plume' in data['plumes']

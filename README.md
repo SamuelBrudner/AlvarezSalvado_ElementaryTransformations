@@ -54,6 +54,21 @@ The `slurm_submit.sh` helper script supports a `-h`/`--help` option that prints
 usage instructions and also logs the calculated array size and selected paths
 when invoked.
 
+## Ingesting new plumes
+
+Run `ingest_plume.py` whenever you acquire a new plume dataset. This script
+creates `configs/plumes/<plume_id>.json` describing the dataset, updates
+`configs/paths.json` with the plume location and appends the plume ID to
+`configs/pipeline/pipeline_plumes.json` so pipeline runs pick it up.
+
+```bash
+python ingest_plume.py MY_PLUME path/to/plume.h5 \
+    --mm-per-pixel 0.12 --fps 30
+```
+
+After running the command, `run_my_pipeline.sh` will list the new plume the next
+time it runs.
+
 
 ## License
 
