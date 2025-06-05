@@ -1,14 +1,28 @@
+function plot_init_with_plumes(crim_cfg_file, smoke_cfg_file)
 % plot_init_with_plumes.m - Plot initialization zones with actual plume data
 
-fprintf('=== Plotting Initialization Zones with Plume Data ===\n\n');
+if nargin < 1 || isempty(crim_cfg_file)
+    crim_cfg_file = 'configs/plumes/crimaldi_10cms_bounded.json';
+end
+if nargin < 2 || isempty(smoke_cfg_file)
+    smoke_cfg_file = 'configs/plumes/smoke_1a_backgroundsubtracted.json';
+end
+
+fprintf('=== Plotting Initialization Zones with Plume Data ===\n');
+fprintf('Crimaldi config: %s\n', crim_cfg_file);
+fprintf('Smoke config:    %s\n\n', smoke_cfg_file);
 
 %% Load configs
-crim_cfg = jsondecode(fileread('configs/plumes/crimaldi_10cms_bounded.json'));
-smoke_cfg = jsondecode(fileread('configs/plumes/smoke_1a_backgroundsubtracted.json'));
+crim_cfg = jsondecode(fileread(crim_cfg_file));
+smoke_cfg = jsondecode(fileread(smoke_cfg_file));
 
 % Get initialization parameters
 init_x = crim_cfg.simulation.agent_initialization.x_range_cm;
 init_y = crim_cfg.simulation.agent_initialization.y_range_cm;
+success_radius = crim_cfg.simulation.success_radius_cm;
+fprintf('Init X range: [%.1f, %.1f] cm\n', init_x(1), init_x(2));
+fprintf('Init Y range: [%.1f, %.1f] cm\n', init_y(1), init_y(2));
+fprintf('Success radius: %.1f cm\n', success_radius);
 
 %% Load plume data (middle frame)
 fprintf('Loading plume data...\n');
@@ -183,3 +197,4 @@ fprintf('Crimaldi: min=%.3f, max=%.3f, mean=%.3f\n', ...
         min(crim_data(:)), max(crim_data(:)), mean(crim_data(:)));
 fprintf('Smoke: min=%.3f, max=%.3f, mean=%.3f\n', ...
         min(smoke_data(:)), max(smoke_data(:)), mean(smoke_data(:)));
+end

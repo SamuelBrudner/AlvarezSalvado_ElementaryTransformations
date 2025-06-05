@@ -54,6 +54,26 @@ The `slurm_submit.sh` helper script supports a `-h`/`--help` option that prints
 usage instructions and also logs the calculated array size and selected paths
 when invoked.
 
+## Plotting initialization zones
+
+First generate clean plume configurations using MATLAB:
+
+```bash
+matlab -batch "generate_clean_configs"
+```
+
+Then run the plotting script with the desired config paths:
+
+```bash
+bash run_matlab_safe.sh <<'EOF'
+plot_init_with_plumes('configs/plumes/crimaldi_10cms_bounded.json', ...
+                      'configs/plumes/smoke_1a_backgroundsubtracted.json');
+EOF
+```
+
+This will create `results/init_zones_with_plumes.png`. Remember to execute
+`pytest -q` before committing any changes.
+
 
 ## License
 
