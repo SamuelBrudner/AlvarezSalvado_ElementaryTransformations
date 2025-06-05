@@ -54,6 +54,10 @@ The `slurm_submit.sh` helper script supports a `-h`/`--help` option that prints
 usage instructions and also logs the calculated array size and selected paths
 when invoked.
 
+## Pipeline workflow
+
+For an end-to-end example that generates configs, submits test jobs and
+produces summary plots, see [pipeline_usage.md](pipeline_usage.md).
 ## Ingesting new plumes
 
 Run `ingest_plume.py` whenever you acquire a new plume dataset. This script

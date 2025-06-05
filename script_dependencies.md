@@ -91,6 +91,13 @@ flowchart TD
     setup_validation_workflow_sh --> validate_and_submit_sh
     setup_validation_workflow_sh --> manage_sessions_sh
     run_test_sh --> Code
+    run_my_pipeline_sh --> generate_clean_configs_m
+    run_my_pipeline_sh --> nav_job_crimaldi_slurm
+    run_my_pipeline_sh --> nav_job_smoke_slurm
+    run_my_pipeline_sh --> create_results_report_sh
+    run_my_pipeline_sh --> run_plot_results_sh
+    run_my_pipeline_sh --> Code
+
     analyze_plume_full_m
     analyze_results_m
     checkarena_m

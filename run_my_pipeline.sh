@@ -10,6 +10,7 @@ echo "Pipeline started at $(date)"
 echo "Project Root: $PROJECT_ROOT"
 echo "--------------------------------------------------"
 
+
 # Show pipeline configuration
 PIPELINE_CFG="$PROJECT_ROOT/configs/pipeline/pipeline_plumes.json"
 if [ -f "$PIPELINE_CFG" ]; then
