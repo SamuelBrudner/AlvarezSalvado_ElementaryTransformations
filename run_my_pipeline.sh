@@ -10,6 +10,23 @@ echo "Pipeline started at $(date)"
 echo "Project Root: $PROJECT_ROOT"
 echo "--------------------------------------------------"
 
+
+# Show pipeline configuration
+PIPELINE_CFG="$PROJECT_ROOT/configs/pipeline/pipeline_plumes.json"
+if [ -f "$PIPELINE_CFG" ]; then
+    echo "STEP 0: Plumes configured for pipeline"
+    python3 - <<EOF
+import json
+with open('$PIPELINE_CFG') as f:
+    cfg = json.load(f)
+for plume in cfg.get('plumes', []):
+    print(f' - {plume}')
+EOF
+    echo ""
+else
+    echo "No pipeline config found at $PIPELINE_CFG"
+fi
+
 # Prepare directories
 mkdir -p "$PROJECT_ROOT/results" \
          "$PROJECT_ROOT/logs" \
