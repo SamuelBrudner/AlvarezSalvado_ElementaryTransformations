@@ -91,5 +91,112 @@ flowchart TD
     setup_validation_workflow_sh --> validate_and_submit_sh
     setup_validation_workflow_sh --> manage_sessions_sh
     run_test_sh --> Code
+    analyze_plume_full_m
+    analyze_results_m
+    checkarena_m
+    clean_quick_test_m
+    get_hdf5_dimensions_sh
+    matlab_results_check_sh
+    plot_init_with_plumes_m
+    plot_results_m
+    plume_config_py
+    quick_dimension_check_m
+    quick_test_both_plumes_m
+    run_plot_results_sh
+    run_simulation_m
+    setup_env_sh
+    setup_plume_info_py
+    test_config_loading_m
+    test_matlab_basic_sh
+    test_matlab_fixed_sh
+    update_configs_shifted_init_m
+    validate_output_py
+    validate_plume_setup_m
 ```
+
+
+## Script Categories
+
+### One-Off Patch Scripts
+- add_matlab_logging_sh
+- add_startup_confirmation_sh
+- debug_and_fix_sh
+- fix_analysis_logic_sh
+- fix_heredoc_sh
+- fix_matlab_cmd_sh
+- fix_quick_mode_sh
+- fix_timeout_issue_sh
+- fix_wrapper_section_sh
+- fix_wrapper_syntax_sh
+- simple_fix_sh
+
+### Connected to run_plume_sim_sh
+- cleanup_junk_files_sh
+- cleanup_results_sh
+- complete_test_slurm
+- create_new_wrapper_sh
+- create_results_report_sh
+- deploy_hpc_tools_sh
+- diagnose_model_state_m
+- generate_clean_configs_m
+- generated_job_slurm
+- get_plume_file_m
+- hpc_batch_submit_sh
+- hpc_monitor_results_sh
+- inspect_smoke_hdf5_m
+- manage_sessions_sh
+- nav_job_crimaldi_slurm
+- nav_job_final_slurm
+- nav_job_paths_fixed_slurm
+- nav_job_slurm_sh
+- nav_job_smoke_slurm
+- plot_both_plumes_m
+- plot_odor_distance_diagnostic_m
+- quick_validate_sh
+- run_direct_sh
+- run_matlab_safe_sh
+- run_nav_model_sh
+- run_plume_sim_sh
+- run_simulation_slurm
+- run_test_sh
+- setup_complete_workflow_sh
+- setup_env_paths_sh
+- setup_hpc_scripts_sh
+- setup_smoke_plume_config_sh
+- setup_validation_workflow_sh
+- smoke_simple_slurm
+- startup_m
+- submit_range_sh
+- test_both_plumes_complete_m
+- test_simple_m
+- test_wrapper_matlab_sh
+- unbuffer_output_sh
+- validate_and_submit_plume_sh
+- validate_and_submit_sh
+- view_results_py
+
+### Independent Non-Patch Scripts
+- analyze_plume_full_m
+- analyze_results_m
+- checkarena_m
+- clean_quick_test_m
+- get_hdf5_dimensions_sh
+- matlab_results_check_sh
+- plot_init_with_plumes_m
+- plot_results_m
+- plume_config_py
+- quick_dimension_check_m
+- quick_test_both_plumes_m
+- run_plot_results_sh
+- run_simulation_m
+- setup_env_sh
+- setup_plume_info_py
+- slurm_job_template_slurm
+- slurm_submit_sh
+- test_config_loading_m
+- test_matlab_basic_sh
+- test_matlab_fixed_sh
+- update_configs_shifted_init_m
+- validate_output_py
+- validate_plume_setup_m
 
