@@ -2,6 +2,8 @@
 
 Quick reference for running navigation model simulations on HPC with Crimaldi and smoke plumes.
 
+Use `ingest_plume.py` to register new plume datasets and update pipeline configuration.
+
 ## Quick Start
 
 ```bash
