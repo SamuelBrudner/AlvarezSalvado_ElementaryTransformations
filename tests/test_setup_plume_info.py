@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def test_setup_plume_info_creates_configs(tmp_path):
-    script = Path(__file__).resolve().parents[1] / 'setup_plume_info.py'
+    script = Path(__file__).resolve().parents[1] / 'scripts/setup_plume_info.py'
     smoke_file = tmp_path / 'smoke.h5'
     crimaldi_file = tmp_path / 'crimaldi.h5'
     smoke_file.write_text('dummy')

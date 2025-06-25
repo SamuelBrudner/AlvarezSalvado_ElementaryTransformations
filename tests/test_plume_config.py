@@ -9,7 +9,7 @@ import pytest
 
 def test_get_plume_file_reads_json(tmp_path, monkeypatch):
     """When PLUME_CONFIG points to a JSON file the path should be used."""
-    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'scripts'))
     temp_config = tmp_path / 'config.json'
     temp_config.write_text('{"plume_file": "custom.hdf5"}')
     monkeypatch.setenv('PLUME_CONFIG', str(temp_config))
@@ -21,7 +21,7 @@ def test_get_plume_file_reads_json(tmp_path, monkeypatch):
 
 def test_get_plume_file_with_path(tmp_path, monkeypatch):
     """plume_path is prepended when present."""
-    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'scripts'))
     temp_config = tmp_path / 'config.json'
     temp_config.write_text(
         '{"plume_file": "custom.hdf5", "plume_path": "' + str(tmp_path) + '"}'
