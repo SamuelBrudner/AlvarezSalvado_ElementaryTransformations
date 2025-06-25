@@ -4,7 +4,7 @@ from pathlib import Path
 
 def test_complete_test_slurm_exists():
     root = Path(__file__).resolve().parents[1]
-    script = root / 'complete_test.slurm'
+    script = root / 'slurm' / 'complete_test.slurm'
     assert script.is_file()
 
     text = script.read_text()
@@ -16,6 +16,6 @@ def test_complete_test_slurm_exists():
 def test_complete_test_slurm_logging():
     """Check that the script logs diagnostics with a timestamp."""
     root = Path(__file__).resolve().parents[1]
-    text = (root / 'complete_test.slurm').read_text()
+    text = (root / 'slurm' / 'complete_test.slurm').read_text()
     assert 'TIMESTAMP=$(date +%Y%m%d_%H%M%S)' in text
     assert 'diagnostics_${TIMESTAMP}' in text
