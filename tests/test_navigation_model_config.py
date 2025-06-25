@@ -8,7 +8,7 @@ def run_model(env):
     root = Path(__file__).resolve().parents[1]
     script = "out = navigation_model_vec(10, 'Crimaldi', 0, 1);"
     result = subprocess.run([
-        'bash', str(root / 'run_matlab_safe.sh')
+        'bash', str(root / 'scripts/run_matlab_safe.sh')
     ], input=script, text=True, capture_output=True, cwd=root, env=env)
     return result
 
