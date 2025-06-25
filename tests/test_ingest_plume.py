@@ -7,7 +7,7 @@ import numpy as np
 
 def test_ingest_plume_creates_config_and_updates_paths(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    script = root / 'ingest_plume.py'
+    script = root / 'scripts' / 'ingest_plume.py'
 
     # create dummy hdf5 file
     h5_file = tmp_path / 'plume.h5'
@@ -50,7 +50,7 @@ def test_ingest_plume_creates_config_and_updates_paths(tmp_path):
 
 def test_ingest_plume_updates_pipeline_config(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    script = root / 'ingest_plume.py'
+    script = root / 'scripts' / 'ingest_plume.py'
 
     h5_file = tmp_path / 'plume.h5'
     with h5py.File(h5_file, 'w') as f:
