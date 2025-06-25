@@ -6,7 +6,7 @@ from pathlib import Path
 
 def test_template_exists():
     root = Path(__file__).resolve().parents[1]
-    template = root / 'slurm_job_template.slurm'
+    template = root / 'slurm/slurm_job_template.slurm'
 
     assert template.is_file()
 
@@ -16,7 +16,7 @@ def test_template_exists():
 
 def test_slurm_submit_creates_batch_file(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    script = root / 'slurm_submit.sh'
+    script = root / 'scripts/slurm_submit.sh'
     output = tmp_path / 'job.slurm'
 
     env = os.environ.copy()
@@ -36,7 +36,7 @@ def test_slurm_submit_creates_batch_file(tmp_path):
 
 def test_slurm_submit_usage_option():
     root = Path(__file__).resolve().parents[1]
-    script = root / 'slurm_submit.sh'
+    script = root / 'scripts/slurm_submit.sh'
 
     result = subprocess.run([
         'bash', str(script), '-h'
@@ -61,7 +61,7 @@ def test_slurm_submit_usage_option():
 
 def test_slurm_submit_logs(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    script = root / 'slurm_submit.sh'
+    script = root / 'scripts/slurm_submit.sh'
     output = tmp_path / 'job.slurm'
 
     env = os.environ.copy()
