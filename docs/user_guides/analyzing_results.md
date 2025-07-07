@@ -1791,3 +1791,21 @@ plume-simulation analyze [OPTIONS]
 | Aspect Ratio | Journal specific | Single/double column |
 
 This comprehensive user guide provides complete coverage of the analysis capabilities in the plume navigation algorithm simulation system, ensuring scientific rigor, reproducibility, and publication-ready results for research applications.
+
+### Using `set_equal_spatial_scale`
+
+The `set_equal_spatial_scale` function allows multiple Matplotlib axes to share
+the same x and y limits. This is useful when comparing trajectories across
+subplots.
+
+```python
+from src.backend.examples.analysis_visualization import set_equal_spatial_scale
+import matplotlib.pyplot as plt
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+# ... generate plots on ax1 and ax2 ...
+set_equal_spatial_scale([ax1, ax2])
+plt.savefig("results/trajectory_overlay.png")
+```
+
+The resulting figure will be located at `results/trajectory_overlay.png`.
