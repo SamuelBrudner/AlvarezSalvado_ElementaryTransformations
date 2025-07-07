@@ -89,6 +89,39 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 warnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')
 
 
+def set_equal_spatial_scale(ax_list: List[plt.Axes]) -> Tuple[float, float, float, float]:
+    """Set common x and y limits for a list of axes.
+
+    Parameters
+    ----------
+    ax_list : List[plt.Axes]
+        Axes that should share the same x/y limits.
+
+    Returns
+    -------
+    Tuple[float, float, float, float]
+        Tuple of ``(xmin, xmax, ymin, ymax)`` applied to all axes.
+    """
+    logger = get_logger('analysis_visualization.scale', 'VISUALIZATION')
+
+    x_vals: List[float] = []
+    y_vals: List[float] = []
+    for ax in ax_list:
+        x_vals.extend(ax.get_xlim())
+        y_vals.extend(ax.get_ylim())
+
+    xmin, xmax = min(x_vals), max(x_vals)
+    ymin, ymax = min(y_vals), max(y_vals)
+    limits = (xmin, xmax, ymin, ymax)
+    logger.debug("Unified axis range: %s", limits)
+
+    for ax in ax_list:
+        ax.set_xlim(xmin, xmax)
+        ax.set_ylim(ymin, ymax)
+
+    return limits
+
+
 def load_example_configuration(
     config_path: str,
     validate_config: bool = True
@@ -438,6 +471,10 @@ def demonstrate_trajectory_visualization(
             include_efficiency_metrics=True,
             show_convergence_zones=True
         )
+
+        # Ensure both plume subplots share the same spatial scale
+        axes = overlay_figure.axes[:2]
+        set_equal_spatial_scale(axes)
         
         # Save overlay visualization with comprehensive formatting
         overlay_figure.savefig(overlay_plot_file, dpi=300, bbox_inches='tight')
