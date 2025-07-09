@@ -215,10 +215,14 @@ smoke_y = linspace(smoke_cfg.spatial.arena_bounds.y_max, ...
                    smoke_cfg.spatial.arena_bounds.y_min, ...
                    smoke_cfg.spatial.resolution.height);
 
-%% Create visualization with plume data
-fprintf('Creating visualization with plume data...\n');
+%% Create visualization with plume data - FIXED SCALE
+fprintf('Creating visualization with plume data (same physical scale)...\n');
 
 figure('Position', [100 100 1200 500]);
+
+% Define common axis limits for both panels
+common_xlim = [-10, 10];
+common_ylim = [-32, 2];  % Use the larger range to show everything
 
 % Crimaldi setup
 subplot(1,2,1);
@@ -231,7 +235,8 @@ colormap(hot);
 caxis([0, prctile(crim_data(:), 95)]);  % Adjust color scale for visibility
 
 % Add semi-transparent overlay to make annotations visible
-h = patch([-10 10 10 -10], [-32 -32 2 2], 'w');
+h = patch([common_xlim(1) common_xlim(2) common_xlim(2) common_xlim(1)], ...
+          [common_ylim(1) common_ylim(1) common_ylim(2) common_ylim(2)], 'w');
 set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
 
 % Arena
@@ -262,18 +267,20 @@ text(7, 0.5, 'Y=0', 'HorizontalAlignment', 'right');
 title(sprintf('Crimaldi Arena (%.0f Hz)', CRIM_FRAME_RATE));
 xlabel('X (cm)'); ylabel('Y (cm)');
 axis equal;
-xlim([-10, 10]); ylim([-32, 2]);
+xlim(common_xlim);
+ylim(common_ylim);
 grid on;
 set(gca, 'GridAlpha', 0.3);
 
 % Data info
-text(0.02, 0.02, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', ...
+text(0.02, 0.98, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', ...
                          middle_frame_crim, crim_dims(3), ...
                          crim_cfg.spatial.resolution.width, ...
                          crim_cfg.spatial.resolution.height, ...
                          crim_cfg.spatial.arena_bounds.x_max - crim_cfg.spatial.arena_bounds.x_min, ...
                          crim_cfg.spatial.arena_bounds.y_max - crim_cfg.spatial.arena_bounds.y_min), ...
-     'Units', 'normalized', 'BackgroundColor', [1 1 1 0.8], 'FontSize', 9);
+     'Units', 'normalized', 'BackgroundColor', [1 1 1 0.8], 'FontSize', 9, ...
+     'VerticalAlignment', 'top');
 
 % Smoke setup
 subplot(1,2,2);
@@ -286,7 +293,8 @@ colormap(hot);
 caxis([0, prctile(smoke_data(:), 95)]);  % Adjust color scale for visibility
 
 % Add semi-transparent overlay
-h = patch([-10 10 10 -10], [-28 -28 2 2], 'w');
+h = patch([common_xlim(1) common_xlim(2) common_xlim(2) common_xlim(1)], ...
+          [common_ylim(1) common_ylim(1) common_ylim(2) common_ylim(2)], 'w');
 set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
 
 % Arena
@@ -316,24 +324,38 @@ text(7, 0.5, 'Y=0', 'HorizontalAlignment', 'right');
 title(sprintf('Smoke Arena (%.0f Hz)', SMOKE_FRAME_RATE));
 xlabel('X (cm)'); ylabel('Y (cm)');
 axis equal;
-xlim([-10, 10]); ylim([-28, 2]);
+xlim(common_xlim);
+ylim(common_ylim);
 grid on;
 set(gca, 'GridAlpha', 0.3);
 
 % Data info
-text(0.02, 0.02, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', ...
+text(0.02, 0.98, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', ...
                          middle_frame_smoke, smoke_dims(3), ...
                          smoke_cfg.spatial.resolution.width, ...
                          smoke_cfg.spatial.resolution.height, ...
                          smoke_cfg.spatial.arena_bounds.x_max - smoke_cfg.spatial.arena_bounds.x_min, ...
                          smoke_cfg.spatial.arena_bounds.y_max - smoke_cfg.spatial.arena_bounds.y_min), ...
-     'Units', 'normalized', 'BackgroundColor', [1 1 1 0.8], 'FontSize', 9);
+     'Units', 'normalized', 'BackgroundColor', [1 1 1 0.8], 'FontSize', 9, ...
+     'VerticalAlignment', 'top');
 
 % Add shared colorbar
 h = colorbar('Position', [0.93 0.3 0.02 0.4]);
 ylabel(h, 'Odor Concentration', 'FontSize', 11);
 
-sgtitle('Complete Configuration Setup with Plume Data', 'FontSize', 16);
+% Add scale bar to show physical scale
+for sp = 1:2
+    subplot(1,2,sp);
+    % Add 5cm scale bar in bottom right
+    scale_length = 5; % cm
+    scale_x = common_xlim(2) - scale_length - 1;
+    scale_y = common_ylim(1) + 1;
+    plot([scale_x, scale_x + scale_length], [scale_y, scale_y], 'k-', 'LineWidth', 3);
+    text(scale_x + scale_length/2, scale_y - 0.5, '5 cm', ...
+         'HorizontalAlignment', 'center', 'FontSize', 10, 'FontWeight', 'bold');
+end
+
+sgtitle('Complete Configuration Setup with Plume Data (Same Physical Scale)', 'FontSize', 16);
 
 % Save figure
 if ~exist('results', 'dir')
@@ -342,4 +364,4 @@ end
 saveas(gcf, 'results/complete_config_setup_with_plumes.png');
 fprintf('✓ Saved visualization to results/complete_config_setup_with_plumes.png\n');
 
-fprintf('\n✓ Complete clean configs generated with plume visualization!\n');
+fprintf('\n✓ Complete clean configs generated with plume visualization (same scale)!\n');
