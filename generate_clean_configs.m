@@ -1,4 +1,4 @@
-% generate_clean_configs.m - Generate complete configs with all correct settings
+% generate_clean_configs.m - Generate complete configs with plume backgrounds
 
 fprintf('=== Generating Complete Clean Configs ===\n\n');
 
@@ -183,8 +183,40 @@ fprintf('  - Crimaldi: tscale=%.3f (for %dHz), pxscale=%.3f mm/px\n', ...
 fprintf('  - Smoke:    tscale=%.3f (for %dHz), pxscale=%.3f mm/px\n', ...
         smoke_cfg.model_params.tscale, SMOKE_FRAME_RATE, smoke_cfg.model_params.pxscale);
 
-%% Create visualization
-fprintf('\nCreating visualization...\n');
+%% Load plume data for visualization
+fprintf('\nLoading plume data for visualization...\n');
+
+% Load Crimaldi plume data
+middle_frame_crim = round(crim_dims(3) / 2);
+crim_data = h5read(crim_file, '/dataset2', ...
+                   [1 1 middle_frame_crim], [crim_dims(1:2), 1]);
+crim_data = squeeze(crim_data)';  % Transpose for correct orientation
+
+% Load Smoke plume data
+middle_frame_smoke = round(smoke_dims(3) / 2);
+smoke_data = h5read(smoke_file, '/dataset2', ...
+                    [1 1 middle_frame_smoke], [smoke_dims(1:2), 1]);
+smoke_data = squeeze(smoke_data)';  % Transpose for correct orientation
+
+% Calculate coordinate arrays
+% Crimaldi
+crim_x = linspace(crim_cfg.spatial.arena_bounds.x_min, ...
+                  crim_cfg.spatial.arena_bounds.x_max, ...
+                  crim_cfg.spatial.resolution.width);
+crim_y = linspace(crim_cfg.spatial.arena_bounds.y_max, ...
+                  crim_cfg.spatial.arena_bounds.y_min, ...
+                  crim_cfg.spatial.resolution.height);
+
+% Smoke
+smoke_x = linspace(smoke_cfg.spatial.arena_bounds.x_min, ...
+                   smoke_cfg.spatial.arena_bounds.x_max, ...
+                   smoke_cfg.spatial.resolution.width);
+smoke_y = linspace(smoke_cfg.spatial.arena_bounds.y_max, ...
+                   smoke_cfg.spatial.arena_bounds.y_min, ...
+                   smoke_cfg.spatial.resolution.height);
+
+%% Create visualization with plume data
+fprintf('Creating visualization with plume data...\n');
 
 figure('Position', [100 100 1200 500]);
 
@@ -192,24 +224,36 @@ figure('Position', [100 100 1200 500]);
 subplot(1,2,1);
 hold on;
 
+% Display plume data first
+imagesc(crim_x, crim_y, crim_data);
+set(gca, 'YDir', 'normal');
+colormap(hot);
+caxis([0, prctile(crim_data(:), 95)]);  % Adjust color scale for visibility
+
+% Add semi-transparent overlay to make annotations visible
+h = patch([-10 10 10 -10], [-32 -32 2 2], 'w');
+set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
+
 % Arena
 rectangle('Position', [crim_cfg.spatial.arena_bounds.x_min, ...
                       crim_cfg.spatial.arena_bounds.y_min, ...
                       crim_width_cm, crim_height_cm], ...
-          'EdgeColor', 'blue', 'LineWidth', 2);
+          'EdgeColor', 'blue', 'LineWidth', 2.5);
 
 % Init zone
 rectangle('Position', [init_x_range(1), init_y_range(1), ...
                       diff(init_x_range), diff(init_y_range)], ...
           'EdgeColor', 'yellow', 'LineWidth', 3);
 text(0, mean(init_y_range), 'Init Zone', 'Color', 'yellow', ...
-     'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+     'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center', ...
+     'BackgroundColor', [0 0 0 0.7]);
 
 % Source
 theta = linspace(0, 2*pi, 100);
 plot(success_radius*cos(theta), success_radius*sin(theta), 'g-', 'LineWidth', 2);
 plot(0, 0, 'g*', 'MarkerSize', 15);
-text(0, 1, 'Source (0,0)', 'Color', 'green', 'HorizontalAlignment', 'center');
+text(0, 1, 'Source (0,0)', 'Color', 'green', 'HorizontalAlignment', 'center', ...
+     'BackgroundColor', [0 0 0 0.7]);
 
 % Annotations
 plot([-8 8], [0 0], 'k--', 'LineWidth', 1);
@@ -220,28 +264,50 @@ xlabel('X (cm)'); ylabel('Y (cm)');
 axis equal;
 xlim([-10, 10]); ylim([-32, 2]);
 grid on;
+set(gca, 'GridAlpha', 0.3);
+
+% Data info
+text(0.02, 0.02, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', ...
+                         middle_frame_crim, crim_dims(3), ...
+                         crim_cfg.spatial.resolution.width, ...
+                         crim_cfg.spatial.resolution.height, ...
+                         crim_cfg.spatial.arena_bounds.x_max - crim_cfg.spatial.arena_bounds.x_min, ...
+                         crim_cfg.spatial.arena_bounds.y_max - crim_cfg.spatial.arena_bounds.y_min), ...
+     'Units', 'normalized', 'BackgroundColor', [1 1 1 0.8], 'FontSize', 9);
 
 % Smoke setup
 subplot(1,2,2);
 hold on;
 
+% Display plume data first
+imagesc(smoke_x, smoke_y, smoke_data);
+set(gca, 'YDir', 'normal');
+colormap(hot);
+caxis([0, prctile(smoke_data(:), 95)]);  % Adjust color scale for visibility
+
+% Add semi-transparent overlay
+h = patch([-10 10 10 -10], [-28 -28 2 2], 'w');
+set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
+
 % Arena
 rectangle('Position', [smoke_cfg.spatial.arena_bounds.x_min, ...
                       smoke_cfg.spatial.arena_bounds.y_min, ...
                       smoke_width_cm, smoke_height_cm], ...
-          'EdgeColor', 'blue', 'LineWidth', 2);
+          'EdgeColor', 'blue', 'LineWidth', 2.5);
 
 % Init zone
 rectangle('Position', [init_x_range(1), init_y_range(1), ...
                       diff(init_x_range), diff(init_y_range)], ...
           'EdgeColor', 'yellow', 'LineWidth', 3);
 text(0, mean(init_y_range), 'Init Zone', 'Color', 'yellow', ...
-     'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+     'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center', ...
+     'BackgroundColor', [0 0 0 0.7]);
 
 % Source
 plot(success_radius*cos(theta), success_radius*sin(theta), 'g-', 'LineWidth', 2);
 plot(0, 0, 'g*', 'MarkerSize', 15);
-text(0, 1, 'Source (0,0)', 'Color', 'green', 'HorizontalAlignment', 'center');
+text(0, 1, 'Source (0,0)', 'Color', 'green', 'HorizontalAlignment', 'center', ...
+     'BackgroundColor', [0 0 0 0.7]);
 
 % Annotations
 plot([-8.3 8.3], [0 0], 'k--', 'LineWidth', 1);
@@ -252,14 +318,28 @@ xlabel('X (cm)'); ylabel('Y (cm)');
 axis equal;
 xlim([-10, 10]); ylim([-28, 2]);
 grid on;
+set(gca, 'GridAlpha', 0.3);
 
-sgtitle('Complete Configuration Setup', 'FontSize', 16);
+% Data info
+text(0.02, 0.02, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', ...
+                         middle_frame_smoke, smoke_dims(3), ...
+                         smoke_cfg.spatial.resolution.width, ...
+                         smoke_cfg.spatial.resolution.height, ...
+                         smoke_cfg.spatial.arena_bounds.x_max - smoke_cfg.spatial.arena_bounds.x_min, ...
+                         smoke_cfg.spatial.arena_bounds.y_max - smoke_cfg.spatial.arena_bounds.y_min), ...
+     'Units', 'normalized', 'BackgroundColor', [1 1 1 0.8], 'FontSize', 9);
+
+% Add shared colorbar
+h = colorbar('Position', [0.93 0.3 0.02 0.4]);
+ylabel(h, 'Odor Concentration', 'FontSize', 11);
+
+sgtitle('Complete Configuration Setup with Plume Data', 'FontSize', 16);
 
 % Save figure
 if ~exist('results', 'dir')
     mkdir('results');
 end
-saveas(gcf, 'results/complete_config_setup.png');
-fprintf('✓ Saved visualization to results/complete_config_setup.png\n');
+saveas(gcf, 'results/complete_config_setup_with_plumes.png');
+fprintf('✓ Saved visualization to results/complete_config_setup_with_plumes.png\n');
 
-fprintf('\n✓ Complete clean configs generated!\n');
+fprintf('\n✓ Complete clean configs generated with plume visualization!\n');
