@@ -50,9 +50,39 @@ This repository now includes a small pytest suite. After creating the developmen
 pytest -q
 ```
 
-The `slurm_submit.sh` helper script supports a `-h`/`--help` option that prints
-usage instructions and also logs the calculated array size and selected paths
-when invoked.
+The legacy `slurm_submit.sh` helper script has been superseded by a single, parameter-driven SLURM workflow described below.
+
+## SLURM jobs (unified structure)
+
+To launch large navigation-model sweeps on the cluster you now only need:
+
+1. `nav_job_base.slurm` – generic SBATCH header that picks up configuration from environment variables.  
+2. `slurm_common.sh` – boilerplate Bash helpers (module load, logging, etc.).  
+3. `nav_driver.m` – MATLAB driver that applies the config and runs `navigation_model_vec`.
+
+Submit jobs with `sbatch` while exporting the plume JSON and any optional overrides:
+
+```bash
+# Crimaldi plume (15 Hz, longer runtime / more RAM)
+sbatch -J nav_crim --time=6:00:00 --mem=32G \
+       --export=ALL,PLUME_JSON=configs/plumes/crimaldi_10cms_bounded.json,\
+FRAME_RATE=15,RESULTS_PREFIX=crim nav_job_base.slurm
+
+# Smoke plume (60 Hz, shorter)
+sbatch -J nav_smoke --time=2:00:00 --mem=16G \
+       --export=ALL,PLUME_JSON=configs/plumes/smoke_1a_backgroundsubtracted.json,\
+FRAME_RATE=60,RESULTS_PREFIX=smoke nav_job_base.slurm
+```
+
+Environment variables recognised by `nav_job_base.slurm`/`nav_driver.m`:
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `PLUME_JSON` | Path to plume config JSON | `configs/plumes/crimaldi_10cms_bounded.json` |
+| `FRAME_RATE` | Override frame rate (Hz, optional) | `60` |
+| `RESULTS_PREFIX` | Prefix for output `.mat` files (optional) | `smoke` |
+
+Standard SBATCH flags (`--time`, `--mem`, etc.) can still be supplied on the command line.
 
 ## Pipeline workflow
 

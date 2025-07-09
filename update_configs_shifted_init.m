@@ -157,7 +157,7 @@ grid on;
 sgtitle('Updated Initialization Zones', 'FontSize', 16);
 
 % Save figure
-saveas(gcf, 'results/shifted_init_zones.png');
+saveas(gcf, 'results/shifted_init_zones.pdf');
 fprintf('   ✓ Saved visualization to results/shifted_init_zones.png\n');
 
 %% 4. Summary

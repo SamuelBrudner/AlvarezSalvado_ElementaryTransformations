@@ -95,9 +95,13 @@ save('results/smoke_test_results.mat', 'out_smoke', 'smoke_cfg', '-v7.3');
 fprintf('   ✓ Saved .mat files\n');
 flush_output();  % Force flush after saving
 
-%% Create visualization
-fprintf('\n4. Creating visualizations...\n');
+%% Create visualization with same physical scale
+fprintf('\n4. Creating visualizations (same physical scale)...\n');
 flush_output();  % Force flush before visualization
+
+% Define common axis limits for consistent scale
+common_xlim = [-10, 10];
+common_ylim = [-32, 2];  % Use the larger range to show everything
 
 % Figure 1: Trajectories comparison
 figure('Position', [100 100 1400 600]);
@@ -107,37 +111,33 @@ subplot(1,2,1);
 plot(out_crim.x, out_crim.y, '-', 'LineWidth', 0.5, 'Color', [0 0 1 0.3]);
 hold on;
 plot(out_crim.start(:,1), out_crim.start(:,2), 'ro', 'MarkerSize', 6, 'MarkerFaceColor', 'r');
-viscircles([0, 0], success_radius, 'Color', 'g', 'LineWidth', 2);
-plot(0, 0, 'g*', 'MarkerSize', 15);
-rectangle('Position', [crim_cfg.spatial.arena_bounds.x_min, ...
-                      crim_cfg.spatial.arena_bounds.y_min, ...
-                      crim_cfg.spatial.arena_bounds.x_max - crim_cfg.spatial.arena_bounds.x_min, ...
-                      crim_cfg.spatial.arena_bounds.y_max - crim_cfg.spatial.arena_bounds.y_min], ...
-          'EdgeColor', 'k', 'LineWidth', 2);
+% Unified arena decorations
+plot_arena_elements(crim_cfg.spatial.arena_bounds, init_x, init_y, success_radius, common_xlim, common_ylim, 5);
+
 title(sprintf('Crimaldi: %.1f%% success', crim_success_rate*100));
 xlabel('X (cm)'); ylabel('Y (cm)');
-axis equal; xlim([-10, 10]); ylim([-32, 2]);
-grid on;
+axis equal; 
+xlim(common_xlim); 
+ylim(common_ylim);  % Use common Y limits
+
+
 
 % Smoke trajectories
 subplot(1,2,2);
 plot(out_smoke.x, out_smoke.y, '-', 'LineWidth', 0.5, 'Color', [1 0 0 0.3]);
 hold on;
 plot(out_smoke.start(:,1), out_smoke.start(:,2), 'ro', 'MarkerSize', 6, 'MarkerFaceColor', 'r');
-viscircles([0, 0], success_radius, 'Color', 'g', 'LineWidth', 2);
-plot(0, 0, 'g*', 'MarkerSize', 15);
-rectangle('Position', [smoke_cfg.spatial.arena_bounds.x_min, ...
-                      smoke_cfg.spatial.arena_bounds.y_min, ...
-                      smoke_cfg.spatial.arena_bounds.x_max - smoke_cfg.spatial.arena_bounds.x_min, ...
-                      smoke_cfg.spatial.arena_bounds.y_max - smoke_cfg.spatial.arena_bounds.y_min], ...
-          'EdgeColor', 'k', 'LineWidth', 2);
+% Unified arena decorations
+plot_arena_elements(smoke_cfg.spatial.arena_bounds, init_x, init_y, success_radius, common_xlim, common_ylim, 5);
+
 title(sprintf('Smoke: %.1f%% success', smoke_success_rate*100));
 xlabel('X (cm)'); ylabel('Y (cm)');
-axis equal; xlim([-10, 10]); ylim([-28, 2]);
-grid on;
+axis equal; 
+xlim(common_xlim); 
+ylim(common_ylim);  % Use common Y limits
 
-sgtitle(sprintf('Navigation Test Results (%d agents each)', n_agents), 'FontSize', 16);
-saveas(gcf, 'results/trajectory_comparison.png');
+sgtitle(sprintf('Navigation Test Results (%d agents each) - Same Physical Scale', n_agents), 'FontSize', 16);
+saveas(gcf, 'results/trajectory_comparison.pdf');
 
 % Figure 2: Statistics comparison
 figure('Position', [100 100 800 600]);
@@ -149,7 +149,7 @@ set(gca, 'XTickLabel', {'Crimaldi', 'Smoke'});
 ylabel('Success Rate (%)');
 title('Success Rates');
 ylim([0 100]);
-grid on;
+
 
 % Latency distributions
 subplot(2,2,2);
@@ -161,9 +161,9 @@ xlabel('Latency (seconds)');
 ylabel('Count');
 title('Success Latencies');
 legend('Crimaldi', 'Smoke');
-grid on;
 
-% Starting positions
+
+% Starting positions - with same scale
 subplot(2,2,3);
 plot(out_crim.start(:,1), out_crim.start(:,2), 'bo', 'MarkerSize', 6);
 hold on;
@@ -174,8 +174,9 @@ xlabel('X (cm)'); ylabel('Y (cm)');
 title('Starting Positions');
 legend('Crimaldi', 'Smoke');
 axis equal;
-xlim([-10, 10]); ylim([-28, -20]);
-grid on;
+xlim([-10, 10]); 
+ylim([-28, -20]);  % Show init zone clearly
+
 
 % Summary statistics
 subplot(2,2,4);
@@ -193,9 +194,9 @@ text(0.1, 0.0, sprintf('  Avg latency: %.1f s', smoke_avg_latency));
 text(0.1, -0.1, sprintf('  Runtime: %.1f s', smoke_time));
 
 sgtitle('Navigation Performance Comparison', 'FontSize', 16);
-saveas(gcf, 'results/statistics_comparison.png');
+saveas(gcf, 'results/statistics_comparison.pdf');
 
-% Figure 3: Time series for a few example agents
+% Figure 3: Time series for a few example agents - with same scale
 figure('Position', [100 100 1200 800]);
 n_examples = min(5, n_agents);
 
@@ -206,14 +207,15 @@ for i = 1:n_examples
     hold on;
     plot(out_crim.x(1,i), out_crim.y(1,i), 'ro', 'MarkerSize', 8);
     plot(out_crim.x(end,i), out_crim.y(end,i), 'ks', 'MarkerSize', 8);
-    viscircles([0, 0], success_radius, 'Color', 'g', 'LineWidth', 1);
+    
     title(sprintf('Agent %d', i));
     if i == 1
         ylabel('Crimaldi', 'FontSize', 12, 'FontWeight', 'bold');
     end
     axis equal;
-    xlim([-10, 10]); ylim([-32, 2]);
-    grid on;
+    xlim(common_xlim);
+    ylim(common_ylim);  % Use common Y limits
+    
     
     % Smoke examples
     subplot(2, n_examples, n_examples + i);
@@ -221,18 +223,19 @@ for i = 1:n_examples
     hold on;
     plot(out_smoke.x(1,i), out_smoke.y(1,i), 'ro', 'MarkerSize', 8);
     plot(out_smoke.x(end,i), out_smoke.y(end,i), 'ks', 'MarkerSize', 8);
-    viscircles([0, 0], success_radius, 'Color', 'g', 'LineWidth', 1);
+    
     if i == 1
         ylabel('Smoke', 'FontSize', 12, 'FontWeight', 'bold');
     end
     xlabel('X (cm)');
     axis equal;
-    xlim([-10, 10]); ylim([-28, 2]);
-    grid on;
+    xlim(common_xlim);
+    ylim(common_ylim);  % Use common Y limits
+    
 end
 
-sgtitle('Example Agent Trajectories', 'FontSize', 16);
-saveas(gcf, 'results/example_trajectories.png');
+sgtitle('Example Agent Trajectories - Same Physical Scale', 'FontSize', 16);
+saveas(gcf, 'results/example_trajectories.pdf');
 
 fprintf('   ✓ Saved visualizations\n');
 flush_output();  % Force flush after all visualizations
@@ -246,6 +249,15 @@ fprintf('  Crimaldi: %.1f%% success, %.1f s avg latency\n', ...
         crim_success_rate*100, crim_avg_latency);
 fprintf('  Smoke:    %.1f%% success, %.1f s avg latency\n', ...
         smoke_success_rate*100, smoke_avg_latency);
+fprintf('\nArena sizes (visible in plots):\n');
+fprintf('  Crimaldi: %.1f×%.1f cm (Y ∈ [%.1f, %.1f])\n', ...
+        crim_cfg.spatial.arena_bounds.x_max - crim_cfg.spatial.arena_bounds.x_min, ...
+        crim_cfg.spatial.arena_bounds.y_max - crim_cfg.spatial.arena_bounds.y_min, ...
+        crim_cfg.spatial.arena_bounds.y_min, crim_cfg.spatial.arena_bounds.y_max);
+fprintf('  Smoke:    %.1f×%.1f cm (Y ∈ [%.1f, %.1f])\n', ...
+        smoke_cfg.spatial.arena_bounds.x_max - smoke_cfg.spatial.arena_bounds.x_min, ...
+        smoke_cfg.spatial.arena_bounds.y_max - smoke_cfg.spatial.arena_bounds.y_min, ...
+        smoke_cfg.spatial.arena_bounds.y_min, smoke_cfg.spatial.arena_bounds.y_max);
 fprintf('\nSaved outputs:\n');
 fprintf('  - results/crimaldi_test_results.mat\n');
 fprintf('  - results/smoke_test_results.mat\n');

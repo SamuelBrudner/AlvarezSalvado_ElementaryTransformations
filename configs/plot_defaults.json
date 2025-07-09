@@ -1,0 +1,17 @@
+{
+  "colors": {
+    "arena_edge": [0, 0, 0],
+    "init_zone_edge": [1, 1, 0],
+    "success_circle": [0, 0.7, 0],
+    "success_star": [0, 0.7, 0],
+    "scale_bar": [0, 0, 0]
+  },
+  "line_widths": {
+    "arena_edge": 2,
+    "init_zone_edge": 3,
+    "success_circle": 1.5,
+    "success_star": 1.5,
+    "scale_bar": 3
+  },
+  "scale_bar_length_cm": 5
+}

@@ -20,6 +20,9 @@ smoke_data = h5read(smoke_cfg.data_path.path, smoke_cfg.data_path.dataset_name, 
                     [1 1 middle_frame], [smoke_info.Dataspace.Size(1:2), 1]);
 smoke_data = squeeze(smoke_data)';
 
+% Shared parameters
+success_radius = 2;  % cm
+
 %% Calculate coordinate arrays
 % Crimaldi
 crim_x = linspace(crim_cfg.spatial.arena_bounds.x_min, ...
@@ -49,30 +52,17 @@ cbar = colorbar();
 ylabel(cbar, 'Odor Concentration');
 hold on;
 
-% Arena boundary
-rectangle('Position', [crim_cfg.spatial.arena_bounds.x_min, ...
-                      crim_cfg.spatial.arena_bounds.y_min, ...
-                      crim_cfg.spatial.arena_bounds.x_max - crim_cfg.spatial.arena_bounds.x_min, ...
-                      crim_cfg.spatial.arena_bounds.y_max - crim_cfg.spatial.arena_bounds.y_min], ...
-          'EdgeColor', 'blue', 'LineWidth', 2, 'LineStyle', '--');
-
-% Model's hardcoded initialization zone
-init_x = [-8, 8];
-init_y = [-30, -25];
-rectangle('Position', [init_x(1), init_y(1), init_x(2)-init_x(1), init_y(2)-init_y(1)], ...
-          'EdgeColor', 'yellow', 'LineWidth', 3);
-text(mean(init_x), mean(init_y), 'Init Zone', ...
-     'Color', 'yellow', 'FontSize', 12, 'FontWeight', 'bold', ...
-     'HorizontalAlignment', 'center');
+% Initialization zone from config
+init_x = crim_cfg.simulation.agent_initialization.x_range_cm;
+init_y = crim_cfg.simulation.agent_initialization.y_range_cm;
+% Unified arena decorations
+plot_arena_elements(crim_cfg.spatial.arena_bounds, init_x, init_y, success_radius, [-10 10], [-32 2]);
 
 % Mark Y=0 (top)
 plot([-8 8], [0 0], 'g--', 'LineWidth', 2);
 text(0, 1, 'Y=0 (top)', 'Color', 'green', 'FontSize', 10, 'HorizontalAlignment', 'center');
 
-% Success zone (2cm radius at origin)
-theta = linspace(0, 2*pi, 100);
-plot(2*cos(theta), 2*sin(theta), 'g-', 'LineWidth', 2);
-plot(0, 0, 'g*', 'MarkerSize', 15);
+
 
 % Labels
 xlabel('X (cm)');
@@ -100,13 +90,12 @@ colormap(hot);
 cbar = colorbar();
 ylabel(cbar, 'Odor Concentration');
 hold on;
+% Define initialization zone from config and draw decorations
+init_x = smoke_cfg.simulation.agent_initialization.x_range_cm;
+init_y = smoke_cfg.simulation.agent_initialization.y_range_cm;
+plot_arena_elements(smoke_cfg.spatial.arena_bounds, init_x, init_y, success_radius, [-10 10], [-28 2]);
 
-% Arena boundary
-rectangle('Position', [smoke_cfg.spatial.arena_bounds.x_min, ...
-                      smoke_cfg.spatial.arena_bounds.y_min, ...
-                      smoke_cfg.spatial.arena_bounds.x_max - smoke_cfg.spatial.arena_bounds.x_min, ...
-                      smoke_cfg.spatial.arena_bounds.y_max - smoke_cfg.spatial.arena_bounds.y_min], ...
-          'EdgeColor', 'blue', 'LineWidth', 2, 'LineStyle', '--');
+
 
 % Model's hardcoded initialization would be here
 rectangle('Position', [init_x(1), init_y(1), init_x(2)-init_x(1), init_y(2)-init_y(1)], ...
@@ -154,7 +143,7 @@ text(0.02, 0.02, sprintf('Size: %d×%d px\nArena: %.1f×%.1f cm', ...
 sgtitle('Plume Comparison with Model Initialization Zones', 'FontSize', 16);
 
 % Save
-saveas(gcf, 'both_plumes_comparison.png');
+saveas(gcf, 'both_plumes_comparison.pdf');
 fprintf('\n✓ Saved plot to: both_plumes_comparison.png\n');
 
 %% Summary
