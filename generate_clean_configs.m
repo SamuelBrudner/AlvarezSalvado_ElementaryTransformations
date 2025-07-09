@@ -361,7 +361,7 @@ sgtitle('Complete Configuration Setup with Plume Data (Same Physical Scale)', 'F
 if ~exist('results', 'dir')
     mkdir('results');
 end
-saveas(gcf, 'results/complete_config_setup_with_plumes.png');
-fprintf('✓ Saved visualization to results/complete_config_setup_with_plumes.png\n');
+saveas(gcf, 'results/complete_config_setup_with_plumes.pdf');
+fprintf('✓ Saved visualization to results/complete_config_setup_with_plumes.pdf\n');
 
 fprintf('\n✓ Complete clean configs generated with plume visualization (same scale)!\n');
