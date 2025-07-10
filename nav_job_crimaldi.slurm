@@ -26,8 +26,9 @@ export MATLAB_JAVA=$JAVA_HOME/jre
 # Load MATLAB module (required on Grace)
 module load MATLAB/2023b
 
-# Setup
-cd /vast/palmer/home.grace/snb6/Documents/AlvarezSalvado_ElementaryTransformations
+# Get project directory using symlink-safe path
+PROJECT_DIR="/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations"
+cd "$PROJECT_DIR" || exit 1
 mkdir -p logs results
 
 # Force Crimaldi plume configuration
