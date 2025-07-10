@@ -41,6 +41,14 @@ echo "Array task: ${SLURM_ARRAY_TASK_ID}"
 echo "Working directory: $(pwd)"
 echo ""
 
+# Log which config will be used and show its contents
+SMOKE_CONFIG_PATH="$PROJECT_DIR/configs/plumes/smoke_1a_backgroundsubtracted.json"
+echo "[INFO] Using smoke plume config: $SMOKE_CONFIG_PATH"
+echo "[INFO] Contents of config file (first 10 lines):"
+head -n 10 "$SMOKE_CONFIG_PATH" || echo "[WARN] Could not read config file"
+echo "[INFO] Contents of paths.json before update (first 10 lines):"
+head -n 10 "$PROJECT_DIR/configs/paths.json" || echo "[WARN] Could not read paths.json"
+
 # Create MATLAB script in temp file
 TEMP_MATLAB=$(mktemp /tmp/smoke_nav_XXXXXX.m)
 cat > "$TEMP_MATLAB" << 'MATLAB_EOF'
@@ -63,33 +71,52 @@ try
     end
     
     % Force smoke plume configuration
-    fprintf('Configuring for smoke plume...\n');
+    fprintf('[MATLAB] Configuring for smoke plume...\n');
     smoke_config_path = fullfile(project_dir, 'configs/plumes/smoke_1a_backgroundsubtracted.json');
     paths_file = fullfile(project_dir, 'configs/paths.json');
+    
+    % Log current plume_config in paths.json before update
+    try
+        paths_data_pre = jsondecode(fileread(paths_file));
+        fprintf('[MATLAB] paths.json before update: plume_config = %s\n', paths_data_pre.plume_config);
+    catch ME
+        fprintf('[MATLAB][WARN] Could not read paths.json before update: %s\n', ME.message);
+    end
     
     % Update paths to use smoke
     paths_data = jsondecode(fileread(paths_file));
     paths_data.plume_config = smoke_config_path;
-    
     fid = fopen(paths_file, 'w');
     fprintf(fid, '%s', jsonencode(paths_data));
     fclose(fid);
     
+    % Log contents of paths.json after update
+    try
+        paths_data_post = jsondecode(fileread(paths_file));
+        fprintf('[MATLAB] paths.json after update: plume_config = %s\n', paths_data_post.plume_config);
+    catch ME
+        fprintf('[MATLAB][WARN] Could not read paths.json after update: %s\n', ME.message);
+    end
+    
     % Verify configuration
     [plume_file, plume_config] = get_plume_file();
-    fprintf('\nActive plume: smoke (configured)\n');
-    fprintf('Frame rate: %.1f Hz\n', plume_config.temporal.frame_rate);
-    fprintf('Pixel scale: %.3f mm/px\n', plume_config.spatial.mm_per_pixel);
+    fprintf('[MATLAB] Loaded plume_config: %s\n', smoke_config_path);
+    fprintf('[MATLAB] Loaded HDF5 file: %s\n', plume_file);
+    fprintf('[MATLAB] Frame rate: %.1f Hz\n', plume_config.temporal.frame_rate);
+    fprintf('[MATLAB] Pixel scale: %.3f mm/px\n', plume_config.spatial.mm_per_pixel);
     
-    % Check if plume file exists
+    % Check if plume file exists and log file size
     if ~exist(plume_file, 'file')
-        error('Plume file not found: %s', plume_file);
+        error('[MATLAB] Plume file not found: %s', plume_file);
+    else
+        file_info = dir(plume_file);
+        fprintf('[MATLAB] Plume file exists. Size: %.2f MB\n', file_info.bytes/1e6);
     end
     
     % Calculate frames for smoke plume at 60 Hz
     duration_seconds = plume_config.simulation.duration_seconds;
     n_frames = round(duration_seconds * 60);
-    fprintf('Simulation: %.1f seconds = %d frames at 60 Hz\n', duration_seconds, n_frames);
+    fprintf('[MATLAB] Simulation: %.1f seconds = %d frames at 60 Hz\n', duration_seconds, n_frames);
     
     % Run simulation (note: we use 'Crimaldi' as environment type, which loads from config)
     fprintf('\nStarting simulation for task %d...\n', task_id);

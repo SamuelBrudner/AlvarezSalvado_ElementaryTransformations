@@ -52,7 +52,7 @@ subplot(1,2,1);
 % Plot plume data
 imagesc(crim_x, crim_y, crim_data);
 set(gca, 'YDir', 'normal');
-colormap(hot);
+colormap(gray);
 caxis([0, prctile(crim_data(:), 95)]);  % Adjust color scale for visibility
 hold on;
 
@@ -113,7 +113,7 @@ subplot(1,2,2);
 % Plot plume data
 imagesc(smoke_x, smoke_y, smoke_data);
 set(gca, 'YDir', 'normal');
-colormap(hot);
+colormap(gray);
 caxis([0, prctile(smoke_data(:), 95)]);  % Adjust color scale for visibility
 hold on;
 
