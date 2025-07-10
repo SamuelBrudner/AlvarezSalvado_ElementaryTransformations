@@ -363,8 +363,7 @@ start = [x(1,:)', y(1,:)'];
 
 %% SUCCESS RATE AND LATENCY
 switch environment
-    case {'Crimaldi','crimaldi','Gaussian','gaussian'} % only in certain environments
-
+    case {'Crimaldi','crimaldi','Gaussian','gaussian','Smoke','smoke'} % Success calculated for these environments
     
     angles = atan2(y,x);
     distances = y./sin(angles);
@@ -378,6 +377,10 @@ switch environment
                 case {'Crimaldi','crimaldi'}
                     latency(i) = found/15;
                 case {'gaussian','Gaussian'}
+                    latency(i) = found/50;
+                case {'Smoke','smoke'}
+                    % Assuming smoke plume uses same sampling rate as gaussian
+                    % Adjust if needed based on actual smoke plume frame rate
                     latency(i) = found/50;
             end
         elseif isempty(found)
