@@ -178,10 +178,17 @@ end
 exit(0);
 MATLAB_EOF
 
-# Execute the temp MATLAB script and capture exit code
+# Save a copy of the MATLAB script for debugging
+echo "[INFO] MATLAB script content saved to logs/crimaldi_matlab_${SLURM_ARRAY_TASK_ID}.m"
+cp "$TEMP_MATLAB" "${PROJECT_DIR}/logs/crimaldi_matlab_${SLURM_ARRAY_TASK_ID}.m" || echo "[WARN] Could not save MATLAB script copy"
+
+# Execute the temp MATLAB script (output will go directly to SLURM log)
 echo "[INFO] Running MATLAB script: $TEMP_MATLAB"
-matlab -nodisplay -nosplash -nodesktop -nojvm -batch "run('$TEMP_MATLAB');"
+echo "[INFO] MATLAB output will appear below"
+echo "===== MATLAB EXECUTION START ====="
+matlab -nodisplay -nosplash -nodesktop -batch "run('$TEMP_MATLAB');"
 MATLAB_EXIT=$?
+echo "===== MATLAB EXECUTION COMPLETE ====="
 
 echo ""
 echo "Job completed at: $(date)"
