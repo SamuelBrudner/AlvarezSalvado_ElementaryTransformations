@@ -65,16 +65,30 @@ else
                 else
                     success_crimaldi = true;
                     
-                    % Show performance metrics if available
+                    % Show performance metrics with robust error checking
                     if isfield(out, 'successrate')
-                        fprintf('   - Success rate: %.1f%%\n', out.successrate * 100);
+                        if isnumeric(out.successrate) && ~isempty(out.successrate) && ~any(isnan(out.successrate(:)))
+                            fprintf('   - Success rate: %.1f%%\n', out.successrate * 100);
+                        else
+                            fprintf('   - Success rate: [INVALID VALUE] Check data\n');
+                            fprintf('   - Debug info: successrate type=%s, isempty=%d, isnan=%d\n', ...
+                                class(out.successrate), ...
+                                isempty(out.successrate), ...
+                                any(isnan(out.successrate(:))));
+                        end
+                    else
+                        fprintf('   - Success rate: [NOT AVAILABLE]\n');
                     end
                     
                     if isfield(out, 'latency')
                         valid_latencies = out.latency(~isnan(out.latency));
                         if ~isempty(valid_latencies)
                             fprintf('   - Mean latency: %.1f seconds\n', mean(valid_latencies));
+                        else
+                            fprintf('   - Mean latency: [NO VALID DATA]\n');
                         end
+                    else
+                        fprintf('   - Latency: [NOT AVAILABLE]\n');
                     end
                 end
             end
@@ -124,16 +138,30 @@ else
                 else
                     success_smoke = true;
                     
-                    % Show performance metrics if available
+                    % Show performance metrics with robust error checking
                     if isfield(out, 'successrate')
-                        fprintf('   - Success rate: %.1f%%\n', out.successrate * 100);
+                        if isnumeric(out.successrate) && ~isempty(out.successrate) && ~any(isnan(out.successrate(:)))
+                            fprintf('   - Success rate: %.1f%%\n', out.successrate * 100);
+                        else
+                            fprintf('   - Success rate: [INVALID VALUE] Check data\n');
+                            fprintf('   - Debug info: successrate type=%s, isempty=%d, isnan=%d\n', ...
+                                class(out.successrate), ...
+                                isempty(out.successrate), ...
+                                any(isnan(out.successrate(:))));
+                        end
+                    else
+                        fprintf('   - Success rate: [NOT AVAILABLE]\n');
                     end
                     
                     if isfield(out, 'latency')
                         valid_latencies = out.latency(~isnan(out.latency));
                         if ~isempty(valid_latencies)
                             fprintf('   - Mean latency: %.1f seconds\n', mean(valid_latencies));
+                        else
+                            fprintf('   - Mean latency: [NO VALID DATA]\n');
                         end
+                    else
+                        fprintf('   - Latency: [NOT AVAILABLE]\n');
                     end
                 end
             end
