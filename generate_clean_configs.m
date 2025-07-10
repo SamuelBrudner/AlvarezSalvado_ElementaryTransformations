@@ -62,7 +62,7 @@ crim_cfg.model_params.pxscale = CRIM_MM_PER_PIXEL;     % Same as spatial.mm_per_
 % Simulation parameters
 crim_cfg.simulation = struct();
 crim_cfg.simulation.success_radius_cm = success_radius;
-crim_cfg.simulation.duration_seconds = 240.0;  % 4 minutes
+crim_cfg.simulation.duration_seconds = 5.0;  % QUICK TEST  % 4 minutes
 
 % Agent initialization
 crim_cfg.simulation.agent_initialization = struct();
@@ -138,7 +138,7 @@ smoke_cfg.model_params.pxscale = SMOKE_MM_PER_PIXEL;      % Same as spatial.mm_p
 % Simulation parameters
 smoke_cfg.simulation = struct();
 smoke_cfg.simulation.success_radius_cm = success_radius;
-smoke_cfg.simulation.duration_seconds = 60.0;  % 1 minute (60Hz data)
+smoke_cfg.simulation.duration_seconds = 5.0;  % QUICK TEST  % 1 minute (60Hz data)
 
 % Agent initialization
 smoke_cfg.simulation.agent_initialization = struct();

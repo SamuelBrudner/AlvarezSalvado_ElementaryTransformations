@@ -4,8 +4,8 @@ function [plume_file, plume_config] = get_plume_file()
 % Load stored paths
 try
     paths = load_paths();
-    plume_file = paths.plume_file;
     config_path = paths.plume_config;
+    plume_file = '';
 catch
     % Fallback to environment variables
     plume_file = getenv('MATLAB_PLUME_FILE');
@@ -15,8 +15,6 @@ catch
         error('No paths configuration found. Run setup_env_paths.sh first!');
     end
 end
-
-fprintf('Using plume file: %s\n', plume_file);
 
 % Initialize default config
 plume_config = struct();
@@ -35,6 +33,9 @@ if exist(config_path, 'file')
         cfg = jsondecode(fileread(config_path));
         
         % Update config from file
+        if isfield(cfg, 'data_path') && isfield(cfg.data_path, 'path')
+            plume_file = cfg.data_path.path;
+        end
         if isfield(cfg, 'spatial')
             if isfield(cfg.spatial, 'mm_per_pixel')
                 plume_config.mm_per_pixel = cfg.spatial.mm_per_pixel;
@@ -70,6 +71,13 @@ if exist(config_path, 'file')
 else
     warning('Config file not found: %s', config_path);
 end
+
+% Fallback: if plume_file is still empty, try to use paths.plume_file
+if isempty(plume_file) && exist('paths', 'var') && isfield(paths, 'plume_file')
+    plume_file = paths.plume_file;
+end
+
+fprintf('Using plume file: %s\n', plume_file);
 
 if nargout < 2
     clear plume_config;
