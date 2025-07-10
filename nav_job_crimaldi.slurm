@@ -27,9 +27,10 @@ export MATLAB_JAVA=$JAVA_HOME/jre
 module load MATLAB/2023b
 
 # Get project directory using symlink-safe path
-PROJECT_DIR="/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations"
+export PROJECT_DIR="/home/snb6/Documents/AlvarezSalvado_ElementaryTransformations"
 cd "$PROJECT_DIR" || exit 1
 mkdir -p logs results
+echo "[INFO] Set PROJECT_DIR=$PROJECT_DIR"
 
 # Force Crimaldi plume configuration
 export PLUME=crimaldi
@@ -54,13 +55,15 @@ head -n 10 "$PROJECT_DIR/configs/paths.json" || echo "[WARN] Could not read path
 
 # Create MATLAB script in temp file
 TEMP_MATLAB=$(mktemp /tmp/crimaldi_nav_XXXXXX.m)
-cat > "$TEMP_MATLAB" << 'MATLAB_EOF'
+cat > "$TEMP_MATLAB" << EOF
 % Crimaldi plume navigation simulation
 try
     % Get project directory and task ID from environment
-    project_dir = getenv('PROJECT_DIR');
+    project_dir = '$PROJECT_DIR';
     task_id = str2double(getenv('SLURM_ARRAY_TASK_ID'));
     if isnan(task_id), task_id = 0; end
+    
+    fprintf('Using project directory: %s\n', project_dir);
     
     % Change to project directory
     cd(project_dir);
