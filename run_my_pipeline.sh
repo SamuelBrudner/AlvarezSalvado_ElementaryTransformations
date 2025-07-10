@@ -37,6 +37,7 @@ mkdir -p "$PROJECT_ROOT/results" \
 # Step 1: Generate or update configs
 echo "STEP 1: Generating clean configs..."
 cd "$PROJECT_ROOT"
+echo "[LOG] Running: matlab -batch \"try, addpath(genpath('Code')), generate_clean_configs, catch ME, fprintf('Error: %s\\n', ME.message), exit(1), end, exit(0);\""
 matlab -batch "try, addpath(genpath('Code')), generate_clean_configs, catch ME, fprintf('Error: %s\n', ME.message), exit(1), end, exit(0);"
 echo "Configurations generated."
 echo ""

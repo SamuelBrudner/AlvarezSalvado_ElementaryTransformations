@@ -17,6 +17,7 @@ echo "Creating figures for $RESULT_FILE..."
 echo ""
 
 # Run MATLAB plotting function
+echo "[LOG] Running: matlab -nodisplay -nosplash -r \"try; plot_results('$RESULT_FILE'); catch ME; fprintf('Error: %s\\n', ME.message); exit(1); end; exit(0);\" 2>&1 | grep -v '^>>'"
 matlab -nodisplay -nosplash -r "
 try
     plot_results('$RESULT_FILE');
