@@ -362,8 +362,10 @@ t = (1:length(odorON))/50;
 start = [x(1,:)', y(1,:)'];
 
 %% SUCCESS RATE AND LATENCY
+disp(['DEBUG: Success rate calculation for environment: ' environment]);
 switch environment
     case {'Crimaldi','crimaldi','Gaussian','gaussian','Smoke','smoke'} % Success calculated for these environments
+        disp('DEBUG: Environment matched success rate case');
     
     angles = atan2(y,x);
     distances = y./sin(angles);
@@ -388,7 +390,12 @@ switch environment
             latency(i) = nan;
         end
     end
+    % Debug success vector
+    disp(['DEBUG: Success vector length = ' num2str(length(success))]);
+    disp(['DEBUG: Success count = ' num2str(sum(success)) ' out of ' num2str(ntrials)]);
+    
     successrate = sum(success)/ntrials; % Success rate
+    disp(['DEBUG: Calculated successrate = ' num2str(successrate)]);
 end
 
 
@@ -402,11 +409,24 @@ out.start = start;
 out.ON = odorON;
 out.OFF = odorOFF;
 out.turn = turn;
+disp('DEBUG: About to assign output.successrate');
+disp(['DEBUG: Current environment = ' environment]);
+
+% Debug whether successrate exists
+if exist('successrate', 'var')
+    disp(['DEBUG: successrate exists with value = ' num2str(successrate)]);
+else
+    disp('DEBUG: successrate variable does not exist!');
+end
+
 switch environment
     case {'Crimaldi','crimaldi','Gaussian','gaussian','Smoke','smoke'}
+        disp('DEBUG: Matched environment case for successrate assignment');
         out.successrate = successrate;
         out.latency = latency;
+        disp(['DEBUG: Assigned out.successrate = ' num2str(out.successrate)]);
     otherwise
+        disp('DEBUG: Did NOT match environment case, setting empty successrate');
         out.successrate = [];
         out.latency = [];
 end
