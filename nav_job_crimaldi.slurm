@@ -43,8 +43,8 @@ echo "Array task: ${SLURM_ARRAY_TASK_ID}"
 echo "Plume: Crimaldi (15 Hz, 0.74 mm/px)"
 echo ""
 
-# Run MATLAB
-matlab -nodisplay -nosplash -nodesktop -nojvm << 'EOF'
+# Run MATLAB with the temp script (guaranteed non-interactive)
+matlab -nodisplay -nosplash -nodesktop -nojvm -batch << 'EOF'
 % Add code to path
 addpath(genpath('Code'));
 

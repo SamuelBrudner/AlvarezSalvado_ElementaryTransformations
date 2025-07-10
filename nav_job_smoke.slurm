@@ -151,8 +151,8 @@ MATLAB_EOF
 export PROJECT_DIR
 export SLURM_ARRAY_TASK_ID
 
-# Run MATLAB with the temp script
-matlab -nodisplay -nosplash -nodesktop -nojvm -r "run('$TEMP_MATLAB')"
+# Run MATLAB with the temp script (guaranteed non-interactive)
+matlab -nodisplay -nosplash -nodesktop -nojvm -batch "run('$TEMP_MATLAB')"
 MATLAB_EXIT=$?
 
 # Clean up
