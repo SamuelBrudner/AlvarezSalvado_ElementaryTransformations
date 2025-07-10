@@ -30,7 +30,23 @@ plume_config.dataset_name = '/dataset2';
 % Load config file
 if exist(config_path, 'file')
     try
-        cfg = jsondecode(fileread(config_path));
+        raw_json = fileread(config_path);
+        disp('DEBUG: Config path:');
+        disp(config_path);
+        disp('DEBUG: Raw JSON:');
+        disp(raw_json);
+        try
+            cfg = jsondecode(raw_json);
+        catch err
+            warning('Could not parse config file: %s', err.message);
+            disp('DEBUG: Failed to parse config, config_path:');
+            disp(config_path);
+            rethrow(err);
+        end
+        disp('DEBUG: Loaded config struct:');
+        disp(cfg);
+        disp('DEBUG: Top-level fields:');
+        disp(fieldnames(cfg));
         
         % Update config from file
         if isfield(cfg, 'data_path') && isfield(cfg.data_path, 'path')
