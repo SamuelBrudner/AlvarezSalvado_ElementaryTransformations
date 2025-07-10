@@ -64,6 +64,7 @@ if exist(config_path, 'file')
         end
         
         if isfield(cfg, 'temporal')
+            plume_config.temporal = cfg.temporal;
             if isfield(cfg.temporal, 'frame_rate')
                 plume_config.frame_rate = cfg.temporal.frame_rate;
                 plume_config.time_scale_50hz = cfg.temporal.frame_rate / 50.0;
