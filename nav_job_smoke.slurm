@@ -102,6 +102,10 @@ try
     [plume_file, plume_config] = get_plume_file();
     fprintf('[MATLAB] Loaded plume_config: %s\n', smoke_config_path);
     fprintf('[MATLAB] Loaded HDF5 file: %s\n', plume_file);
+    disp('DEBUG: plume_config struct just before accessing .temporal:');
+    disp(plume_config);
+    disp('DEBUG: Top-level fields in plume_config:');
+    disp(fieldnames(plume_config));
     fprintf('[MATLAB] Frame rate: %.1f Hz\n', plume_config.temporal.frame_rate);
     fprintf('[MATLAB] Pixel scale: %.3f mm/px\n', plume_config.spatial.mm_per_pixel);
     
