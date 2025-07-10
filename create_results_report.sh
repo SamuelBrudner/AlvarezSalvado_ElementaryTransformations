@@ -91,6 +91,7 @@ EOF
 
 # Run MATLAB analysis
 echo "Analyzing results with MATLAB..." >&2
+echo "[LOG] Running: matlab -nodisplay -nosplash < temp_analyze_all.m 2>/dev/null | grep -v '^>>' | tail -n +11 >> $REPORT_FILE"
 matlab -nodisplay -nosplash < temp_analyze_all.m 2>/dev/null | grep -v "^>>" | tail -n +11 >> $REPORT_FILE
 
 # Clean up

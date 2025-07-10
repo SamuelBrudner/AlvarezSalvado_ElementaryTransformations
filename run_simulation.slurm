@@ -21,16 +21,4 @@ fi
 module load matlab/R2023b
 
 # Run simulation
-matlab -nodisplay -nosplash -r "
-    addpath('${MATLAB_CODE_DIR}');
-    
-    % Run simulation
-    fprintf('Starting simulation...\n');
-    out = Elifenavmodel_bilateral(3600, 'crimaldi', 0, 100);
-    
-    % Save results  
-    save('results_${SLURM_JOB_ID}.mat', 'out', '-v7.3');
-    fprintf('Results saved to: results_${SLURM_JOB_ID}.mat\n');
-    
-    exit;
-"
+matlab -nodisplay -nosplash -batch "addpath('${MATLAB_CODE_DIR}'); try, fprintf('Starting simulation...\n'); out = Elifenavmodel_bilateral(3600, 'crimaldi', 0, 100); save('results_${SLURM_JOB_ID}.mat', 'out', '-v7.3'); fprintf('Results saved to: results_${SLURM_JOB_ID}.mat\n'); catch ME, fprintf('Error: %s\n', ME.message); exit(1); end; exit(0);"

@@ -50,6 +50,7 @@ export PROJECT_DIR PLUME_JSON FRAME_RATE RESULTS_PREFIX
 
 run_matlab_batch "nav_driver"
 EXIT_CODE=$?
+# (run_matlab_batch already uses -batch; just confirm and document)
 
 echo ""
 echo "Job completed at: $(date)"
