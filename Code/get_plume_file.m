@@ -32,6 +32,12 @@ if exist(config_path, 'file')
     try
         cfg = jsondecode(fileread(config_path));
         
+        % DEBUG: Print config struct and fieldnames
+        disp('DEBUG: Loaded config struct:');
+        disp(cfg);
+        disp('DEBUG: Top-level fields:');
+        disp(fieldnames(cfg));
+        
         % Update config from file
         if isfield(cfg, 'data_path') && isfield(cfg.data_path, 'path')
             plume_file = cfg.data_path.path;
