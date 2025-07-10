@@ -403,7 +403,7 @@ out.ON = odorON;
 out.OFF = odorOFF;
 out.turn = turn;
 switch environment
-    case {'Crimaldi','crimaldi','Gaussian','gaussian'}
+    case {'Crimaldi','crimaldi','Gaussian','gaussian','Smoke','smoke'}
         out.successrate = successrate;
         out.latency = latency;
     otherwise
