@@ -132,8 +132,8 @@ try
     fprintf('\nStarting simulation for task %d...\n', task_id);
     tic;
     
-    % The model will use the configured plume file regardless of environment string
-    out = navigation_model_vec(n_frames, 'Crimaldi', 0, 10);
+    % Use the correct environment type for smoke plume simulation
+    out = navigation_model_vec(n_frames, 'Smoke', 0, 10);
     
     elapsed = toc;
     fprintf('Simulation completed in %.1f seconds\n', elapsed);
