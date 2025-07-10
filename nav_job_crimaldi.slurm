@@ -182,6 +182,12 @@ MATLAB_EOF
 echo "[INFO] MATLAB script content saved to logs/crimaldi_matlab_${SLURM_ARRAY_TASK_ID}.m"
 cp "$TEMP_MATLAB" "${PROJECT_DIR}/logs/crimaldi_matlab_${SLURM_ARRAY_TASK_ID}.m" || echo "[WARN] Could not save MATLAB script copy"
 
+# Export environment variables to ensure they're available to MATLAB
+echo "[INFO] Exporting environment variables for MATLAB"
+export PROJECT_DIR
+export SLURM_ARRAY_TASK_ID
+export PLUME
+
 # Execute the temp MATLAB script (output will go directly to SLURM log)
 echo "[INFO] Running MATLAB script: $TEMP_MATLAB"
 echo "[INFO] MATLAB output will appear below"
