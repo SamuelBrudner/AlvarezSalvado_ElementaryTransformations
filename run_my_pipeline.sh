@@ -164,7 +164,7 @@ EOF
 
 # Run MATLAB with timeout and capture output
 log_message "INFO" "Running MATLAB to generate configs (timeout: 5 minutes)"
-log_message "DEBUG" "Command: matlab -batch "source('$TEMP_MATLAB_SCRIPT')""
+log_message "DEBUG" "Command: matlab -batch 'source(\'$TEMP_MATLAB_SCRIPT\')'"
 
 # Run with timeout
 timeout 300s matlab -batch "source('$TEMP_MATLAB_SCRIPT')" 2>&1 | tee -a "$MAIN_LOG"
