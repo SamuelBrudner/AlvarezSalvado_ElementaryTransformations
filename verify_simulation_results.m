@@ -59,6 +59,13 @@ else
                 [frames, n_agents] = size(out.x);
                 fprintf('   - Trajectory data: %d frames x %d agents\n', frames, n_agents);
                 
+                % Log environment type for debugging
+                if isfield(out, 'environment')
+                    fprintf('   - Environment type: "%s"\n', out.environment);
+                else
+                    fprintf('   - Environment type: [UNKNOWN]\n');
+                end
+                
                 if frames < 10 || n_agents < 1
                     fprintf('   ❌ WARNING: Suspicious data dimensions in Crimaldi results\n');
                     success_crimaldi = false;
@@ -131,6 +138,13 @@ else
                 % Check data dimensions and content
                 [frames, n_agents] = size(out.x);
                 fprintf('   - Trajectory data: %d frames x %d agents\n', frames, n_agents);
+                
+                % Log environment type for debugging
+                if isfield(out, 'environment')
+                    fprintf('   - Environment type: "%s"\n', out.environment);
+                else
+                    fprintf('   - Environment type: [UNKNOWN]\n');
+                end
                 
                 if frames < 10 || n_agents < 1
                     fprintf('   ❌ WARNING: Suspicious data dimensions in Smoke results\n');
