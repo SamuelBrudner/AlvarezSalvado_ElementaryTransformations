@@ -40,12 +40,48 @@ try
 
     % Update paths.json --------------------------------------------------
     paths_file = fullfile('configs', 'paths.json');
-    paths_data = jsondecode(fileread(paths_file));
+    
+    % Validate existing JSON first
+    try
+        paths_data = jsondecode(fileread(paths_file));
+        fprintf('Successfully loaded paths.json\n');
+    catch jsonEx
+        error('Error loading paths.json: %s\nCheck JSON format and fix it before continuing.', jsonEx.message);
+    end
+    
+    % Create backup before modifying
+    backup_file = [paths_file, '.bak'];
+    copyfile(paths_file, backup_file);
+    fprintf('Created backup at %s\n', backup_file);
+    
+    % Only update the plume_config field, preserving everything else
     paths_data.plume_config = plume_json;
-    fid = fopen(paths_file, 'w');
-    fprintf(fid, '%s', jsonencode(paths_data));
-    fclose(fid);
-    fprintf('configs/paths.json updated.\n');
+    
+    % Validate the modified structure before writing
+    try
+        % Test that the modified structure can be encoded properly
+        json_str = jsonencode(paths_data);
+        % Parse it back to verify integrity
+        jsondecode(json_str);
+        
+        % Write with pretty formatting to maintain readability
+        fid = fopen(paths_file, 'w');
+        if fid == -1
+            error('Could not open paths.json for writing');
+        end
+        
+        % Use jsonencode with proper spacing and indentation
+        json_str = jsonencode(paths_data, 'PrettyPrint', true);
+        fprintf(fid, '%s', json_str);
+        fclose(fid);
+        fprintf('configs/paths.json updated with validation.\n');
+    catch jsonEx
+        % Restore from backup if something went wrong
+        fprintf(2, 'Error updating paths.json: %s\n', jsonEx.message);
+        fprintf(2, 'Restoring from backup...\n');
+        copyfile(backup_file, paths_file);
+        error('Failed to update paths.json. Restored from backup. Error: %s', jsonEx.message);
+    end
 
     % Load plume config --------------------------------------------------
     [plume_file, plume_cfg] = get_plume_file();
