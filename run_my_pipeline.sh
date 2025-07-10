@@ -30,9 +30,9 @@ fi
 # Prepare directories
 mkdir -p "$PROJECT_ROOT/results" \
          "$PROJECT_ROOT/logs" \
-         "$PROJECT_ROOT/validation_sessions" \
-         "$PROJECT_ROOT/slurm_logs/nav_crim" \
-         "$PROJECT_ROOT/slurm_logs/nav_smoke"
+         "$PROJECT_ROOT/logs/crimaldi" \
+         "$PROJECT_ROOT/logs/smoke" \
+         "$PROJECT_ROOT/validation_sessions"
 
 # Step 1: Generate or update configs
 echo "STEP 1: Generating clean configs..."
@@ -44,17 +44,17 @@ echo ""
 
 # Step 2: Submit jobs
 echo "STEP 2: Submitting SLURM test jobs..."
-CRIM_LOG_DIR="$PROJECT_ROOT/slurm_logs/nav_crim"
-SMOKE_LOG_DIR="$PROJECT_ROOT/slurm_logs/nav_smoke"
+CRIM_LOG_DIR="$PROJECT_ROOT/logs/crimaldi"
+SMOKE_LOG_DIR="$PROJECT_ROOT/logs/smoke"
 
 CRIM_JOB_ID=$(sbatch --parsable \
-    --output=${CRIM_LOG_DIR}/nav_crim_logs_%A_%a.out \
-    --error=${CRIM_LOG_DIR}/nav_crim_logs_%A_%a.err \
+    --output=${CRIM_LOG_DIR}/nav_crim_%A_%a.out \
+    --error=${CRIM_LOG_DIR}/nav_crim_%A_%a.err \
     nav_job_crimaldi.slurm --array=0-0%1)
 SMOKE_JOB_ID=$(sbatch --parsable \
-    --output=${SMOKE_LOG_DIR}/nav_smoke_logs_%A_%a.out \
-    --error=${SMOKE_LOG_DIR}/nav_smoke_logs_%A_%a.err \
-    --array=1000-1000%1 nav_job_smoke.slurm)
+    --output=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.out \
+    --error=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.err \
+    nav_job_smoke.slurm --array=1000-1000%1)
 
 if [[ ! "$CRIM_JOB_ID" =~ ^[0-9]+$ ]] || [[ ! "$SMOKE_JOB_ID" =~ ^[0-9]+$ ]]; then
     echo "Failed to submit jobs: CRIM_JOB_ID=$CRIM_JOB_ID SMOKE_JOB_ID=$SMOKE_JOB_ID"

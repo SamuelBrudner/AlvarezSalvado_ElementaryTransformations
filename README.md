@@ -25,6 +25,27 @@ CRIM:
   max: 1.291
   count: 315705600ata acquisition and preprocessing.
 
+## Directory Structure
+
+### Logs
+
+All logs are organized in subdirectories under the `logs/` directory, following this structure:
+
+```
+logs/
+  ├── crimaldi/         # Logs for Crimaldi plume jobs
+  │     └── nav_crim_*  # Output and error files
+  ├── smoke/            # Logs for smoke plume jobs
+  │     └── nav_smoke_* # Output and error files
+  ├── complete_test/    # Logs for complete test jobs
+  └── [other_exp_name]/ # For experiments created via slurm_submit.sh
+```
+
+When running pipeline jobs or individual SLURM scripts, logs will automatically be saved to the appropriate subdirectory. Log file naming follows this convention:
+- Crimaldi plume jobs: `logs/crimaldi/nav_crim_<jobid>_<arrayid>.[out|err]`
+- Smoke plume jobs: `logs/smoke/nav_smoke_<jobid>_<arrayid>.[out|err]`
+- Complete test jobs: `logs/complete_test/complete_test_<jobid>.[out|err]`
+
 ## Quick start
 
 The MATLAB code was written for MATLAB R2017b and depends on functions in the `Code/` and `Code/import functions feb2017/` directories. To simulate the navigation model, open MATLAB in the repository root and run:

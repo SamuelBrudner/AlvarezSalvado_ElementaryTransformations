@@ -16,8 +16,8 @@
 #SBATCH --mem=32G         # Higher than smoke due to uncompressed file
 #SBATCH --cpus-per-task=1
 #SBATCH --array=0-0%1  # Quick test: only one job
-#SBATCH --output=logs/crim-%A_%a.out
-#SBATCH --error=logs/crim-%A_%a.err
+#SBATCH --output=logs/crimaldi/nav_crim_%A_%a.out
+#SBATCH --error=logs/crimaldi/nav_crim_%A_%a.err
 
 # Ensure no display
 unset DISPLAY

@@ -4,8 +4,8 @@
 #SBATCH --partition=day
 #SBATCH --time=1:00:00
 #SBATCH --mem=8G
-#SBATCH --output=slurm_logs/complete_test/complete_test_logs_%j.out
-#SBATCH --error=slurm_logs/complete_test/complete_test_logs_%j.err
+#SBATCH --output=logs/complete_test/complete_test_%j.out
+#SBATCH --error=logs/complete_test/complete_test_%j.err
 
 set -euo pipefail
 
@@ -13,7 +13,7 @@ module load MATLAB/2023b
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_DIR"
-mkdir -p slurm_logs/complete_test results
+mkdir -p logs/complete_test results
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 echo "Starting complete test at $(date)" | tee "results/diagnostics_${TIMESTAMP}.txt"

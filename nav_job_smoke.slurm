@@ -16,8 +16,8 @@
 #SBATCH --mem=16G         # Reduced from 82G - compressed file
 #SBATCH --cpus-per-task=1
 #SBATCH --array=1000-1000%1  # Quick test: only one job
-#SBATCH --output=logs/smoke-%A_%a.out
-#SBATCH --error=logs/smoke-%A_%a.err
+#SBATCH --output=logs/smoke/nav_smoke_%A_%a.out
+#SBATCH --error=logs/smoke/nav_smoke_%A_%a.err
 
 # Ensure no display
 unset DISPLAY
