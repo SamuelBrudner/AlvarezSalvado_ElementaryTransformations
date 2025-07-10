@@ -99,7 +99,12 @@ try
     end
     
     % Verify configuration
+    which get_plume_file
     [plume_file, plume_config] = get_plume_file();
+    disp('DEBUG: plume_config after get_plume_file:');
+    disp(plume_config);
+    disp('DEBUG: Top-level fields after get_plume_file:');
+    disp(fieldnames(plume_config));
     fprintf('[MATLAB] Loaded plume_config: %s\n', smoke_config_path);
     fprintf('[MATLAB] Loaded HDF5 file: %s\n', plume_file);
     disp('DEBUG: plume_config struct just before accessing .temporal:');
