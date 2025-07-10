@@ -175,5 +175,13 @@ end
 exit(0);
 MATLAB_EOF
 
+# Execute the temp MATLAB script and capture exit code
+echo "[INFO] Running MATLAB script: $TEMP_MATLAB"
+matlab -nodisplay -nosplash -nodesktop -nojvm -batch "run('$TEMP_MATLAB');"
+MATLAB_EXIT=$?
+
 echo ""
 echo "Job completed at: $(date)"
+echo "MATLAB exit code: $MATLAB_EXIT"
+
+exit $MATLAB_EXIT
