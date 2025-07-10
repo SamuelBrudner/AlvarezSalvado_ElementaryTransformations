@@ -3,59 +3,68 @@ function cfg = get_plot_defaults()
 %   cfg = get_plot_defaults() returns a struct with color, line width, and
 %   scale bar length settings for arena plotting, loaded from
 %   configs/plot_defaults.json. Uses persistent caching for efficiency.
+%
+%   To enable verbose debug logging, set debug_mode = true in the debug_log function
 
 persistent cached_cfg cached_time
+
+% Define a function to log diagnostics only in debug mode
+function debug_log(varargin)
+    % Only print diagnostic messages if in debug mode
+    % To enable debug mode, set this to true
+    debug_mode = false;
+    
+    if debug_mode
+        fprintf(varargin{:});
+    end
+end
 
 % Use absolute path by first getting the project root directory
 % Either from current directory or relative to this script's location
 try
-    % Log initial diagnostic information
-    fprintf('[get_plot_defaults] Starting with working directory: %s\n', pwd);
-    fprintf('[get_plot_defaults] Path environment: %s\n', path);
-    
     % First try to find project root from current directory
     current_dir = pwd;
-    fprintf('[get_plot_defaults] Current directory: %s\n', current_dir);
+    debug_log('[get_plot_defaults] Starting with working directory: %s\n', current_dir);
     
     if contains(current_dir, 'AlvarezSalvado_ElementaryTransformations')
         % Navigate up to project root if in a subdirectory
-        fprintf('[get_plot_defaults] In project directory, finding root...\n');
+        debug_log('[get_plot_defaults] In project directory, finding root...\n');
         while ~contains(fileparts(current_dir), 'AlvarezSalvado_ElementaryTransformations') && ~isempty(fileparts(current_dir))
             current_dir = fileparts(current_dir);
-            fprintf('[get_plot_defaults] Moving up to: %s\n', current_dir);
+            debug_log('[get_plot_defaults] Moving up to: %s\n', current_dir);
         end
         project_root = current_dir;
     else
         % If not in project directory, use the location of this script
-        fprintf('[get_plot_defaults] Not in project directory, using script location...\n');
+        debug_log('[get_plot_defaults] Not in project directory, using script location...\n');
         script_path = mfilename('fullpath');
-        fprintf('[get_plot_defaults] Script path: %s\n', script_path);
+        debug_log('[get_plot_defaults] Script path: %s\n', script_path);
         script_dir = fileparts(script_path);
-        fprintf('[get_plot_defaults] Script directory: %s\n', script_dir);
+        debug_log('[get_plot_defaults] Script directory: %s\n', script_dir);
         project_root = fileparts(script_dir); % Assuming Code dir is directly under project root
     end
     
-    fprintf('[get_plot_defaults] Project root identified as: %s\n', project_root);
+    debug_log('[get_plot_defaults] Project root identified as: %s\n', project_root);
     
     % Check if we found a valid project root
     if ~exist(fullfile(project_root, 'configs'), 'dir')
-        fprintf('[get_plot_defaults] WARNING: configs directory not found in project root!\n');
+        warning('[get_plot_defaults] Configs directory not found in project root!');
         % List contents of the supposed project root to help debugging
         dir_contents = dir(project_root);
-        fprintf('[get_plot_defaults] Project root contents:\n');
+        debug_log('[get_plot_defaults] Project root contents:\n');
         for i = 1:numel(dir_contents)
             if dir_contents(i).isdir
                 item_type = 'dir';
             else
                 item_type = 'file';
             end
-            fprintf('  - %s (%s)\n', dir_contents(i).name, item_type);
+            debug_log('  - %s (%s)\n', dir_contents(i).name, item_type);
         end
     end
     
     % Create the absolute path to the config
     config_path = fullfile(project_root, 'configs', 'plot_defaults.json');
-    fprintf('[get_plot_defaults] Looking for plot defaults at: %s\n', config_path);
+    debug_log('[get_plot_defaults] Looking for plot defaults at: %s\n', config_path);
     
     % Fall back to default values if we can't load the file
     if ~exist(config_path, 'file')
