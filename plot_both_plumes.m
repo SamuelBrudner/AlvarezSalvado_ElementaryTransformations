@@ -47,7 +47,7 @@ figure('Position', [100 100 1400 600]);
 subplot(1,2,1);
 imagesc(crim_x, crim_y, crim_data);
 set(gca, 'YDir', 'normal');
-colormap(hot);
+colormap(gray);
 cbar = colorbar();
 ylabel(cbar, 'Odor Concentration');
 hold on;
@@ -86,7 +86,7 @@ text(0.02, 0.02, sprintf('Size: %d×%d px\nArena: %.1f×%.1f cm', ...
 subplot(1,2,2);
 imagesc(smoke_x, smoke_y, smoke_data);
 set(gca, 'YDir', 'normal');
-colormap(hot);
+colormap(gray);
 cbar = colorbar();
 ylabel(cbar, 'Odor Concentration');
 hold on;

@@ -231,7 +231,7 @@ hold on;
 % Display plume data first
 imagesc(crim_x, crim_y, crim_data);
 set(gca, 'YDir', 'normal');
-colormap(hot);
+colormap(gray);
 caxis([0, prctile(crim_data(:), 95)]);  % Adjust color scale for visibility
 
 % Add semi-transparent overlay to make annotations visible
@@ -278,7 +278,7 @@ hold on;
 % Display plume data first
 imagesc(smoke_x, smoke_y, smoke_data);
 set(gca, 'YDir', 'normal');
-colormap(hot);
+colormap(gray);
 caxis([0, prctile(smoke_data(:), 95)]);  % Adjust color scale for visibility
 
 % Add semi-transparent overlay
