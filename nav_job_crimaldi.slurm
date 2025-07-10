@@ -15,7 +15,7 @@
 #SBATCH --time=6:00:00
 #SBATCH --mem=32G         # Higher than smoke due to uncompressed file
 #SBATCH --cpus-per-task=1
-#SBATCH --array=0-399%100
+#SBATCH --array=0-0%1  # Quick test: only one job
 #SBATCH --output=logs/crim-%A_%a.out
 #SBATCH --error=logs/crim-%A_%a.err
 
@@ -70,10 +70,11 @@ fprintf('\nActive plume: %s\n', plume_config.plume_id);
 fprintf('Frame rate: %.1f Hz\n', plume_config.temporal.frame_rate);
 fprintf('Pixel scale: %.3f mm/px\n', plume_config.spatial.mm_per_pixel);
 
-% Calculate frames for Crimaldi plume at 15 Hz
-duration_seconds = plume_config.simulation.duration_seconds;
+% QUICK TEST: reduce simulation duration and agents
+n_agents = 2;
+duration_seconds = 5;  % 5 seconds for fast test
 n_frames = round(duration_seconds * 15);
-fprintf('Simulation: %.1f seconds = %d frames at 15 Hz\n', duration_seconds, n_frames);
+fprintf('[QUICK TEST] Running %d agents for %.1f seconds (%d frames at 15 Hz)\n', n_agents, duration_seconds, n_frames);
 
 % Run simulation
 try

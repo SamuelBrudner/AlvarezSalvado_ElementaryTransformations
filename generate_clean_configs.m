@@ -62,7 +62,7 @@ crim_cfg.model_params.pxscale = CRIM_MM_PER_PIXEL;     % Same as spatial.mm_per_
 % Simulation parameters
 crim_cfg.simulation = struct();
 crim_cfg.simulation.success_radius_cm = success_radius;
-crim_cfg.simulation.duration_seconds = 240.0;  % 4 minutes
+crim_cfg.simulation.duration_seconds = 5.0;  % QUICK TEST  % 4 minutes
 
 % Agent initialization
 crim_cfg.simulation.agent_initialization = struct();
@@ -138,7 +138,7 @@ smoke_cfg.model_params.pxscale = SMOKE_MM_PER_PIXEL;      % Same as spatial.mm_p
 % Simulation parameters
 smoke_cfg.simulation = struct();
 smoke_cfg.simulation.success_radius_cm = success_radius;
-smoke_cfg.simulation.duration_seconds = 60.0;  % 1 minute (60Hz data)
+smoke_cfg.simulation.duration_seconds = 5.0;  % QUICK TEST  % 1 minute (60Hz data)
 
 % Agent initialization
 smoke_cfg.simulation.agent_initialization = struct();
@@ -231,7 +231,7 @@ hold on;
 % Display plume data first
 imagesc(crim_x, crim_y, crim_data);
 set(gca, 'YDir', 'normal');
-colormap(gray);
+colormap(flipud(gray));
 caxis([0, prctile(crim_data(:), 95)]);  % Adjust color scale for visibility
 
 % Add semi-transparent overlay to make annotations visible
@@ -241,13 +241,7 @@ set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
 % Unified arena decorations
 plot_arena_elements(crim_cfg.spatial.arena_bounds, init_x_range, init_y_range, success_radius, common_xlim, common_ylim, 5);
 
-
-
 % Init zone
-
-
-
-
 
 % Annotations
 plot([-8 8], [0 0], 'k--', 'LineWidth', 1);
@@ -278,7 +272,7 @@ hold on;
 % Display plume data first
 imagesc(smoke_x, smoke_y, smoke_data);
 set(gca, 'YDir', 'normal');
-colormap(gray);
+colormap(flipud(gray));
 caxis([0, prctile(smoke_data(:), 95)]);  % Adjust color scale for visibility
 
 % Add semi-transparent overlay

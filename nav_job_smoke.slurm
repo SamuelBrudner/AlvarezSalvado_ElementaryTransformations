@@ -15,7 +15,7 @@
 #SBATCH --time=2:00:00    # Reduced from 6h - smoke sims are faster
 #SBATCH --mem=16G         # Reduced from 82G - compressed file
 #SBATCH --cpus-per-task=1
-#SBATCH --array=0-399%100
+#SBATCH --array=1000-1000%1  # Quick test: only one job
 #SBATCH --output=logs/smoke-%A_%a.out
 #SBATCH --error=logs/smoke-%A_%a.err
 
@@ -113,10 +113,11 @@ try
         fprintf('[MATLAB] Plume file exists. Size: %.2f MB\n', file_info.bytes/1e6);
     end
     
-    % Calculate frames for smoke plume at 60 Hz
-    duration_seconds = plume_config.simulation.duration_seconds;
+    % QUICK TEST: reduce simulation duration and agents
+    n_agents = 2;
+    duration_seconds = 5;  % 5 seconds for fast test
     n_frames = round(duration_seconds * 60);
-    fprintf('[MATLAB] Simulation: %.1f seconds = %d frames at 60 Hz\n', duration_seconds, n_frames);
+    fprintf('[MATLAB][QUICK TEST] Running %d agents for %.1f seconds (%d frames at 60 Hz)\n', n_agents, duration_seconds, n_frames);
     
     % Run simulation (note: we use 'Crimaldi' as environment type, which loads from config)
     fprintf('\nStarting simulation for task %d...\n', task_id);
