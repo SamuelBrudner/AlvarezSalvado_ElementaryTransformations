@@ -139,8 +139,11 @@ try
         error('Required file Code/generate_clean_configs.m not found');
     end
     
-    % Print available MATLAB path for debugging
-    fprintf('MATLAB path:\n%s\n', path);
+    % Load environment script if it exists
+    if exist('setup_env.m', 'file')
+        fprintf('Loading environment setup script...\n');
+        setup_env;
+    end
     
     % Run the config generation
     fprintf('Starting config generation...\n');
