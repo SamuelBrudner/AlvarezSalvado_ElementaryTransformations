@@ -236,10 +236,10 @@ function plot_results(result_file)
     [pathstr, name, ~] = fileparts(result_file);
     
     % Save as PNG
-    figure(1); saveas(gcf, fullfile(pathstr, [name '_trajectories.png']));
-    figure(2); saveas(gcf, fullfile(pathstr, [name '_example.png']));
-    figure(3); saveas(gcf, fullfile(pathstr, [name '_performance.png']));
-    figure(4); saveas(gcf, fullfile(pathstr, [name '_summary.png']));
+    figure(1); saveas(gcf, fullfile(pathstr, [name '_trajectories.pdf']));
+    figure(2); saveas(gcf, fullfile(pathstr, [name '_example.pdf']));
+    figure(3); saveas(gcf, fullfile(pathstr, [name '_performance.pdf']));
+    figure(4); saveas(gcf, fullfile(pathstr, [name '_summary.pdf']));
     
     fprintf('\nFigures saved to %s directory\n', pathstr);
     fprintf('Files created:\n');

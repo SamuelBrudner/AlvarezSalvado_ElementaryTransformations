@@ -238,27 +238,16 @@ caxis([0, prctile(crim_data(:), 95)]);  % Adjust color scale for visibility
 h = patch([common_xlim(1) common_xlim(2) common_xlim(2) common_xlim(1)], ...
           [common_ylim(1) common_ylim(1) common_ylim(2) common_ylim(2)], 'w');
 set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
+% Unified arena decorations
+plot_arena_elements(crim_cfg.spatial.arena_bounds, init_x_range, init_y_range, success_radius, common_xlim, common_ylim, 5);
 
-% Arena
-rectangle('Position', [crim_cfg.spatial.arena_bounds.x_min, ...
-                      crim_cfg.spatial.arena_bounds.y_min, ...
-                      crim_width_cm, crim_height_cm], ...
-          'EdgeColor', 'blue', 'LineWidth', 2.5);
+
 
 % Init zone
-rectangle('Position', [init_x_range(1), init_y_range(1), ...
-                      diff(init_x_range), diff(init_y_range)], ...
-          'EdgeColor', 'yellow', 'LineWidth', 3);
-text(0, mean(init_y_range), 'Init Zone', 'Color', 'yellow', ...
-     'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center', ...
-     'BackgroundColor', [0 0 0 0.7]);
 
-% Source
-theta = linspace(0, 2*pi, 100);
-plot(success_radius*cos(theta), success_radius*sin(theta), 'g-', 'LineWidth', 2);
-plot(0, 0, 'g*', 'MarkerSize', 15);
-text(0, 1, 'Source (0,0)', 'Color', 'green', 'HorizontalAlignment', 'center', ...
-     'BackgroundColor', [0 0 0 0.7]);
+
+
+
 
 % Annotations
 plot([-8 8], [0 0], 'k--', 'LineWidth', 1);
@@ -296,26 +285,19 @@ caxis([0, prctile(smoke_data(:), 95)]);  % Adjust color scale for visibility
 h = patch([common_xlim(1) common_xlim(2) common_xlim(2) common_xlim(1)], ...
           [common_ylim(1) common_ylim(1) common_ylim(2) common_ylim(2)], 'w');
 set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
+% Unified arena decorations
+plot_arena_elements(crim_cfg.spatial.arena_bounds, init_x_range, init_y_range, success_radius, common_xlim, common_ylim, 5);
 
-% Arena
-rectangle('Position', [smoke_cfg.spatial.arena_bounds.x_min, ...
-                      smoke_cfg.spatial.arena_bounds.y_min, ...
-                      smoke_width_cm, smoke_height_cm], ...
-          'EdgeColor', 'blue', 'LineWidth', 2.5);
+
 
 % Init zone
-rectangle('Position', [init_x_range(1), init_y_range(1), ...
-                      diff(init_x_range), diff(init_y_range)], ...
-          'EdgeColor', 'yellow', 'LineWidth', 3);
-text(0, mean(init_y_range), 'Init Zone', 'Color', 'yellow', ...
-     'FontSize', 12, 'FontWeight', 'bold', 'HorizontalAlignment', 'center', ...
-     'BackgroundColor', [0 0 0 0.7]);
+
+
 
 % Source
-plot(success_radius*cos(theta), success_radius*sin(theta), 'g-', 'LineWidth', 2);
-plot(0, 0, 'g*', 'MarkerSize', 15);
-text(0, 1, 'Source (0,0)', 'Color', 'green', 'HorizontalAlignment', 'center', ...
-     'BackgroundColor', [0 0 0 0.7]);
+
+
+
 
 % Annotations
 plot([-8.3 8.3], [0 0], 'k--', 'LineWidth', 1);
@@ -343,17 +325,7 @@ text(0.02, 0.98, sprintf('Frame %d/%d\nSize: %d×%d px\nArena: %.1f×%.1f cm', .
 h = colorbar('Position', [0.93 0.3 0.02 0.4]);
 ylabel(h, 'Odor Concentration', 'FontSize', 11);
 
-% Add scale bar to show physical scale
-for sp = 1:2
-    subplot(1,2,sp);
-    % Add 5cm scale bar in bottom right
-    scale_length = 5; % cm
-    scale_x = common_xlim(2) - scale_length - 1;
-    scale_y = common_ylim(1) + 1;
-    plot([scale_x, scale_x + scale_length], [scale_y, scale_y], 'k-', 'LineWidth', 3);
-    text(scale_x + scale_length/2, scale_y - 0.5, '5 cm', ...
-         'HorizontalAlignment', 'center', 'FontSize', 10, 'FontWeight', 'bold');
-end
+
 
 sgtitle('Complete Configuration Setup with Plume Data (Same Physical Scale)', 'FontSize', 16);
 

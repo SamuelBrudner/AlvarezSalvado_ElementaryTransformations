@@ -174,7 +174,7 @@ annotation('textbox', [0.35 0.02 0.3 0.08], 'String', info_text, ...
            'BackgroundColor', 'white', 'EdgeColor', 'black', 'FontSize', 9);
 
 %% Save figure
-saveas(gcf, 'results/init_zones_with_plumes.png');
+saveas(gcf, 'results/init_zones_with_plumes.pdf');
 fprintf('\n✓ Saved figure to: results/init_zones_with_plumes.png\n');
 
 %% Print plume statistics

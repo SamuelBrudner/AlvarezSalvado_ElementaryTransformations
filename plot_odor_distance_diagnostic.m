@@ -87,7 +87,7 @@ for i = 1:n_agents_crim
 end
 
 fprintf('Saving Crimaldi figure...\n');
-saveas(gcf, 'results/odor_distance_crimaldi.png');
+saveas(gcf, 'results/odor_distance_crimaldi.pdf');
 
 %% Figure 2: Individual agent plots for Smoke
 fprintf('Generating Smoke individual plots...\n');
@@ -132,7 +132,7 @@ for i = 1:n_agents_smoke
 end
 
 fprintf('Saving Smoke figure...\n');
-saveas(gcf, 'results/odor_distance_smoke.png');
+saveas(gcf, 'results/odor_distance_smoke.pdf');
 
 %% Figure 3: Overlay plot showing all agents together
 fprintf('Generating overlay comparison...\n');
@@ -209,7 +209,7 @@ grid on;
 
 sgtitle('Distance & Odor Trajectories - All Agents', 'FontSize', 16);
 fprintf('Saving overlay figure...\n');
-saveas(gcf, 'results/odor_distance_overlay.png');
+saveas(gcf, 'results/odor_distance_overlay.pdf');
 
 %% Figure 4: Statistical summary plot
 fprintf('Generating statistical summary...\n');
@@ -312,7 +312,7 @@ grid on;
 
 sgtitle('Statistical Analysis of Odor Response', 'FontSize', 16);
 fprintf('Saving statistics figure...\n');
-saveas(gcf, 'results/odor_distance_statistics.png');
+saveas(gcf, 'results/odor_distance_statistics.pdf');
 
 %% Summary output
 fprintf('\nDiagnostic plots created:\n');
