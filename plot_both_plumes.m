@@ -47,7 +47,7 @@ figure('Position', [100 100 1400 600]);
 subplot(1,2,1);
 imagesc(crim_x, crim_y, crim_data);
 set(gca, 'YDir', 'normal');
-colormap(gray);
+colormap(flipud(gray));
 cbar = colorbar();
 ylabel(cbar, 'Odor Concentration');
 hold on;
@@ -61,8 +61,6 @@ plot_arena_elements(crim_cfg.spatial.arena_bounds, init_x, init_y, success_radiu
 % Mark Y=0 (top)
 plot([-8 8], [0 0], 'g--', 'LineWidth', 2);
 text(0, 1, 'Y=0 (top)', 'Color', 'green', 'FontSize', 10, 'HorizontalAlignment', 'center');
-
-
 
 % Labels
 xlabel('X (cm)');
@@ -86,7 +84,7 @@ text(0.02, 0.02, sprintf('Size: %d×%d px\nArena: %.1f×%.1f cm', ...
 subplot(1,2,2);
 imagesc(smoke_x, smoke_y, smoke_data);
 set(gca, 'YDir', 'normal');
-colormap(gray);
+colormap(flipud(gray));
 cbar = colorbar();
 ylabel(cbar, 'Odor Concentration');
 hold on;
