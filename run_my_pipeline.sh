@@ -104,3 +104,4 @@ fi
 
 echo "--------------------------------------------------"
 echo "Pipeline finished at $(date)"
+exit 0
