@@ -288,8 +288,39 @@ cat > "${PROJECT_ROOT}/nav_job_paths.slurm" << EOF
 #SBATCH --output=logs/nav-%A_%a.out
 #SBATCH --error=logs/nav-%A_%a.err
 
-# Load the project paths
-source "${PROJECT_ROOT}/configs/paths.json"
+# Load the project paths using proper JSON parsing
+if command -v jq >/dev/null 2>&1; then
+    # Use jq if available (preferred method)
+    if [[ -f "${PROJECT_ROOT}/configs/paths.json" ]]; then
+        log_message "INFO" "Loading paths from ${PROJECT_ROOT}/configs/paths.json using jq"
+        export PATHS_PROJECT_ROOT=$(jq -r '.project_root' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null)
+        export PATHS_CODE_DIR=$(jq -r '.code_dir' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null)
+        export PATHS_DATA_DIR=$(jq -r '.data_dir' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null)
+        export PATHS_CONFIG_DIR=$(jq -r '.config_dir' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null)
+        export PATHS_PLUME_FILE=$(jq -r '.plume_file' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null)
+        export PATHS_PLUME_CONFIG=$(jq -r '.plume_config' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null)
+    else
+        log_message "ERROR" "Could not find paths config: ${PROJECT_ROOT}/configs/paths.json"
+    fi
+else
+    # Fallback if jq is not available - using grep and sed
+    log_message "WARNING" "jq not found, using fallback JSON parsing method"
+    if [[ -f "${PROJECT_ROOT}/configs/paths.json" ]]; then
+        log_message "INFO" "Loading paths from ${PROJECT_ROOT}/configs/paths.json using grep/sed"
+        export PATHS_PROJECT_ROOT=$(grep -o '"project_root":"[^"]*"' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null | sed 's/"project_root":"\(.*\)"/\1/')
+        export PATHS_CODE_DIR=$(grep -o '"code_dir":"[^"]*"' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null | sed 's/"code_dir":"\(.*\)"/\1/')
+        export PATHS_DATA_DIR=$(grep -o '"data_dir":"[^"]*"' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null | sed 's/"data_dir":"\(.*\)"/\1/')
+        export PATHS_CONFIG_DIR=$(grep -o '"config_dir":"[^"]*"' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null | sed 's/"config_dir":"\(.*\)"/\1/')
+        export PATHS_PLUME_FILE=$(grep -o '"plume_file":"[^"]*"' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null | sed 's/"plume_file":"\(.*\)"/\1/')
+        export PATHS_PLUME_CONFIG=$(grep -o '"plume_config":"[^"]*"' "${PROJECT_ROOT}/configs/paths.json" 2>/dev/null | sed 's/"plume_config":"\(.*\)"/\1/')
+    else
+        log_message "ERROR" "Could not find paths config: ${PROJECT_ROOT}/configs/paths.json"
+    fi
+fi
+
+# Log the parsed values for debugging
+log_message "DEBUG" "PATHS_PROJECT_ROOT=${PATHS_PROJECT_ROOT}"
+log_message "DEBUG" "PATHS_PLUME_CONFIG=${PATHS_PLUME_CONFIG}"
 
 # Change to project directory
 cd "$PROJECT_ROOT"
