@@ -63,6 +63,7 @@ if exist(config_path, 'file')
             end
         end
         
+        % Copy temporal field from config to plume_config
         if isfield(cfg, 'temporal')
             plume_config.temporal = cfg.temporal;
             disp('DEBUG: plume_config.temporal assigned!');
@@ -72,6 +73,13 @@ if exist(config_path, 'file')
                 plume_config.time_scale_50hz = cfg.temporal.frame_rate / 50.0;
                 plume_config.time_scale_15hz = cfg.temporal.frame_rate / 15.0;
             end
+        end
+        
+        % Copy spatial field from config to plume_config
+        if isfield(cfg, 'spatial')
+            plume_config.spatial = cfg.spatial;
+            disp('DEBUG: plume_config.spatial assigned!');
+            disp(plume_config.spatial);
         end
         
         if isfield(cfg, 'data_path') && isfield(cfg.data_path, 'dataset_name')
