@@ -55,7 +55,7 @@ head -n 10 "$PROJECT_DIR/configs/paths.json" || echo "[WARN] Could not read path
 
 # Create MATLAB script in temp file
 TEMP_MATLAB=$(mktemp /tmp/crimaldi_nav_XXXXXX.m)
-cat > "$TEMP_MATLAB" << EOF
+cat > "$TEMP_MATLAB" << MATLAB_EOF
 % Crimaldi plume navigation simulation
 try
     % Get project directory and task ID from environment
