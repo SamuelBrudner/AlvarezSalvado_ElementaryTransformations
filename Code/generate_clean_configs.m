@@ -76,7 +76,22 @@ crim_cfg.simulation.source_position.x_cm = source_position(1);
 crim_cfg.simulation.source_position.y_cm = source_position(2);
 
 % Save
-fid = fopen('configs/plumes/crimaldi_10cms_bounded.json', 'w');
+% Ensure the output directory exists
+cfg_dir = 'configs/plumes';
+if ~exist(cfg_dir, 'dir')
+    fprintf('Creating directory: %s\n', cfg_dir);
+    mkdir(cfg_dir);
+end
+
+% Open file with error handling
+config_file = [cfg_dir, '/crimaldi_10cms_bounded.json'];
+fprintf('Saving config to: %s\n', config_file);
+fid = fopen(config_file, 'w');
+if fid == -1
+    error('Failed to open file for writing: %s', config_file);
+end
+
+% Write and close
 fprintf(fid, '%s', jsonencode(crim_cfg));
 fclose(fid);
 
@@ -152,7 +167,22 @@ smoke_cfg.simulation.source_position.x_cm = source_position(1);
 smoke_cfg.simulation.source_position.y_cm = source_position(2);
 
 % Save
-fid = fopen('configs/plumes/smoke_1a_backgroundsubtracted.json', 'w');
+% Ensure the output directory exists (already checked above but being safe)
+cfg_dir = 'configs/plumes';
+if ~exist(cfg_dir, 'dir')
+    fprintf('Creating directory: %s\n', cfg_dir);
+    mkdir(cfg_dir);
+end
+
+% Open file with error handling
+config_file = [cfg_dir, '/smoke_1a_backgroundsubtracted.json'];
+fprintf('Saving config to: %s\n', config_file);
+fid = fopen(config_file, 'w');
+if fid == -1
+    error('Failed to open file for writing: %s', config_file);
+end
+
+% Write and close
 fprintf(fid, '%s', jsonencode(smoke_cfg));
 fclose(fid);
 
