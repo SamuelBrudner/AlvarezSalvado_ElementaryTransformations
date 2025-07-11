@@ -49,8 +49,13 @@ if exist(config_path, 'file')
         disp(fieldnames(cfg));
         
         % Update config from file
-        if isfield(cfg, 'data_path') && isfield(cfg.data_path, 'path')
-            plume_file = cfg.data_path.path;
+        % Preserve the full data_path struct for downstream access (e.g. navigation_model_vec expects
+        % plume_config.data_path.path to exist).
+        if isfield(cfg, 'data_path')
+            plume_config.data_path = cfg.data_path;
+            if isfield(cfg.data_path, 'path')
+                plume_file = cfg.data_path.path;
+            end
         end
         if isfield(cfg, 'spatial')
             if isfield(cfg.spatial, 'mm_per_pixel')
