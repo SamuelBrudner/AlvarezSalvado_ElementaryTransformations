@@ -36,11 +36,17 @@ function out = navigation_model_vec(triallength, environment, plotting,ntrials)
 
 tic
 
+% Load plume configuration from config file (used throughout the function)
+[~, plume_config] = get_plume_file();
+
+% Extract scaling factors from plume_config
+tscale = plume_config.time_scale_50hz;  % Time scaling factor (default 15Hz/50Hz ratio)
+pxscale = plume_config.mm_per_pixel;   % Spatial scaling factor (mm per pixel)
+
 % Handle string input for triallength
 if ischar(triallength) || isstring(triallength)
     if strcmpi(triallength, 'config') || strcmpi(triallength, 'auto')
         fprintf('Reading duration from config file...\n');
-        [~, plume_config] = get_plume_file();
         
         % Get duration in seconds from config
         if isfield(plume_config, 'simulation') && isfield(plume_config.simulation, 'duration_seconds')
@@ -54,6 +60,8 @@ if ischar(triallength) || isstring(triallength)
         switch lower(environment)
             case {'crimaldi', 'openlooppulse15', 'openlooppulsewb15'}
                 frame_rate = 15;
+            case {'smoke'}
+                frame_rate = 60; % Smoke plume uses 60 Hz frame rate per config
             case {'gaussian', 'openlooppulse', 'openlooppulsewb'}
                 frame_rate = 50;
             otherwise
@@ -71,56 +79,55 @@ else
     triallength = double(triallength);
 end
 
-% Scaling factors and plume configuration
 
-tscale = 15/50;  % Default 15Hz/50Hz ratio
-pxscale = 0.74;  % Default mm/pixel ratio
 
-% Initialize plume_config with defaults
-plume_config = struct();
-plume_config.frame_rate = 15;
+% Use the already loaded plume_config to get the plume filename
+% Note: plume_config was loaded at the beginning of the function
+env_plume = getenv('MATLAB_PLUME_FILE');
 
-% Load the correct config for Crimaldi environment
-if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
-    try
-        % Determine which config to load based on environment variable
-        env_plume = getenv('MATLAB_PLUME_FILE');
-
-        if contains(env_plume, 'smoke')
-            % Smoke plume
-            cfg = jsondecode(fileread('configs/plumes/smoke_1a_backgroundsubtracted.json'));
-            plume_filename = env_plume;
-        else
-            % Crimaldi plume (default)
-            cfg = jsondecode(fileread('configs/plumes/crimaldi_10cms_bounded.json'));
-            plume_filename = cfg.data_path.path;
-        end
-
-        % Extract values from config
-        plume_config.frame_rate = cfg.temporal.frame_rate;
-        tscale = cfg.temporal.frame_rate / 50.0;
-        pxscale = cfg.spatial.mm_per_pixel;
-        plume_config.dataset_name = cfg.data_path.dataset_name;
-
-        % Use model_params if available
-        if isfield(cfg, 'model_params')
-            tscale = cfg.model_params.tscale;
-            pxscale = cfg.model_params.pxscale;
-        end
-
-        fprintf('Loaded config: %.1f Hz, tscale=%.3f, pxscale=%.3f\n', ...
-                plume_config.frame_rate, tscale, pxscale);
-
-    catch ME
-        fprintf('Config loading failed: %s\n', ME.message);
-        plume_filename = 'data/plumes/10302017_10cms_bounded.hdf5';
+% Set the plume filename based on environment
+if strcmpi(environment, 'Smoke') || strcmpi(environment, 'smoke') || contains(env_plume, 'smoke')
+    % Smoke plume
+    plume_filename = env_plume;
+    if isempty(plume_filename)
+        error('MATLAB_PLUME_FILE environment variable not set for Smoke environment');
+    end
+else
+    % Crimaldi plume (default)
+    if isfield(plume_config, 'data_path') && isfield(plume_config.data_path, 'path')
+        plume_filename = plume_config.data_path.path;
+    else
+        error('Missing plume_config.data_path.path - Cannot determine plume file path');
     end
 end
 
-% Ensure plume_config exists
-if ~exist('plume_config', 'var')
-    plume_config.frame_rate = 15;
+% Verify the plume file exists
+if ~exist(plume_filename, 'file')
+    error('Plume file not found: %s', plume_filename);
 end
+
+% Ensure dataset_name is defined for all environments
+if isfield(plume_config, 'dataset_name')
+    dataset_name = plume_config.dataset_name;
+else
+    dataset_name = '/dataset2'; % sensible default
+end
+
+% Ensure final triallength for open-loop pulse environments
+switch lower(environment)
+    case {'openlooppulse15','openlooppulsewb15'}
+        triallength = 1050;
+    case {'openlooppulse','openlooppulsewb','openloopslope'}
+        triallength = 3500;
+end
+
+% Log the configuration we're using
+fprintf('Using configuration: %s environment, %.1f Hz, tscale=%.3f, pxscale=%.3f\n', ...
+    environment, plume_config.frame_rate, tscale, pxscale);
+
+% Allocate rows = triallength + 1 so the simulation loop can safely write
+% to index i+1 on the final iteration without exceeding bounds.
+rows = triallength + 1;
 
 
 
@@ -159,9 +166,11 @@ end
  if (nargin<=3)
      ntrials=1;
  end
-  switch environment % If we are using environments at 15 Hz, converts the time constants to 15 Hz
+  switch environment % Adjust time constants based on environment frame rate
      
-    case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
+    case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15','Smoke','smoke'}
+        % Apply time scaling for both Crimaldi (15 Hz) and Smoke (60 Hz) environments
+        % using the tscale factor calculated from the actual frame rate
         tau_Aon = tau_Aon*tscale;
         tau_Aoff = tau_Aoff*tscale;
         tau_ON = tau_ON*tscale;
@@ -174,31 +183,62 @@ end
         turnbase = turnbase/tscale;
         tmodON = tmodON/tscale;
         tmodOFF = tmodOFF/tscale;
+        
+        % Log the actual scaling values used
+        fprintf('Applied time scaling: environment=%s, tscale=%.3f\n', lower(environment), tscale);
   end
 
+%--- Model parameter summary logging ---
+fprintf('--- Model parameter summary ---\n');
+fprintf('Environment       : %s\n', environment);
+fprintf('Frame rate (Hz)   : %.1f\n', plume_config.frame_rate);
+fprintf('tscale (fps/50Hz) : %.3f\n', tscale);
+fprintf('pxscale (mm/px)   : %.3f\n', pxscale);
+fprintf('Turn base (prob/frame) : %.4f\n', turnbase);
+fprintf('vbase (mm/s)           : %.2f (%.3f px/frame)\n', ...
+        vbase, vbase/(pxscale*plume_config.frame_rate));
+fprintf('kup/kdown (deg/frame)  : %.3f / %.3f\n', kup, kdown);
+fprintf('tau_Aon/Aoff           : %.1f / %.1f\n', tau_Aon, tau_Aoff);
+fprintf('tau_ON/OFF1/OFF2       : %.1f / %.1f / %.1f\n', ...
+        tau_ON, tau_OFF1, tau_OFF2);
+fprintf('tmodON/OFF             : %.3f / %.3f\n', tmodON, tmodOFF);
+fprintf('vmodON/OFF             : %.3f / %.3f\n', vmodON, vmodOFF);
+fprintf('scaleON/OFF            : %.2f / %.2f\n', scaleON, scaleOFF);
+fprintf('--------------------------------\n');
+
 %allocate space for results
-x = zeros(triallength,ntrials);
-y = zeros(triallength,ntrials);
-% heading = zeros(triallength,ntrials);
-odor = zeros(triallength,ntrials);
-odorON = zeros(triallength,ntrials);
-odorOFF = zeros(triallength,ntrials);
-downwind=zeros(triallength,ntrials);
-upwind=zeros(triallength,ntrials);
+
   
 %initial conditions
-Aon = zeros(triallength,ntrials);
-Aoff = zeros(triallength,ntrials);
-C = zeros(triallength,ntrials);
-Coff = zeros(triallength,ntrials);
-R = zeros(triallength,ntrials);
-Rh = zeros(triallength,ntrials);
-Rd = zeros(triallength,ntrials);
-ON = zeros(triallength,ntrials);
-OFF = zeros(triallength,ntrials);
-pturn = zeros(triallength,ntrials);
-turn = zeros(triallength,ntrials);
-N = zeros(triallength,ntrials);
+% -------------------------------------------------------------------------
+% Unified single allocation section (rows = triallength+1)
+% -------------------------------------------------------------------------
+x      = zeros(rows,ntrials);
+y      = zeros(rows,ntrials);
+odor   = zeros(rows,ntrials);
+odorON = zeros(rows,ntrials);
+odorOFF= zeros(rows,ntrials);
+downwind= zeros(rows,ntrials);
+upwind  = zeros(rows,ntrials);
+Coff    = zeros(rows,ntrials);
+R       = zeros(rows,ntrials);
+Rh      = zeros(rows,ntrials);
+Rd      = zeros(rows,ntrials);
+ON      = zeros(rows,ntrials);
+OFF     = zeros(rows,ntrials);
+pturn   = zeros(rows,ntrials);
+turn    = zeros(rows,ntrials);
+N       = zeros(rows,ntrials);
+v       = zeros(rows,ntrials);
+heading = zeros(rows,ntrials);  % heading angles (deg)
+Aon     = zeros(rows,ntrials);
+Aoff    = zeros(rows,ntrials);
+C       = zeros(rows,ntrials);
+p       = zeros(rows,ntrials);      % Gaussian diagnostic (only used there)
+success = false(1,ntrials);
+latency = NaN(1,ntrials);
+
+
 
 % D function - to be scaled by the model below
 D = -sin(2*pi*(1:360)/360);
@@ -214,17 +254,28 @@ switch environment
 %         load('startpositions plume.mat');
 %         x(1,:) = iniX(1:ntrials); y(1,:) = iniY(1:ntrials);
         % -----------------------------------------------------------------
-        x(1,:) = (rand(1,ntrials).*16)-8; %rand(1,ntrials)*10-5; % gaussian distribution of initial X positions centered around 0, with sigma=4
-        y(1,:) = rand(1,ntrials)*5-30; % random distribution of initial Y positions, between -25 and -30
+        % Using the exact init zones from generate_clean_configs.m
+        % init_x_range = [-8, 8] cm
+        % init_y_range = [-26.4, -21.4] cm
+        x(1,:) = rand(1,ntrials).*16-8; % X between -8 and 8 cm
+        y(1,:) = rand(1,ntrials)*5-26.4; % Y between -26.4 and -21.4 cm
+    case {'Smoke', 'smoke'} % Smoke plume data - using same initialization as Crimaldi
+        % Using the exact init zones from generate_clean_configs.m
+        % init_x_range = [-8, 8] cm
+        % init_y_range = [-26.4, -21.4] cm
+        x(1,:) = rand(1,ntrials).*16-8; % X between -8 and 8 cm 
+        y(1,:) = rand(1,ntrials)*5-26.4; % Y between -26.4 and -21.4 cm
     case {'openlooppulse15','openlooppulsewb15'} % Single odor pulses at 15 Hz
-        x(1,:)= 0; y(1,:)= 0; triallength = 1050;
+        x(1,:)= 0; y(1,:)= 0; % triallength preset earlier
     case {'openlooppulse','openlooppulsewb','openloopslope'} % Single odor pulses at 50 Hz
-        x(1,:) = 0; y(1,:) = 0; triallength = 3500;
+        x(1,:) = 0; y(1,:) = 0; % triallength preset earlier
     case {'gaussian', 'Gaussian'} % Gaussian odor gradient without any wind
         x(1,:) = 20*rand(1,ntrials)-10;
         y(1,:) = 20*rand(1,ntrials)-10;
 end
-heading = 360*rand(1,ntrials); % starts with a random heading
+heading(1,:) = 360*rand(1,ntrials); % random initial heading
+
+
 
 
 
@@ -282,6 +333,21 @@ for i = 1:triallength
             for it=within
                 odor(i,it)=max(0,h5read(plume_filename, dataset_name,[xind(it) yind(it) tind],[1 1 1])); % Draws odor concentration for the current position and time
             end
+            
+        case {'Smoke', 'smoke'}
+            % Use same loading logic as Crimaldi since both use HDF5 plume files
+            tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
+            % Use same spatial scaling/positioning as Crimaldi
+            xind = round(10*x(i,:)/pxscale)+108; 
+            yind = -round(10*y(i,:)/pxscale)+1;
+            % Check if agents are within plume bounds
+            out_of_plume=union(union(find(xind<plume_xlims(1)),find(xind>plume_xlims(2))),union(find(yind<plume_ylims(1)),find(yind>plume_ylims(2))));
+            within=setdiff([1:ntrials],out_of_plume);
+            odor(i,out_of_plume)=0;
+            % Load odor data from plume file
+            for it=within
+                odor(i,it)=max(0,h5read(plume_filename, dataset_name,[xind(it) yind(it) tind],[1 1 1])); 
+            end
         case {'openloopslope','openlooppulse15','openlooppulse','openlooppulsewb15','openlooppulsewb'}
             odor(i,:) = odormax*OLodorlib.(environment).data(i);
             ws=OLodorlib.(environment).ws;
@@ -337,10 +403,12 @@ for i = 1:triallength
 
     % Calculate X and Y positions
     switch environment
-        case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
-            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/150);  % convert mm/s to cm/samp
-        otherwise
-           [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi,v(i,:)/500); % convert mm/s to cm/samp (for 50Hz)
+        case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}  % 15 Hz environments
+            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi, v(i,:)/150);  % mm s⁻¹ → cm per 66 ms
+        case {'Smoke','smoke'} % 60 Hz environment
+            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi, v(i,:)/600);  % mm s⁻¹ → cm per 16.7 ms
+        otherwise  % 50 Hz environments
+            [dx, dy] = pol2cart((heading(i,:)-90)/360*2*pi, v(i,:)/500);  % mm s⁻¹ → cm per 20 ms
     end
     x(i+1,:) = x(i,:) + dx;
     y(i+1,:) = y(i,:) + dy;
@@ -356,7 +424,7 @@ odorOFF(end,:) = [];
 x(end,:) = []; y(end,:) = [];
 heading(end,:) = [];
 heading = heading-90;           % rotate h so upwind is 90 deg for display
-t = (1:length(odorON))/50;
+t = (1:length(odorON))/plume_config.frame_rate;
 
 
 start = [x(1,:)', y(1,:)'];
@@ -367,8 +435,8 @@ switch environment
     case {'Crimaldi','crimaldi','Gaussian','gaussian','Smoke','smoke'} % Success calculated for these environments
         disp('DEBUG: Environment matched success rate case');
     
-    angles = atan2(y,x);
-    distances = y./sin(angles);
+
+    distances = sqrt(x.^2 + y.^2);  % Euclidean radial distance
         
     for i = 1:ntrials                                                                          
         found = find(distances(:,i) <= 2,1);
@@ -381,9 +449,8 @@ switch environment
                 case {'gaussian','Gaussian'}
                     latency(i) = found/50;
                 case {'Smoke','smoke'}
-                    % Assuming smoke plume uses same sampling rate as gaussian
-                    % Adjust if needed based on actual smoke plume frame rate
-                    latency(i) = found/50;
+                    % Smoke plume uses 60 Hz per config
+                    latency(i) = found/60;
             end
         elseif isempty(found)
             success(i) = 0;
@@ -495,7 +562,7 @@ if plotting>=2
     figure;
     set(gcf,'PaperPositionMode','auto');
     set(gcf,'Position',[44    50   329   613]);
-    t = [1:length(odor)]/50;
+    t = [1:length(odor)]/plume_config.frame_rate;
     switch environment
         case {'Crimaldi','crimaldi','openlooppulse15','openlooppulsewb15'}
             t = (1:length(odor))/15;
@@ -531,7 +598,7 @@ if plotting>=2
     figure;
     set(gcf,'PaperPositionMode','auto');
     set(gcf,'Position',[375    50   329   613]);
-    t = [1:length(odor)]/50;
+    t = [1:length(odor)]/plume_config.frame_rate;
 
     subplot(4,1,1);
     hold off; plot(t,turn,'k');
