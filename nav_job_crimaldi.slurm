@@ -50,8 +50,7 @@ CRIM_CONFIG_PATH="$PROJECT_DIR/configs/plumes/crimaldi_10cms_bounded.json"
 echo "[INFO] Using Crimaldi plume config: $CRIM_CONFIG_PATH"
 echo "[INFO] Contents of config file (first 10 lines):"
 head -n 10 "$CRIM_CONFIG_PATH" || echo "[WARN] Could not read config file"
-echo "[INFO] Contents of paths.json before update (first 10 lines):"
-head -n 10 "$PROJECT_DIR/configs/paths.json" || echo "[WARN] Could not read paths.json"
+# paths.json no longer referenced
 
 # Create MATLAB script in temp file
 TEMP_MATLAB=$(mktemp /tmp/crimaldi_nav_XXXXXX.m)
@@ -82,24 +81,7 @@ try
         fprintf('[MATLAB][WARN] Could not read paths.json before update: %s\n', ME.message);
     end
     
-    % Update paths to use Crimaldi
-    paths_data = jsondecode(fileread(paths_file));
-    paths_data.plume_config = crim_config_path;
-    json_txt = jsonencode(paths_data);
-    fid = fopen(paths_file, 'w');
-    if fid == -1
-        error('[MATLAB] Could not open paths.json for writing');
-    end
-    fwrite(fid, json_txt, 'char');
-    fclose(fid);
-    
-    % Log contents of paths.json after update
-    try
-        paths_data_post = jsondecode(fileread(paths_file));
-        fprintf('[MATLAB] paths.json after update: plume_config = %s\n', paths_data_post.plume_config);
-    catch ME
-        fprintf('[MATLAB][WARN] Could not read paths.json after update: %s\n', ME.message);
-    end
+    % paths.json rewrite removed; PLUME_CONFIG env var controls configuration
     
     % Update MATLAB environment variables so get_plume_file prioritizes this config
     setenv('PLUME_CONFIG', crim_config_path);
