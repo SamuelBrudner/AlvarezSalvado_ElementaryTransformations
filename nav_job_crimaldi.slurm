@@ -77,7 +77,6 @@ try
     
     % Update MATLAB environment variables so get_plume_file prioritizes this config
     setenv('PLUME_CONFIG', crim_config_path);
-    setenv('MATLAB_PLUME_FILE', '');
     
     % Verify configuration
     which get_plume_file
@@ -104,6 +103,9 @@ try
     disp(plume_config);
     disp('DEBUG: Top-level fields after get_plume_file:');
     disp(fieldnames(plume_config));
+    
+    % Make plume file path available to downstream code
+    setenv('MATLAB_PLUME_FILE', plume_file);
     
     fprintf('[MATLAB] Loaded plume_config: %s\n', crim_config_path);
     fprintf('[MATLAB] Loaded HDF5 file: %s\n', plume_file);
