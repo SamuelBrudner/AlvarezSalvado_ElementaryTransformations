@@ -85,8 +85,12 @@ try
     % Update paths to use Crimaldi
     paths_data = jsondecode(fileread(paths_file));
     paths_data.plume_config = crim_config_path;
+    json_txt = jsonencode(paths_data);
     fid = fopen(paths_file, 'w');
-    fprintf(fid, '%s', jsonencode(paths_data));
+    if fid == -1
+        error('[MATLAB] Could not open paths.json for writing');
+    end
+    fwrite(fid, json_txt, 'char');
     fclose(fid);
     
     % Log contents of paths.json after update
