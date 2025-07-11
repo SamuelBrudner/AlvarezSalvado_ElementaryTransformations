@@ -122,18 +122,19 @@ try
         fprintf('[MATLAB] Plume file exists. Size: %.2f MB\n', file_info.bytes/1e6);
     end
     
-    % QUICK TEST: reduce simulation duration and agents
-    n_agents = 2;
-    duration_seconds = 5;  % 5 seconds for fast test
-    n_frames = round(duration_seconds * 60);
-    fprintf('[MATLAB][QUICK TEST] Running %d agents for %.1f seconds (%d frames at 60 Hz)\n', n_agents, duration_seconds, n_frames);
+    % Determine simulation parameters from config
+    n_agents = plume_config.simulation.agent_initialization.n_agents_per_job;
+    duration_seconds = plume_config.simulation.duration_seconds;
+    n_frames = round(duration_seconds * plume_config.temporal.frame_rate);
+    fprintf('[MATLAB] Running %d agents for %.1f seconds (%d frames at %.1f Hz)\n', ...
+        n_agents, duration_seconds, n_frames, plume_config.temporal.frame_rate);
     
     % Run simulation (note: we use 'Crimaldi' as environment type, which loads from config)
     fprintf('\nStarting simulation for task %d...\n', task_id);
     tic;
     
     % Use the correct environment type for smoke plume simulation
-    out = navigation_model_vec(n_frames, 'Smoke', 0, 10);
+    out = navigation_model_vec(n_frames, 'Smoke', 0, n_agents);
     
     elapsed = toc;
     fprintf('Simulation completed in %.1f seconds\n', elapsed);

@@ -199,13 +199,18 @@ else
     
     % Check file size
     file_info = dir(plume_viz);
-    if file_info.bytes < 1000
-        fprintf('   ❌ WARNING: Plume visualization file suspiciously small: %d bytes\n', ...
-            file_info.bytes);
+    if isempty(file_info) || ~isfield(file_info, 'bytes')
+        fprintf('   ❌ WARNING: Could not determine file size (dir returned empty).\n');
         success_viz = false;
     else
-        fprintf('   ✓ Plume visualization file size: %.1f KB\n', file_info.bytes / 1024);
-        success_viz = true;
+        viz_bytes = file_info(1).bytes;
+        if viz_bytes < 1000
+            fprintf('   ❌ WARNING: Plume visualization file suspiciously small: %d bytes\n', viz_bytes);
+            success_viz = false;
+        else
+            fprintf('   ✓ Plume visualization file size: %.1f KB\n', viz_bytes / 1024);
+            success_viz = true;
+        end
     end
 end
 
