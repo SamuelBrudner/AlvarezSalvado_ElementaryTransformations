@@ -239,7 +239,7 @@ log_message "INFO" "Submitting Smoke job"
 SMOKE_JOB_ID=$(sbatch --parsable \
     --output=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.out \
     --error=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.err \
-    --array=1000-1000%1 \
+    --array=0-399%100 \
     "$PROJECT_ROOT/jobs/nav_job_template.slurm" smoke 2>&1)
 SMOKE_STATUS=$?
 
@@ -386,7 +386,7 @@ RESULT_FILES_DIR="$PROJECT_ROOT/results"
 
 # Define expected result files
 CRIM_RESULT="$RESULT_FILES_DIR/nav_results_0000.mat"
-SMOKE_RESULT="$RESULT_FILES_DIR/smoke_nav_results_1000.mat"
+SMOKE_RESULT="$RESULT_FILES_DIR/smoke_nav_results_0000.mat"
 
 # Check results directory content
 if [[ ! -d "$RESULT_FILES_DIR" ]]; then
@@ -454,7 +454,7 @@ if [[ -f "$SMOKE_RESULT" ]]; then
     fi
     
     # Check if plots were actually created
-    SMOKE_PLOT_COUNT=$(find "$RESULT_FILES_DIR" -name "smoke_nav_results_1000_*.pdf" -type f | wc -l)
+    SMOKE_PLOT_COUNT=$(find "$RESULT_FILES_DIR" -name "smoke_nav_results_*_*.pdf" -type f | wc -l)
     log_message "INFO" "Generated $SMOKE_PLOT_COUNT Smoke plots"
 else
     log_message "WARNING" "Missing Smoke result file: $SMOKE_RESULT"
