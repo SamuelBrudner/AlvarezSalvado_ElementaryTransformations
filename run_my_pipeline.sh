@@ -108,6 +108,7 @@ log_message "INFO" "Creating required directories"
 dirs_to_create=(
     "$PROJECT_ROOT/results"
     "$PROJECT_ROOT/logs"
+    "$PROJECT_ROOT/logs/pipeline"
     "$PROJECT_ROOT/logs/crimaldi"
     "$PROJECT_ROOT/logs/smoke"
     "$PROJECT_ROOT/validation_sessions"
@@ -413,7 +414,7 @@ for script in "create_results_report.sh" "run_plot_results.sh"; do
 done
 
 # Generate report with proper error handling
-REPORT_FILE="$PROJECT_ROOT/pipeline_results_summary_${TIMESTAMP}.txt"
+REPORT_FILE="$PROJECT_ROOT/logs/pipeline/pipeline_results_summary_${TIMESTAMP}.txt"
 log_message "INFO" "Generating summary report to $REPORT_FILE"
 
 cd "$PROJECT_ROOT" || { log_message "ERROR" "Failed to change directory to $PROJECT_ROOT"; exit 1; }
@@ -466,7 +467,7 @@ if [[ "$CRIM_EXIT_CODE" != "0" || "$SMOKE_EXIT_CODE" != "0" || ! -f "$CRIM_RESUL
     PIPELINE_STATUS="WARNING"
 fi
 
-STATUS_FILE="$PROJECT_ROOT/logs/pipeline_status_${TIMESTAMP}.json"
+STATUS_FILE="$PROJECT_ROOT/logs/pipeline/pipeline_status_${TIMESTAMP}.json"
 cat > "$STATUS_FILE" << EOF
 {
     "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
