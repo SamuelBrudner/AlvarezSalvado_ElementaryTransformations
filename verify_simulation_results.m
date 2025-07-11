@@ -23,9 +23,24 @@ if ~exist('results', 'dir')
     error('Results directory not found. Pipeline may not have run successfully.');
 end
 
-% Define expected result files
-crimaldi_file  = 'results/crimaldi_nav_results_0000.mat';
-smoke_file = 'results/smoke_nav_results_1000.mat';
+% Locate result files dynamically (take the first match)
+crim_files = dir('results/crimaldi_nav_results_*.mat');
+smoke_files = dir('results/smoke_nav_results_*.mat');
+
+if isempty(crim_files)
+    crimaldi_file = '';
+else
+    % Pick the newest by modification time
+    [~, idx] = max([crim_files.datenum]);
+    crimaldi_file = fullfile('results', crim_files(idx).name);
+end
+
+if isempty(smoke_files)
+    smoke_file = '';
+else
+    [~, idx] = max([smoke_files.datenum]);
+    smoke_file = fullfile('results', smoke_files(idx).name);
+end
 plume_viz = 'results/complete_config_setup_with_plumes.pdf';
 
 %% Check Crimaldi results
