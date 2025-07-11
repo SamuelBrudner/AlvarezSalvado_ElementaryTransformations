@@ -427,6 +427,16 @@ else
     log_message "WARNING" "Problem generating summary report (status=$REPORT_STATUS)"
 fi
 
+# Run MATLAB success-rate aggregation
+log_message "INFO" "Aggregating success rates across result files"
+matlab -nodisplay -nosplash -r "addpath(genpath('Code')); summarize_success_rates; exit" 2>&1 | tee -a "$MAIN_LOG"
+AGG_STATUS=${PIPESTATUS[0]}
+if [[ $AGG_STATUS -ne 0 ]]; then
+    log_message "WARNING" "Success-rate aggregation script failed (status=$AGG_STATUS)"
+else
+    log_message "INFO" "Success-rate summary generated successfully"
+fi
+
 # Generate plots for Crimaldi results
 if [[ -f "$CRIM_RESULT" ]]; then
     log_message "INFO" "Generating plots for Crimaldi results"
