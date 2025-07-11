@@ -101,6 +101,10 @@ try
         fprintf('[MATLAB][WARN] Could not read paths.json after update: %s\n', ME.message);
     end
     
+    % Update MATLAB environment variables so get_plume_file prioritizes this config
+    setenv('PLUME_CONFIG', crim_config_path);
+    setenv('MATLAB_PLUME_FILE', '');
+    
     % Verify configuration
     which get_plume_file
     

@@ -1,18 +1,22 @@
 function [plume_file, plume_config] = get_plume_file()
 %GET_PLUME_FILE Return plume HDF5 filename from stored paths configuration
 
-% Load stored paths
-try
-    paths = load_paths();
-    config_path = paths.plume_config;
-    plume_file = '';
-catch
-    % Fallback to environment variables
-    plume_file = getenv('MATLAB_PLUME_FILE');
-    config_path = getenv('PLUME_CONFIG');
-    
-    if isempty(plume_file) || isempty(config_path)
-        error('No paths configuration found. Run setup_env_paths.sh first!');
+% First priority: explicit environment override
+config_path = getenv('PLUME_CONFIG');
+plume_file  = getenv('MATLAB_PLUME_FILE');
+
+% If PLUME_CONFIG is not provided or invalid, fall back to paths.json via load_paths
+if isempty(config_path) || ~exist(config_path,'file')
+    try
+        paths = load_paths();
+        config_path = paths.plume_config;
+        if isempty(plume_file)
+            plume_file = paths.plume_file;
+        end
+    catch
+        if isempty(config_path)
+            error('Could not determine plume config (PLUME_CONFIG not set and load_paths failed).');
+        end
     end
 end
 
@@ -92,9 +96,8 @@ if exist(config_path, 'file')
         end
         
         if isfield(cfg, 'simulation')
-            if isfield(cfg.simulation, 'duration_seconds')
-                plume_config.simulation.duration_seconds = cfg.simulation.duration_seconds;
-            end
+            % Preserve full simulation sub-struct (includes agent_initialization)
+            plume_config.simulation = cfg.simulation;
         end
         
     catch err
