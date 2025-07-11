@@ -208,7 +208,7 @@ CRIM_LOG_DIR="$PROJECT_ROOT/logs/crimaldi"
 SMOKE_LOG_DIR="$PROJECT_ROOT/logs/smoke"
 
 # Check if SLURM script files exist
-for script in "nav_job_crimaldi.slurm" "nav_job_smoke.slurm"; do
+for script in "jobs/nav_job_template.slurm"; do
     if [[ ! -f "$PROJECT_ROOT/$script" ]]; then
         log_message "ERROR" "SLURM job script not found: $script"
         exit 1
@@ -225,7 +225,7 @@ log_message "INFO" "Submitting Crimaldi job"
 CRIM_JOB_ID=$(sbatch --parsable \
     --output=${CRIM_LOG_DIR}/nav_crim_%A_%a.out \
     --error=${CRIM_LOG_DIR}/nav_crim_%A_%a.err \
-    "$PROJECT_ROOT/nav_job_crimaldi.slurm" --array=0-0%1 2>&1)
+    "$PROJECT_ROOT/jobs/nav_job_template.slurm" crimaldi --array=0-399%100 2>&1)
 CRIM_STATUS=$?
 
 if [[ $CRIM_STATUS -ne 0 ]] || [[ ! "$CRIM_JOB_ID" =~ ^[0-9]+$ ]]; then
@@ -238,7 +238,7 @@ log_message "INFO" "Submitting Smoke job"
 SMOKE_JOB_ID=$(sbatch --parsable \
     --output=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.out \
     --error=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.err \
-    "$PROJECT_ROOT/nav_job_smoke.slurm" --array=1000-1000%1 2>&1)
+    "$PROJECT_ROOT/jobs/nav_job_template.slurm" smoke --array=1000-1000%1 2>&1)
 SMOKE_STATUS=$?
 
 if [[ $SMOKE_STATUS -ne 0 ]] || [[ ! "$SMOKE_JOB_ID" =~ ^[0-9]+$ ]]; then
