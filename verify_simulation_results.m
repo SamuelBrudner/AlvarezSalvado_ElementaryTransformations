@@ -24,7 +24,7 @@ if ~exist('results', 'dir')
 end
 
 % Define expected result files
-crimaldi_file = 'results/nav_results_0000.mat';
+crimaldi_file  = 'results/crimaldi_nav_results_0000.mat';
 smoke_file = 'results/smoke_nav_results_1000.mat';
 plume_viz = 'results/complete_config_setup_with_plumes.pdf';
 
