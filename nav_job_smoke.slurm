@@ -72,17 +72,9 @@ try
     % Force smoke plume configuration
     fprintf('[MATLAB] Configuring for smoke plume...\n');
     smoke_config_path = fullfile(project_dir, 'configs/plumes/smoke_1a_backgroundsubtracted.json');
-    paths_file = fullfile(project_dir, 'configs/paths.json');
+    % paths_file no longer needed
     
-    % Log current plume_config in paths.json before update
-    try
-        paths_data_pre = jsondecode(fileread(paths_file));
-        fprintf('[MATLAB] paths.json before update: plume_config = %s\n', paths_data_pre.plume_config);
-    catch ME
-        fprintf('[MATLAB][WARN] Could not read paths.json before update: %s\n', ME.message);
-    end
-    
-    % paths.json rewrite removed; PLUME_CONFIG env var controls configuration
+    % PLUME_CONFIG env var controls configuration; no paths.json interaction needed
     
     % Ensure MATLAB prioritizes this config via environment variables
     setenv('PLUME_CONFIG', smoke_config_path);
