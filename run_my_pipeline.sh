@@ -294,7 +294,6 @@ check_job_completion() {
     fi
 
     # No matching IDs in queue – job (and all its tasks) are done; fetch exit code
-        # Nothing in queue anymore, fetch final exit code
 
         # Try to get the exit code from sacct
         local exit_code
@@ -317,7 +316,6 @@ check_job_completion() {
         eval $status_var=true
         eval $exit_code_var=\"$exit_code\"
         return 0  # Job is complete
-    fi
     
 
 }
