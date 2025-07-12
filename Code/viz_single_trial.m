@@ -108,12 +108,27 @@ colormap hot;
 hold on;
 
 % Trajectory (white line) & start (green circle)
-pos = squeeze(out.pos);      % [steps x 2 x trials] or [2 x steps] depending on version
-if ndims(pos) == 2  % [2 x steps]
-    pos = permute(pos, [2 1]);
-    pos = reshape(pos, [], 2);
+if isfield(out, 'pos')
+    pos = out.pos;  % may be [steps x 2 x trials] or [2 x steps] or [steps x 2]
+    if ndims(pos) == 3              % [steps x 2 x trials]
+        pos = squeeze(pos(:,:,1));  % take first trial
+    elseif size(pos,1) == 2 && size(pos,2) > 2  % [2 x steps]
+        pos = pos.';               % transpose to [steps x 2]
+    end
+elseif isfield(out, 'x') && isfield(out, 'y')
+    % navigation_model_vec stores trajectories separately as x (cm) and y (cm)
+    x = out.x;  y = out.y;
+    if isvector(x)
+        pos = [x(:) y(:)];           % single trial vector
+    else
+        pos = [x(:,1) y(:,1)];       % first trial of many
+    end
 else
-    pos = pos(:,:,1);  % first trial
+    error('Result struct lacks both "pos" and "x"/"y" fields – cannot plot trajectory.');
+end
+% Ensure pos is [nSteps x 2]
+if size(pos,2) ~= 2
+    pos = pos.';
 end
 
 plot(pos(:,1), pos(:,2), 'w-', 'LineWidth', 1.0);
