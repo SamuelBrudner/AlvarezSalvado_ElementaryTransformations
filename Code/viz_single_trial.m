@@ -52,8 +52,13 @@ S   = load(matFile, 'out');
 out = S.out;
 
 cfg = jsondecode(fileread(cfgFile));
-assert(isfield(cfg, 'plume_file'), 'Config lacks plume_file field.');
-plumePath = cfg.plume_file;
+if isfield(cfg,'plume_file')
+    plumePath = cfg.plume_file;
+elseif isfield(cfg,'data_path') && isfield(cfg.data_path,'path')
+    plumePath = cfg.data_path.path;
+else
+    error('Could not determine plume file: config has no plume_file or data_path.path field.');
+end
 
 % ----------------------------------------------------------------------
 % Read a single plume frame (frame 1000)
