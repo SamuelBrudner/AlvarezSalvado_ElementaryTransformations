@@ -84,8 +84,18 @@ img = img';
 % Build physical coordinate axes (cm)
 % ----------------------------------------------------------------------
 [nRows,nCols] = size(img);
-xs = linspace(cfg.arena.x_min, cfg.arena.x_max, nCols);
-ys = linspace(cfg.arena.y_min, cfg.arena.y_max, nRows);
+if isfield(cfg,'arena')
+    xmin = cfg.arena.x_min; xmax = cfg.arena.x_max;
+    ymin = cfg.arena.y_min; ymax = cfg.arena.y_max;
+elseif isfield(cfg,'spatial') && isfield(cfg.spatial,'arena_bounds')
+    ab = cfg.spatial.arena_bounds;
+    xmin = ab.x_min; xmax = ab.x_max;
+    ymin = ab.y_min; ymax = ab.y_max;
+else
+    error('Config lacks arena or spatial.arena_bounds needed for plotting.');
+end
+xs = linspace(xmin, xmax, nCols);
+ys = linspace(ymin, ymax, nRows);
 
 % ----------------------------------------------------------------------
 % Plot plume frame in physical units
