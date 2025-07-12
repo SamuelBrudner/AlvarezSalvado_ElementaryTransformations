@@ -24,17 +24,29 @@ function viz_single_trial(matFile, cfgFile)
 
 % Optional arguments handling
 if nargin < 1 || isempty(matFile)
-    % auto-detect first Smoke result file
-    cand = dir(fullfile('results','*smoke*_nav_results_*.mat'));
-    assert(~isempty(cand), 'No smoke result files found in results/.');
-    matFile = fullfile(cand(1).folder, cand(1).name);
-    fprintf('[INFO] Auto-selected result file: %s\n', matFile);
+    matFile = 'smoke'; % default environment keyword
 end
+
+% If the first argument is NOT a file but an environment keyword (e.g. "smoke" or "crimaldi"),
+% automatically select the first matching result & config files.
+if exist(matFile,'file') ~= 2
+    envKey  = lower(matFile);
+    % Pick first result file for that env
+    candRes = dir(fullfile('results', sprintf('%s*_nav_results_*.mat', envKey)));
+    assert(~isempty(candRes), 'No %s result files found in results/.', envKey);
+    matFile = fullfile(candRes(1).folder, candRes(1).name);
+    fprintf('[INFO] Auto-selected %s result file: %s\n', envKey, matFile);
+
+    if nargin < 2 || isempty(cfgFile)
+        candCfg = dir(fullfile('configs','plumes', sprintf('%s*.json', envKey)));
+        assert(~isempty(candCfg), 'No %s plume config JSON found in configs/plumes/.', envKey);
+        cfgFile = fullfile(candCfg(1).folder, candCfg(1).name);
+        fprintf('[INFO] Auto-selected %s config file: %s\n', envKey, cfgFile);
+    end
+end
+
 if nargin < 2 || isempty(cfgFile)
-    candCfg = dir(fullfile('configs','plumes','*smoke*.json'));
-    assert(~isempty(candCfg), 'No smoke plume config JSON found in configs/plumes/.');
-    cfgFile = fullfile(candCfg(1).folder, candCfg(1).name);
-    fprintf('[INFO] Auto-selected config file: %s\n', cfgFile);
+    error('When specifying a direct result file, you must also provide the matching config JSON.');
 end
 
 % Validate files exist
@@ -113,6 +125,12 @@ axis equal tight xy;
 set(gca,'YDir','normal');  % ensure y increases upward (cm)
 colormap hot;
 hold on;
+% Plot source position (magenta star)
+if isfield(cfg,'simulation') && isfield(cfg.simulation,'source_position')
+    sx = cfg.simulation.source_position.x_cm;
+    sy = cfg.simulation.source_position.y_cm;
+    hSource = plot(sx, sy, 'm*', 'MarkerSize', 10, 'LineWidth', 1.5);
+end
 
 % Trajectory (white line) & start (green circle)
 pos = extract_pos(out, 1);
@@ -126,8 +144,8 @@ hStart = plot(pos(1,1), pos(1,2), 'go', 'MarkerSize', 8, 'LineWidth', 1.5);
 hEnd   = plot(pos(end,1), pos(end,2), 'bx', 'MarkerSize', 8, 'LineWidth', 1.5);
 
 % Add a simple legend for clarity
-legend([hStart, hEnd, hTraj], {'Start', 'End', 'Trajectory'}, ...
-       'TextColor', 'w', 'Location', 'southoutside', 'Box', 'off');
+legend([hStart, hEnd, hTraj, hSource], {'Start', 'End', 'Trajectory', 'Source'}, ...
+       'TextColor', 'b', 'Location', 'southoutside', 'Box', 'off');
 
 title({'Smoke trial overlay', sprintf('File: %s', matFile)}, 'Interpreter', 'none');
 colorbar;
@@ -139,6 +157,12 @@ axis equal tight xy;
 set(gca,'YDir','normal');
 colormap hot;
 hold on;
+% Plot source position (magenta star)
+if isfield(cfg,'simulation') && isfield(cfg.simulation,'source_position')
+    sx = cfg.simulation.source_position.x_cm;
+    sy = cfg.simulation.source_position.y_cm;
+    hSource = plot(sx, sy, 'm*', 'MarkerSize', 10, 'LineWidth', 1.5);
+end
 
 % Determine environment prefix (e.g., 'smoke' or 'crimaldi') from the file name
 envPrefix = regexprep(baseName, '_nav_results.*','');
