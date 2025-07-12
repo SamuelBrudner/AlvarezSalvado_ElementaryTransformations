@@ -97,6 +97,9 @@ end
 xs = linspace(xmin, xmax, nCols);
 ys = linspace(ymin, ymax, nRows);
 
+% Compute base file name once (used later)
+[~, baseName] = fileparts(matFile);
+
 % ----------------------------------------------------------------------
 % Create 1×2 tiled layout: (1) single trial, (2) 25-trial overlay
 % ----------------------------------------------------------------------
@@ -112,24 +115,7 @@ colormap hot;
 hold on;
 
 % Trajectory (white line) & start (green circle)
-if isfield(out, 'pos')
-    pos = out.pos;  % may be [steps x 2 x trials] or [2 x steps] or [steps x 2]
-    if ndims(pos) == 3              % [steps x 2 x trials]
-        pos = squeeze(pos(:,:,1));  % take first trial
-    elseif size(pos,1) == 2 && size(pos,2) > 2  % [2 x steps]
-        pos = pos.';               % transpose to [steps x 2]
-    end
-elseif isfield(out, 'x') && isfield(out, 'y')
-    % navigation_model_vec stores trajectories separately as x (cm) and y (cm)
-    x = out.x;  y = out.y;
-    if isvector(x)
-        pos = [x(:) y(:)];           % single trial vector
-    else
-        pos = [x(:,1) y(:,1)];       % first trial of many
-    end
-else
-    error('Result struct lacks both "pos" and "x"/"y" fields – cannot plot trajectory.');
-end
+pos = extract_pos(out, 1);
 % Ensure pos is [nSteps x 2]
 if size(pos,2) ~= 2
     pos = pos.';
@@ -154,13 +140,21 @@ set(gca,'YDir','normal');
 colormap hot;
 hold on;
 
-caseFiles = dir(fullfile('results','*smoke*nav_results_*.mat'));
+% Determine environment prefix (e.g., 'smoke' or 'crimaldi') from the file name
+envPrefix = regexprep(baseName, '_nav_results.*','');
+caseFiles = dir(fullfile('results', sprintf('%s_nav_results_*.mat', envPrefix)));
+% Exclude the primary file already shown in panel 1
+caseFiles = caseFiles(~strcmp({caseFiles.name}, [baseName '.mat']));
 numCases  = min(25, numel(caseFiles));
-colors = lines(numCases);
-for k = 1:numCases
-    S = load(fullfile(caseFiles(k).folder, caseFiles(k).name), 'out');
-    posK = extract_pos(S.out);
-    plot(posK(:,1), posK(:,2), '-', 'Color', colors(k,:), 'LineWidth', 0.8);
+if numCases==0
+    warning('No additional %s result files found – multi-trial overlay skipped.', envPrefix);
+else
+    colors = lines(numCases);
+    for k = 1:numCases
+        S = load(fullfile(caseFiles(k).folder, caseFiles(k).name), 'out');
+        posK = extract_pos(S.out, 1);
+        plot(posK(:,1), posK(:,2), '-', 'Color', colors(k,:), 'LineWidth', 0.8);
+    end
 end
 
 title(sprintf('%d-trial overlay', numCases));
@@ -205,20 +199,49 @@ if exist(f, 'file') ~= 2
 end
 end
 
-function pos = extract_pos(out)
-%EXTRACT_POS Return [nSteps x 2] trajectory matrix from result struct.
-if isfield(out, 'pos')
+function pos = extract_pos(out, agentIdx)
+%EXTRACT_POS Return [nSteps x 2] trajectory matrix for a given agent (default = 1).
+if nargin < 2 || isempty(agentIdx), agentIdx = 1; end
+
+if isfield(out, 'pos') && ~isempty(out.pos)
     p = out.pos;
-    if ndims(p) == 3, p = squeeze(p(:,:,1)); end
-    if size(p,1)==2 && size(p,2) > 2, p = p.'; end
+    switch ndims(p)
+        case 3  % likely [steps x 2 x agents] OR [2 x steps x agents]
+            if size(p,2) == 2             % [steps x 2 x agents]
+                p = squeeze(p(:,:,agentIdx));         % [steps x 2]
+            elseif size(p,1) == 2          % [2 x steps x agents]
+                p = squeeze(p(:,:,agentIdx)).';       % [steps x 2]
+            else
+                p = squeeze(p(:,:,agentIdx));  % fallback
+            end
+        case 2
+            if size(p,2) == 2              % [steps x 2]
+                if agentIdx > 1 && size(p,3) >= agentIdx
+                    p = squeeze(p(:,:,agentIdx));
+                end
+            elseif size(p,1) == 2          % [2 x steps]
+                p = p.';
+            end
+        otherwise
+            p = [];
+    end
     pos = p;
 elseif isfield(out,'x') && isfield(out,'y')
-    if isvector(out.x)
-        pos = [out.x(:) out.y(:)];
+    x = out.x; y = out.y;
+    if ~isempty(x)
+        if isvector(x)
+            pos = [x(:) y(:)];
+        else
+            pos = [x(:,agentIdx) y(:,agentIdx)];
+        end
     else
-        pos = [out.x(:,1) out.y(:,1)];
+        pos = [];
     end
 else
+    pos = [];
+end
+if isempty(pos)
+    warning('Could not extract trajectory for agent %d', agentIdx);
     pos = nan(0,2);
 end
 end
