@@ -98,9 +98,13 @@ xs = linspace(xmin, xmax, nCols);
 ys = linspace(ymin, ymax, nRows);
 
 % ----------------------------------------------------------------------
-% Plot plume frame in physical units
+% Create 1×2 tiled layout: (1) single trial, (2) 25-trial overlay
 % ----------------------------------------------------------------------
-figure('Name', sprintf('Trial overlay – %s', matFile), 'Color', 'w');
+fig = figure('Name', sprintf('Trial overlay – %s', matFile), 'Color', 'w');
+tl  = tiledlayout(fig,1,2,'Padding','compact','TileSpacing','compact');
+
+%% --- Panel 1: single trial ------------------------------------------------
+nexttile;
 imagesc(xs, ys, img);
 axis equal tight xy;
 set(gca,'YDir','normal');  % ensure y increases upward (cm)
@@ -131,21 +135,44 @@ if size(pos,2) ~= 2
     pos = pos.';
 end
 
-plot(pos(:,1), pos(:,2), 'w-', 'LineWidth', 1.0);
-plot(pos(1,1), pos(1,2), 'go', 'MarkerSize', 8, 'LineWidth', 1.5);
-plot(pos(end,1), pos(end,2), 'bx', 'MarkerSize', 8, 'LineWidth', 1.5);
+hTraj  = plot(pos(:,1), pos(:,2), 'w-', 'LineWidth', 1.0);
+hStart = plot(pos(1,1), pos(1,2), 'go', 'MarkerSize', 8, 'LineWidth', 1.5);
+hEnd   = plot(pos(end,1), pos(end,2), 'bx', 'MarkerSize', 8, 'LineWidth', 1.5);
+
+% Add a simple legend for clarity
+legend([hStart, hEnd, hTraj], {'Start', 'End', 'Trajectory'}, ...
+       'TextColor', 'w', 'Location', 'southoutside', 'Box', 'off');
 
 title({'Smoke trial overlay', sprintf('File: %s', matFile)}, 'Interpreter', 'none');
 colorbar;
 
+%% --- Panel 2: multi-trial overlay (up to 25) -------------------------------
+nexttile;
+imagesc(xs, ys, img);
+axis equal tight xy;
+set(gca,'YDir','normal');
+colormap hot;
+hold on;
+
+caseFiles = dir(fullfile('results','*smoke*nav_results_*.mat'));
+numCases  = min(25, numel(caseFiles));
+colors = lines(numCases);
+for k = 1:numCases
+    S = load(fullfile(caseFiles(k).folder, caseFiles(k).name), 'out');
+    posK = extract_pos(S.out);
+    plot(posK(:,1), posK(:,2), '-', 'Color', colors(k,:), 'LineWidth', 0.8);
+end
+
+title(sprintf('%d-trial overlay', numCases));
+
 % ----------------------------------------------------------------------
-% Save figure to file for headless runs
+% Save figure to file for headless runs (after both panels)
 % ----------------------------------------------------------------------
 [~, baseName] = fileparts(matFile);
-outFigPath = fullfile('results', [baseName '_overlay.png']);
+outFigPath = fullfile('results', [baseName '_overlay_multi.png']);
 try
-    saveas(gcf, outFigPath);
-    fprintf('[INFO] Saved figure to %s\n', outFigPath);
+    saveas(fig, outFigPath);
+    fprintf('[INFO] Saved multi-trial figure to %s\n', outFigPath);
 catch ME
     warning('Could not save figure: %s', ME.message);
 end
@@ -175,5 +202,23 @@ end
 function mustBeFile(f)
 if exist(f, 'file') ~= 2
     error('File %s does not exist.', f);
+end
+end
+
+function pos = extract_pos(out)
+%EXTRACT_POS Return [nSteps x 2] trajectory matrix from result struct.
+if isfield(out, 'pos')
+    p = out.pos;
+    if ndims(p) == 3, p = squeeze(p(:,:,1)); end
+    if size(p,1)==2 && size(p,2) > 2, p = p.'; end
+    pos = p;
+elseif isfield(out,'x') && isfield(out,'y')
+    if isvector(out.x)
+        pos = [out.x(:) out.y(:)];
+    else
+        pos = [out.x(:,1) out.y(:,1)];
+    end
+else
+    pos = nan(0,2);
 end
 end
