@@ -149,6 +149,8 @@ for env_key = keys(by_env)
 
     edges = linspace(min(dist_vec), max(dist_vec), n_bins+1);
     [~, bin_idx] = histc(dist_vec, edges);
+    % histc can return bin index n_bins+1 for values equal to the last edge
+    bin_idx(bin_idx==n_bins+1) = n_bins;  % clamp to last valid bin
     odor_dist_mean = accumarray(bin_idx(bin_idx>0), odor_vec(bin_idx>0), [n_bins 1], @mean, NaN);
     dist_centers  = (edges(1:end-1) + edges(2:end)) / 2;
 

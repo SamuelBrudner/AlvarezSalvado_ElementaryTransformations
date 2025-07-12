@@ -78,10 +78,11 @@ for f = files'
 end
 
 %% Print summary table (per navigator)
-fprintf('\n=== Success-rate summary (per navigator) ===\n');
+failure_counts = agent_counts - success_sums;
+fprintf('\n=== Success summary (per navigator) ===\n');
 for i = 1:numel(env_keys)
     mean_rate = (success_sums(i) / agent_counts(i)) * 100;
-    fprintf('%-10s :  mean %.1f %%  (N=%d navigators)\n', env_keys(i), mean_rate, agent_counts(i));
+    fprintf('%-10s :  %d successes / %d failures  (%.1f %% success)\n', env_keys(i), success_sums(i), failure_counts(i), mean_rate);
 end
 
 %% Additional QC: odor intensity diagnostics
@@ -99,7 +100,7 @@ if fid ~= -1
     fprintf(fid, 'Success-rate summary generated %s\n', timestamp);
     for i = 1:numel(env_keys)
         mean_rate = (success_sums(i) / agent_counts(i)) * 100;
-        fprintf(fid, '%s %.1f %% (N=%d navigators)\n', env_keys(i), mean_rate, agent_counts(i));
+        fprintf(fid, '%s %d successes / %d failures (%.1f %% success)\n', env_keys(i), success_sums(i), failure_counts(i), mean_rate);
     end
     fclose(fid);
     fprintf('\n✓ Summary saved to %s\n', log_file);
