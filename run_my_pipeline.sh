@@ -300,7 +300,11 @@ check_job_completion() {
         exit_code=$(sacct -j "$job_id" --format=exitcode --noheader | head -1 | tr -d ' ')
         
         # Check if exit code is retrievable and is valid
-        if [[ -n "$exit_code" && "$exit_code" != "0:0" ]]; then
+        if [[ -z "$exit_code" ]]; then
+            return 1  # Exit code not yet recorded -> still running/starting
+        fi
+
+        if [[ "$exit_code" != "0:0" ]]; then
             # Extract the first number (job exit code, not step exit code)
             exit_code=${exit_code%%:*}
             log_message "WARNING" "$job_name job completed with non-zero exit code: $exit_code"
