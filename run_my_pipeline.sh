@@ -30,6 +30,14 @@ log_message() {
     fi
 }
 
+# Function to log detailed job state (queue + accounting)
+log_job_state() {
+    local id="$1" name="$2"
+    local sq="$(squeue -h -j "$id" -o '%i %T' 2>/dev/null)"
+    local acct="$(sacct -j "$id" --format=state --parsable2 -n | head -1)"
+    log_message "DEBUG" "$name id=$id  squeue='${sq:-none}'  sacct=${acct:-none}"
+}
+
 # Function to check for required commands
 check_requirements() {
     local missing_cmds=0
@@ -287,11 +295,21 @@ check_job_completion() {
     local status_var=$3
     local exit_code_var=$4
     local job_status
+    # Emit current state for debugging
+    log_job_state "$job_id" "$job_name"
     
-    # Check if parent or any array task with this job ID is still RUNNING or PENDING
-    if squeue -h -u "$USER" -o "%i" | grep -E "^${job_id}(_[0-9]+)?$" >/dev/null ; then
-        return 1  # Still running
+    # (a) Any tasks still in the queue?
+    if squeue -h -j "$job_id" 2>/dev/null | grep -q . ; then
+        return 1  # Still running or pending
     fi
+
+    # (b) Check accounting state (handles cases where tasks left queue but job not yet finalized)
+    local state
+    state=$(sacct -j "$job_id" --format=state --parsable2 -n | head -1 | tr -d ' ')
+    case "$state" in
+        RUNNING|PENDING|CONFIGURING|COMPLETING|"")
+            return 1 ;;  # still in progress or accounting delay
+    esac
 
     # No matching IDs in queue – job (and all its tasks) are done; fetch exit code
 
