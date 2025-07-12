@@ -51,7 +51,7 @@ for f = files'
     if ~isKey(by_env, key)
         by_env(key) = {fullfile(f.folder, f.name)};
     else
-        by_env(key){end+1} = fullfile(f.folder, f.name); %#ok<AGROW>
+        by_env(key) = [by_env(key), {fullfile(f.folder, f.name)}]; %#ok<AGROW>
     end
 end
 
