@@ -282,11 +282,12 @@ check_job_completion() {
     local exit_code_var=$4
     local job_status
     
-    # Check if job is still in queue
-    job_status=$(squeue -j "$job_id" -h -o %T 2>/dev/null)
-    
-    # If job is no longer in queue, it's completed or failed
-    if [[ -z "$job_status" ]]; then
+    # Check if any tasks with this job ID (including array tasks) are still in the queue
+    if squeue -h -u "$USER" | grep -q "^${job_id}[_ ]"; then
+        return 1  # Still running
+    fi
+    # Nothing in queue anymore, fetch final exit code
+
         # Try to get the exit code from sacct
         local exit_code
         exit_code=$(sacct -j "$job_id" --format=exitcode --noheader | head -1 | tr -d ' ')
