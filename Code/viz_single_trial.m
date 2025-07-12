@@ -139,6 +139,18 @@ title({'Smoke trial overlay', sprintf('File: %s', matFile)}, 'Interpreter', 'non
 colorbar;
 
 % ----------------------------------------------------------------------
+% Save figure to file for headless runs
+% ----------------------------------------------------------------------
+[~, baseName] = fileparts(matFile);
+outFigPath = fullfile('results', [baseName '_overlay.png']);
+try
+    saveas(gcf, outFigPath);
+    fprintf('[INFO] Saved figure to %s\n', outFigPath);
+catch ME
+    warning('Could not save figure: %s', ME.message);
+end
+
+% ----------------------------------------------------------------------
 % Console diagnostics
 % ----------------------------------------------------------------------
 if isfield(out, 'odor')
