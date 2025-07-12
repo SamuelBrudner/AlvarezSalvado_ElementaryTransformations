@@ -111,10 +111,10 @@ for env_key = keys(by_env)
 
     if isnan(frame_rate) || frame_rate <= 0
         frame_rate = 1;  % fallback – units become frames
-        time_vec = 0:n_frames-1;
+        time_vec = 0:n_frames-1; % row vector
         time_label = "Frame #";
     else
-        time_vec = (0:n_frames-1) ./ frame_rate;
+        time_vec = (0:n_frames-1) ./ frame_rate; % row vector
         time_label = "Time (s)";
     end
 
@@ -165,7 +165,8 @@ for env_key = keys(by_env)
     % (1) Example odor traces -------------------------------------------
     nexttile;
     ex_idx = 1:min(n_examples, n_agents);
-    plot(time_vec, odor_all(:, ex_idx), 'LineWidth', 1.0);
+    % Ensure matching X/Y sizes: replicate time vector for each example column
+    plot(repmat(time_vec(:),1,numel(ex_idx)), odor_all(:, ex_idx), 'LineWidth', 1.0);
     xlabel(time_label); ylabel('Odor intensity');
     title(sprintf('%s – Example odor traces (n=%d)', capitalize(env), numel(ex_idx)));
 
