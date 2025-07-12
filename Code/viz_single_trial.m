@@ -111,7 +111,7 @@ else
     error('Config lacks arena or spatial.arena_bounds needed for plotting.');
 end
 xs = linspace(xmin, xmax, nCols);
-ys = linspace(ymin, ymax, nRows);
+ys = linspace(ymax, ymin, nRows);  % flip so source (y=0) at top
 
 % Compute base file name once (used later)
 [~, baseName] = fileparts(matFile);
