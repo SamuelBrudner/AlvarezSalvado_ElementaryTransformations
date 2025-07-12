@@ -217,6 +217,62 @@ fi
 
 log_message "INFO" "Configurations generated."
 
+# ----------------------------------------------------------------------
+# Step 1.5: Compute plume intensity statistics (Crimaldi & Smoke)
+# ----------------------------------------------------------------------
+log_message "INFO" "STEP 1.5: Computing plume intensity statistics..."
+
+# Create temporary MATLAB script to compute statistics quickly (≤100 frames)
+TEMP_MATLAB_STATS="$PROJECT_ROOT/logs/temp_intensity_stats_${TIMESTAMP}.m"
+cat > "$TEMP_MATLAB_STATS" << 'EOF'
+try
+    addpath(genpath('Code'));
+    configs = { ...
+        fullfile('configs','plumes','crimaldi_10cms_bounded.json'), ...
+        fullfile('configs','plumes','smoke_1a_backgroundsubtracted.json')};
+
+    for i = 1:numel(configs)
+        cfg = configs{i};
+        if ~isfile(cfg)
+            fprintf('WARNING: Config file not found: %s\n', cfg);
+            continue;
+        end
+        stats = compute_plume_intensity_stats(cfg);
+
+        fprintf('\n=== Intensity Stats: %s ===\n', cfg);
+        fprintf('Sampled Frames : %d / %d\n', stats.sampled_frames, stats.total_frames);
+        fprintf('Min intensity  : %.5f\n', stats.min);
+        fprintf('Max intensity  : %.5f\n', stats.max);
+        fprintf('Mean intensity : %.5f\n', stats.mean);
+    end
+catch ME
+    fprintf('ERROR in intensity stats: %s\n', getReport(ME,'extended'));
+    exit(1);
+end
+EOF
+
+log_message "INFO" "Running MATLAB to compute intensity stats (timeout: 5 minutes)"
+# Execute the MATLAB script with a timeout for robustness
+TIMEOUT_SECS=300
+timeout ${TIMEOUT_SECS}s matlab -batch "run('$TEMP_MATLAB_STATS')" 2>&1 | tee -a "$MAIN_LOG"
+MATLAB_STATS_EXIT=${PIPESTATUS[0]}
+
+if [[ $MATLAB_STATS_EXIT -ne 0 ]]; then
+    if [[ $MATLAB_STATS_EXIT -eq 124 ]]; then
+        log_message "ERROR" "Intensity stats MATLAB script timed out after ${TIMEOUT_SECS}s"
+    else
+        log_message "ERROR" "Intensity stats computation failed with exit code $MATLAB_STATS_EXIT"
+    fi
+else
+    log_message "INFO" "Intensity stats computation completed successfully"
+fi
+
+# Clean up temporary MATLAB script
+rm -f "$TEMP_MATLAB_STATS"
+
+# ----------------------------------------------------------------------
+
+
 # Step 2: Submit jobs with improved error handling
 log_message "INFO" "STEP 2: Submitting SLURM test jobs..."
 CRIM_LOG_DIR="$PROJECT_ROOT/logs/crimaldi"

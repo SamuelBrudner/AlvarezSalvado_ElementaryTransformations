@@ -161,6 +161,7 @@ axis equal tight xy;
 set(gca,'YDir','normal');
 colormap hot;
 hold on;
+overlayAx = gca;  % store handle for positioning histograms
 % Plot source position (magenta star)
 if isfield(cfg,'simulation') && isfield(cfg.simulation,'source_position')
     sx = cfg.simulation.source_position.x_cm;
@@ -183,6 +184,51 @@ else
         plot(posK(:,1), posK(:,2), '-', 'Color', colors(k,:), 'LineWidth', 0.8);
     end
 end
+
+% ------------------------------------------------------------------
+% Marginal histograms of start (green) and end (blue) locations
+% ------------------------------------------------------------------
+% Gather start/end positions from primary + overlay trajectories
+startX = pos(1,1);  startY = pos(1,2);
+endX   = pos(end,1); endY   = pos(end,2);
+for kk = 1:numCases
+    pk = trajs{kk};
+    startX(end+1) = pk(1,1); %#ok<AGROW>
+    startY(end+1) = pk(1,2);
+    endX  (end+1) = pk(end,1); %#ok<AGROW>
+    endY  (end+1) = pk(end,2);
+end
+
+% Define histogram axes sizes relative to overlay axis
+ovPos = get(overlayAx,'Position');
+margin = 0.02;
+heightFrac = 0.18; % relative size
+widthFrac  = 0.18;
+
+% Top histogram (X positions)
+axTop = axes('Position', [ovPos(1), ovPos(2)+ovPos(4)+margin, ovPos(3), heightFrac*ovPos(4)], ...
+             'Box','off');
+edgesX = linspace(xmin, xmax, 20);
+histogram(axTop, startX, edgesX, 'FaceColor','g', 'EdgeColor','none', 'FaceAlpha',0.5);
+hold(axTop,'on');
+histogram(axTop, endX,   edgesX, 'FaceColor','b', 'EdgeColor','none', 'FaceAlpha',0.5);
+set(axTop,'XTick',[]); yl = ylabel(axTop,'Count'); yl.FontSize = 8;
+axis(axTop,'tight');
+
+% Right histogram (Y positions)
+axRight = axes('Position', [ovPos(1)+ovPos(3)+margin, ovPos(2), widthFrac*ovPos(3), ovPos(4)], ...
+               'Box','off');
+edgesY = linspace(ymin, ymax, 20);
+histogram(axRight, startY, edgesY, 'Orientation','horizontal', ...
+          'FaceColor','g', 'EdgeColor','none', 'FaceAlpha',0.5);
+hold(axRight,'on');
+histogram(axRight, endY,   edgesY, 'Orientation','horizontal', ...
+          'FaceColor','b', 'EdgeColor','none', 'FaceAlpha',0.5);
+set(axRight,'YTick',[]); xl = xlabel(axRight,'Count'); xl.FontSize = 8;
+axis(axRight,'tight');
+
+% Ensure overlay axis is topmost for interaction
+uistack(overlayAx,'top');
 
 title(sprintf('%d-trial overlay', numCases));
 
