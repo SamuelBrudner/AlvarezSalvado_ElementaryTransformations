@@ -7,7 +7,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 MAX_WAIT_TIME=7200  # Maximum wait time for jobs in seconds (2 hours)
-MAX_CONCURRENT=100   # Maximum number of array tasks running concurrently
+MAX_CONCURRENT=500   # Maximum number of array tasks running concurrently
 
 # Prepare log directories early to avoid brittle failures if they don't exist
 LOG_ROOT="$PROJECT_ROOT/logs"
