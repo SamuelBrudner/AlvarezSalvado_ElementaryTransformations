@@ -64,10 +64,17 @@ end
 % Read a single plume frame (frame 1000)
 % ----------------------------------------------------------------------
 frameIdx = 1000;  % arbitrary snapshot
+% Determine HDF5 dataset name – must be present in config
+assert(isfield(cfg,'data_path') && isfield(cfg.data_path,'dataset_name') && ~isempty(cfg.data_path.dataset_name), ...
+    'Config is missing data_path.dataset_name; cannot locate plume dataset.');
+
+dset = cfg.data_path.dataset_name;
+
+% Attempt to read the specified dataset – fail loudly if it is absent
 try
-    img = h5read(plumePath, '/odor', [1 1 frameIdx], [Inf Inf 1]);
+    img = h5read(plumePath, dset, [1 1 frameIdx], [Inf Inf 1]);
 catch ME
-    error('Failed to read plume frame from %s: %s', plumePath, ME.message);
+    error('Failed to read dataset "%s" from %s: %s', dset, plumePath, ME.message);
 end
 
 % Transpose so (x,y) match MATLAB imagesc orientation
