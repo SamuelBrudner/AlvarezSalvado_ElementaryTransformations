@@ -246,7 +246,9 @@ histogram(axTop, startX, edgesX, 'FaceColor','g', 'EdgeColor','none', 'FaceAlpha
 hold(axTop,'on');
 histogram(axTop, endX,   edgesX, 'FaceColor','b', 'EdgeColor','none', 'FaceAlpha',0.5);
 set(axTop,'XTick',[]); yl = ylabel(axTop,'Count'); yl.FontSize = 8;
-axis(axTop,'tight');
+% Align X limits with main overlay axis
+linkaxes([overlayAx axTop],'x');
+axTop.XAxisLocation = 'top';
 
 % Right histogram (Y positions)
 axRight = axes('Position', [ovPos(1)+ovPos(3)+margin, ovPos(2), widthFrac*ovPos(3), ovPos(4)], ...
@@ -258,7 +260,9 @@ hold(axRight,'on');
 histogram(axRight, endY,   edgesY, 'Orientation','horizontal', ...
           'FaceColor','b', 'EdgeColor','none', 'FaceAlpha',0.5);
 set(axRight,'YTick',[]); xl = xlabel(axRight,'Count'); xl.FontSize = 8;
-axis(axRight,'tight');
+% Align Y limits with main overlay axis
+linkaxes([overlayAx axRight],'y');
+axRight.YAxisLocation = 'right';
 
 % Ensure overlay axis is topmost for interaction
 uistack(overlayAx,'top');
