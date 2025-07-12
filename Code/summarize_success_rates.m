@@ -30,6 +30,9 @@ results_dir = fullfile(project_dir, 'results');
 log_dir     = fullfile(project_dir, 'logs', 'pipeline');
 if ~exist(log_dir, 'dir'); mkdir(log_dir); end
 
+%% QC: ensure each results file has a unique RNG seed
+verify_rng_seeds();
+
 %% Gather result files
 files = dir(fullfile(results_dir, '*_nav_results_*.mat'));
 if isempty(files)
@@ -38,9 +41,9 @@ if isempty(files)
 end
 
 %% Aggregate by environment
-env_keys = strings(0);
-rate_sums = [];
-file_counts = [];
+env_keys      = strings(0);
+success_sums  = [];
+agent_counts  = [];
 
 for f = files'
     try
@@ -56,24 +59,28 @@ for f = files'
     end
 
     env  = string(data.out.environment);
-    rate = mean(data.out.successrate(:), 'omitnan');
+    if ~isfield(data.out,'success') || isempty(data.out.success)
+        error('Result file %s lacks "success" vector – aborting summary. Fix simulation output.', f.name);
+    end
+    successes = sum(data.out.success(:) == 1, 'omitnan');
+    agents    = numel(data.out.success);
 
     idx = find(env_keys == env, 1);
     if isempty(idx)
-        env_keys(end+1)  = env;     %#ok<*AGROW>
-        rate_sums(end+1) = rate;
-        file_counts(end+1) = 1;
+        env_keys(end+1)     = env;          %#ok<*AGROW>
+        success_sums(end+1) = successes;
+        agent_counts(end+1) = agents;
     else
-        rate_sums(idx)  = rate_sums(idx) + rate;
-        file_counts(idx) = file_counts(idx) + 1;
+        success_sums(idx)  = success_sums(idx) + successes;
+        agent_counts(idx)  = agent_counts(idx) + agents;
     end
 end
 
-%% Print summary table
-fprintf('\n=== Success-rate summary ===\n');
+%% Print summary table (per navigator)
+fprintf('\n=== Success-rate summary (per navigator) ===\n');
 for i = 1:numel(env_keys)
-    mean_rate = (rate_sums(i) / file_counts(i)) * 100;
-    fprintf('%-10s :  mean %.1f %%  (N=%d files)\n', env_keys(i), mean_rate, file_counts(i));
+    mean_rate = (success_sums(i) / agent_counts(i)) * 100;
+    fprintf('%-10s :  mean %.1f %%  (N=%d navigators)\n', env_keys(i), mean_rate, agent_counts(i));
 end
 
 %% Save to log file
@@ -83,8 +90,8 @@ fid = fopen(log_file, 'w');
 if fid ~= -1
     fprintf(fid, 'Success-rate summary generated %s\n', timestamp);
     for i = 1:numel(env_keys)
-        mean_rate = (rate_sums(i) / file_counts(i)) * 100;
-        fprintf(fid, '%s %.1f %% (N=%d files)\n', env_keys(i), mean_rate, file_counts(i));
+        mean_rate = (success_sums(i) / agent_counts(i)) * 100;
+        fprintf(fid, '%s %.1f %% (N=%d navigators)\n', env_keys(i), mean_rate, agent_counts(i));
     end
     fclose(fid);
     fprintf('\n✓ Summary saved to %s\n', log_file);

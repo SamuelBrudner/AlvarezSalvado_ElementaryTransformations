@@ -79,12 +79,16 @@ else
     if isnan(task_id); task_id = 0; end
     rng(task_id);    % deterministic, unique per array task
 end
+% Capture the seed actually used (robust even for rng('shuffle'))
+seed_value = rng;  seed_value = seed_value.Seed;
 
 fprintf('[MATLAB] %s: %d agents, %.1f s, %d frames @ %.1f Hz\n', ...
         env, n_agents, duration_seconds, n_frames, frame_rate);
 
 %% Run simulation
 out = navigation_model_vec(n_frames, env, 0, n_agents);
+% Record seed for reproducibility/QC
+out.rng_seed = seed_value;
 
 %% Persist results
 % task_id was determined earlier when seeding RNG
