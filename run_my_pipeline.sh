@@ -8,9 +8,14 @@ PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 MAX_WAIT_TIME=7200  # Maximum wait time for jobs in seconds (2 hours)
 
+# Prepare log directories early to avoid brittle failures if they don't exist
+LOG_ROOT="$PROJECT_ROOT/logs"
+LOG_PIPE="$LOG_ROOT/pipeline"
+mkdir -p "$LOG_PIPE"
+
 # Define log files
-MAIN_LOG="$PROJECT_ROOT/logs/pipeline_${TIMESTAMP}.log"
-ERROR_LOG="$PROJECT_ROOT/logs/pipeline_errors_${TIMESTAMP}.log"
+MAIN_LOG="$LOG_PIPE/pipeline_main_${TIMESTAMP}.log"
+ERROR_LOG="$LOG_PIPE/pipeline_errors_${TIMESTAMP}.log"
 
 # Function to log messages with timestamps
 log_message() {
@@ -285,8 +290,8 @@ check_job_completion() {
     # Check if any tasks with this job ID (including array tasks) are still in the queue
     if squeue -h -u "$USER" | grep -q "^${job_id}[_ ]"; then
         return 1  # Still running
-    fi
-    # Nothing in queue anymore, fetch final exit code
+    else
+        # Nothing in queue anymore, fetch final exit code
 
         # Try to get the exit code from sacct
         local exit_code
@@ -311,7 +316,7 @@ check_job_completion() {
         return 0  # Job is complete
     fi
     
-    return 1  # Job is still running
+
 }
 
 # Progress indicator variables
