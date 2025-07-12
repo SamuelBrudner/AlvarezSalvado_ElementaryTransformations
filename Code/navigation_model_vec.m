@@ -502,27 +502,13 @@ out.start = start;
 out.ON = odorON;
 out.OFF = odorOFF;
 out.turn = turn;
-disp('DEBUG: About to assign output.successrate');
-disp(['DEBUG: Current environment = ' environment]);
+% Debug performance metrics
+fprintf('DEBUG: Success vector size = %d, successrate = %.3f\n', numel(success), successrate);
 
-% Debug whether successrate exists
-if exist('successrate', 'var')
-    disp(['DEBUG: successrate exists with value = ' num2str(successrate)]);
-else
-    disp('DEBUG: successrate variable does not exist!');
-end
-
-switch environment
-    case {'Crimaldi','crimaldi','Gaussian','gaussian','Smoke','smoke'}
-        disp('DEBUG: Matched environment case for successrate assignment');
-        out.successrate = successrate;
-        out.latency = latency;
-        disp(['DEBUG: Assigned out.successrate = ' num2str(out.successrate)]);
-    otherwise
-        disp('DEBUG: Did NOT match environment case, setting empty successrate');
-        out.successrate = [];
-        out.latency = [];
-end
+% Store performance metrics universally
+out.success = success;
+out.latency = latency;
+out.successrate = successrate;
 
 
 toc

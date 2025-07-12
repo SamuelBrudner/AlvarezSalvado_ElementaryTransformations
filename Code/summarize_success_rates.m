@@ -60,7 +60,8 @@ for f = files'
 
     env  = string(data.out.environment);
     if ~isfield(data.out,'success') || isempty(data.out.success)
-        error('Result file %s lacks "success" vector – aborting summary. Fix simulation output.', f.name);
+        % Halt immediately – success vector is mandatory for reproducible QC
+        error('Result file %s lacks mandatory field out.success. Investigate simulation output before summarizing.', f.name);
     end
     successes = sum(data.out.success(:) == 1, 'omitnan');
     agents    = numel(data.out.success);
