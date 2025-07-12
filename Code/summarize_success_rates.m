@@ -83,6 +83,13 @@ for i = 1:numel(env_keys)
     fprintf('%-10s :  mean %.1f %%  (N=%d navigators)\n', env_keys(i), mean_rate, agent_counts(i));
 end
 
+%% Additional QC: odor intensity diagnostics
+try
+    qc_odor_traces();
+catch ME
+    warning('qc_odor_traces failed: %s', ME.message);
+end
+
 %% Save to log file
 timestamp = datestr(now, 'yyyymmdd_HHMMSS');
 log_file  = fullfile(log_dir, ['success_summary_' timestamp '.txt']);

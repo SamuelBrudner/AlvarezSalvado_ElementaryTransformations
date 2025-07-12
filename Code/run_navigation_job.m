@@ -70,17 +70,30 @@ n_agents         = cfg.simulation.agent_initialization.n_agents_per_job;
 n_frames = round(duration_seconds * frame_rate);
 
 % ----- Seed RNG uniquely per SLURM array task -----
+% ----- Seed RNG uniquely per SLURM array task *and* environment -----
 array_id_str = getenv('SLURM_ARRAY_TASK_ID');
 if isempty(array_id_str)
     task_id = 0;
-    rng('shuffle');  % non-deterministic seed for local runs
+    rng('shuffle');  % non-deterministic seed for ad-hoc local runs
 else
     task_id = str2double(array_id_str);
     if isnan(task_id); task_id = 0; end
-    rng(task_id);    % deterministic, unique per array task
+
+    % Offset seeds by environment to guarantee global uniqueness across plumes
+    switch env
+        case "Crimaldi"
+            env_offset = 0;
+        case "Smoke"
+            env_offset = 1000;
+        otherwise
+            env_offset = 2000;  % reserve range for future plume types
+    end
+
+    rng(task_id + env_offset);  % deterministic, unique per array task & plume
 end
 % Capture the seed actually used (robust even for rng('shuffle'))
-seed_value = rng;  seed_value = seed_value.Seed;
+seed_state = rng;
+seed_value = seed_state.Seed;
 
 fprintf('[MATLAB] %s: %d agents, %.1f s, %d frames @ %.1f Hz\n', ...
         env, n_agents, duration_seconds, n_frames, frame_rate);
