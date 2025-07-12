@@ -23,6 +23,9 @@ function viz_single_trial(matFile, cfgFile)
 % -------------------------------------------------------------------------
 
 % Optional arguments handling
+if nargin < 2
+    cfgFile = '';
+end
 if nargin < 1 || isempty(matFile)
     matFile = 'smoke'; % default environment keyword
 end
@@ -45,8 +48,9 @@ if exist(matFile,'file') ~= 2
     end
 end
 
-if nargin < 2 || isempty(cfgFile)
-    error('When specifying a direct result file, you must also provide the matching config JSON.');
+% After automatic detection above, ensure we have a config path; otherwise abort.
+if isempty(cfgFile)
+    error('Could not determine matching plume config JSON – please provide it explicitly.');
 end
 
 % Validate files exist
