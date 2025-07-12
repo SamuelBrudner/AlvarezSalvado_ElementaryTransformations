@@ -195,6 +195,10 @@ else
     end
 end
 
+% Lock axes to arena bounds so trajectories cannot rescale the view
+xlim(overlayAx, [xmin xmax]);
+ylim(overlayAx, [ymin ymax]);
+
 % ------------------------------------------------------------------
 % Marginal histograms of start (green) and end (blue) locations
 % ------------------------------------------------------------------
@@ -206,14 +210,18 @@ outOfBounds = 0;
 endX   = pos(end,1); endY   = pos(end,2);
 for kk = 1:numCases
     pk = trajs{kk};
-    startX(end+1) = pk(1,1); %#ok<AGROW>
-    startY(end+1) = pk(1,2);
-    % bounds check
+    % bounds check – include in histogram only if inside init zone
+    inZone = true;
     if exist('init','var')
-        if pk(1,1) < init.x_range_cm(1) || pk(1,1) > init.x_range_cm(2) || ...
-           pk(1,2) < init.y_range_cm(1) || pk(1,2) > init.y_range_cm(2)
+        inZone = pk(1,1) >= init.x_range_cm(1) && pk(1,1) <= init.x_range_cm(2) && ...
+                 pk(1,2) >= init.y_range_cm(1) && pk(1,2) <= init.y_range_cm(2);
+        if ~inZone
             outOfBounds = outOfBounds + 1;
         end
+    end
+    if inZone
+        startX(end+1) = pk(1,1); %#ok<AGROW>
+        startY(end+1) = pk(1,2);
     end
     endX  (end+1) = pk(end,1); %#ok<AGROW>
     endY  (end+1) = pk(end,2);

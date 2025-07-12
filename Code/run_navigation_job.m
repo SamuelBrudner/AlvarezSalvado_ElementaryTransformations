@@ -69,6 +69,17 @@ n_agents         = cfg.simulation.agent_initialization.n_agents_per_job;
 
 n_frames = round(duration_seconds * frame_rate);
 
+% ----- Seed RNG uniquely per SLURM array task -----
+array_id_str = getenv('SLURM_ARRAY_TASK_ID');
+if isempty(array_id_str)
+    task_id = 0;
+    rng('shuffle');  % non-deterministic seed for local runs
+else
+    task_id = str2double(array_id_str);
+    if isnan(task_id); task_id = 0; end
+    rng(task_id);    % deterministic, unique per array task
+end
+
 fprintf('[MATLAB] %s: %d agents, %.1f s, %d frames @ %.1f Hz\n', ...
         env, n_agents, duration_seconds, n_frames, frame_rate);
 
@@ -76,13 +87,8 @@ fprintf('[MATLAB] %s: %d agents, %.1f s, %d frames @ %.1f Hz\n', ...
 out = navigation_model_vec(n_frames, env, 0, n_agents);
 
 %% Persist results
-array_id = getenv('SLURM_ARRAY_TASK_ID');
-if isempty(array_id)
-    task_id = 0;
-else
-    task_id = str2double(array_id);
-    if isnan(task_id); task_id = 0; end
-end
+% task_id was determined earlier when seeding RNG
+
 
 result_name = sprintf('results/%s_nav_results_%04d.mat', lower(env), task_id);
 if ~isfolder('results'); mkdir('results'); end
