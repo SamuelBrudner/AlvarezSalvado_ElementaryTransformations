@@ -106,12 +106,11 @@ if ~exist(plume_filename, 'file')
     error('Plume file not found: %s', plume_filename);
 end
 
-% Ensure dataset_name is defined for all environments
-if isfield(plume_config, 'dataset_name')
-    dataset_name = plume_config.dataset_name;
-else
-    dataset_name = '/dataset2'; % sensible default
+% Require dataset_name in configuration – no fallback allowed
+if ~isfield(plume_config, 'dataset_name')
+    error('Missing required field dataset_name in plume_config.');
 end
+dataset_name = plume_config.dataset_name;
 
 % Ensure final triallength for open-loop pulse environments
 switch lower(environment)
@@ -312,8 +311,16 @@ heading(1,:) = 360*rand(1,ntrials); % random initial heading
 odormax = 1; % Maximal odor concentration for pulse environments
 sigma = 5; % Width of gaussian gradient in cm
 pmax = 1; % Maximal odor probability for gaussian environment
-plume_xlims=[1 216];
-plume_ylims=[1 406];
+% Require plume limits from configuration; fail fast if missing
+if ~isfield(plume_config, 'plume_xlims')
+    error('Missing required field plume_xlims in plume_config.');
+end
+plume_xlims = plume_config.plume_xlims;
+if ~isfield(plume_config, 'plume_ylims')
+    error('Missing required field plume_ylims in plume_config.');
+end
+plume_ylims = plume_config.plume_ylims;
+x_center_px = round(mean(plume_xlims));
 
 OLzero=zeros(3501,1);
 OLodorlib.openlooppulse15.data    =OLzero; OLodorlib.openlooppulse15.data(450:600) = 1;
@@ -339,7 +346,10 @@ if strcmpi(environment, 'Crimaldi') || strcmpi(environment, 'crimaldi')
         fprintf('Using dataset: %s\n', dataset_name);
     else
         plume_filename = get_plume_file();
-        dataset_name = '/dataset2';
+        if ~isfield(plume_config,'dataset_name')
+            error('Missing required field dataset_name in plume_config (Crimaldi path).');
+        end
+        dataset_name = plume_config.dataset_name;
     end
 end
 
@@ -350,7 +360,7 @@ for i = 1:triallength
         
         case {'Crimaldi', 'crimaldi'}
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
-            xind = round(10*x(i,:)/pxscale)+108; % turns the initial position to cm
+            xind = round(10*x(i,:)/pxscale) + x_center_px;
             yind = -round(10*y(i,:)/pxscale)+1;
             out_of_plume=union(union(find(xind<plume_xlims(1)),find(xind>plume_xlims(2))),union(find(yind<plume_ylims(1)),find(yind>plume_ylims(2))));
             within=setdiff([1:ntrials],out_of_plume);
@@ -364,7 +374,7 @@ for i = 1:triallength
             % Use same loading logic as Crimaldi since both use HDF5 plume files
             tind = mod(i-1,3600)+1; % Restarts the count in case we want to run longer trials
             % Use same spatial scaling/positioning as Crimaldi
-            xind = round(10*x(i,:)/pxscale)+108; 
+            xind = round(10*x(i,:)/pxscale) + x_center_px; 
             yind = -round(10*y(i,:)/pxscale)+1;
             % Check if agents are within plume bounds
             out_of_plume=union(union(find(xind<plume_xlims(1)),find(xind>plume_xlims(2))),union(find(yind<plume_ylims(1)),find(yind>plume_ylims(2))));

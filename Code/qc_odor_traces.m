@@ -143,6 +143,10 @@ for env_key = keys(by_env)
     mean_odor_time = mean(odor_all, 2, 'omitnan');
     sem_odor_time  = std(odor_all, 0, 2, 'omitnan') ./ sqrt(n_agents);
 
+    % Distance stats
+    mean_dist_time = mean(dist_all, 2, 'omitnan');
+    sem_dist_time  = std(dist_all, 0, 2, 'omitnan') ./ sqrt(n_agents);
+
     % Odor vs distance (bin)
     dist_vec  = dist_all(:);
     odor_vec  = odor_all(:);
@@ -158,7 +162,7 @@ for env_key = keys(by_env)
     fig = figure('Visible', 'off', 'Color', 'w', 'Name', sprintf('Odor QC – %s', env));
     tl = tiledlayout(fig, 2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 
-    % (1) Example traces --------------------------------------------------
+    % (1) Example odor traces -------------------------------------------
     nexttile;
     ex_idx = 1:min(n_examples, n_agents);
     plot(time_vec, odor_all(:, ex_idx), 'LineWidth', 1.0);
@@ -174,8 +178,17 @@ for env_key = keys(by_env)
     xlabel(time_label); ylabel('Mean odor ± SEM');
     title('Average odor over time');
 
-    % (3) Odor vs distance ----------------------------------------------
-    nexttile([1 2]);
+    % (3) Mean distance from source vs time -----------------------------
+    nexttile;
+    fill([time_vec fliplr(time_vec)], [mean_dist_time.' - sem_dist_time.' fliplr(mean_dist_time.' + sem_dist_time.')], ...
+         [0.8 0.5 0.2], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
+    hold on;
+    plot(time_vec, mean_dist_time, 'r-', 'LineWidth', 1.5);
+    xlabel(time_label); ylabel('Distance (cm)');
+    title('Average distance vs time');
+
+    % (4) Odor vs distance ----------------------------------------------
+    nexttile;
     plot(dist_centers, odor_dist_mean, 'k-', 'LineWidth', 1.5);
     xlabel('Distance from source (cm)'); ylabel('Mean odor');
     title('Odor vs distance'); grid on;
