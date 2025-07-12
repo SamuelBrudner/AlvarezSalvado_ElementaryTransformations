@@ -7,6 +7,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 MAX_WAIT_TIME=7200  # Maximum wait time for jobs in seconds (2 hours)
+MAX_CONCURRENT=100   # Maximum number of array tasks running concurrently
 
 # Prepare log directories early to avoid brittle failures if they don't exist
 LOG_ROOT="$PROJECT_ROOT/logs"
@@ -231,7 +232,7 @@ log_message "INFO" "Submitting Crimaldi job"
 CRIM_JOB_ID=$(sbatch --parsable \
     --output=${CRIM_LOG_DIR}/nav_crim_%A_%a.out \
     --error=${CRIM_LOG_DIR}/nav_crim_%A_%a.err \
-    --array=0-399%100 \
+    --array=0-399%${MAX_CONCURRENT} \
     "$PROJECT_ROOT/jobs/nav_job_template.slurm" crimaldi 2>&1)
 CRIM_STATUS=$?
 
@@ -245,7 +246,7 @@ log_message "INFO" "Submitting Smoke job"
 SMOKE_JOB_ID=$(sbatch --parsable \
     --output=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.out \
     --error=${SMOKE_LOG_DIR}/nav_smoke_%A_%a.err \
-    --array=0-399%100 \
+    --array=0-399%${MAX_CONCURRENT} \
     "$PROJECT_ROOT/jobs/nav_job_template.slurm" smoke 2>&1)
 SMOKE_STATUS=$?
 
