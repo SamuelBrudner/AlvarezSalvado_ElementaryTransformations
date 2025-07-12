@@ -22,9 +22,27 @@ function viz_single_trial(matFile, cfgFile)
 %     publication.
 % -------------------------------------------------------------------------
 
-arguments
-    matFile (1,1) string {mustBeFile}
-    cfgFile (1,1) string {mustBeFile}
+% Optional arguments handling
+if nargin < 1 || isempty(matFile)
+    % auto-detect first Smoke result file
+    cand = dir(fullfile('results','*smoke*_nav_results_*.mat'));
+    assert(~isempty(cand), 'No smoke result files found in results/.');
+    matFile = fullfile(cand(1).folder, cand(1).name);
+    fprintf('[INFO] Auto-selected result file: %s\n', matFile);
+end
+if nargin < 2 || isempty(cfgFile)
+    candCfg = dir(fullfile('configs','plumes','*smoke*.json'));
+    assert(~isempty(candCfg), 'No smoke plume config JSON found in configs/plumes/.');
+    cfgFile = fullfile(candCfg(1).folder, candCfg(1).name);
+    fprintf('[INFO] Auto-selected config file: %s\n', cfgFile);
+end
+
+% Validate files exist
+if exist(matFile,'file')~=2
+    error('Result file not found: %s', matFile);
+end
+if exist(cfgFile,'file')~=2
+    error('Config file not found: %s', cfgFile);
 end
 
 % ----------------------------------------------------------------------
