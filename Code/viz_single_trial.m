@@ -162,6 +162,16 @@ set(gca,'YDir','normal');
 colormap hot;
 hold on;
 overlayAx = gca;  % store handle for positioning histograms
+
+% Overlay initialization zone rectangle if available in config
+if isfield(cfg,'simulation') && isfield(cfg.simulation,'agent_initialization')
+    init = cfg.simulation.agent_initialization;
+    x0 = init.x_range_cm(1);
+    y0 = init.y_range_cm(1);
+    w  = diff(init.x_range_cm);
+    h  = diff(init.y_range_cm);
+    rectangle('Position',[x0, y0, w, h], 'EdgeColor',[0 0.7 0], 'LineStyle','--', 'LineWidth',1.2);
+end
 % Plot source position (magenta star)
 if isfield(cfg,'simulation') && isfield(cfg.simulation,'source_position')
     sx = cfg.simulation.source_position.x_cm;
@@ -190,13 +200,28 @@ end
 % ------------------------------------------------------------------
 % Gather start/end positions from primary + overlay trajectories
 startX = pos(1,1);  startY = pos(1,2);
+
+% Bounds check counter
+outOfBounds = 0;
 endX   = pos(end,1); endY   = pos(end,2);
 for kk = 1:numCases
     pk = trajs{kk};
     startX(end+1) = pk(1,1); %#ok<AGROW>
     startY(end+1) = pk(1,2);
+    % bounds check
+    if exist('init','var')
+        if pk(1,1) < init.x_range_cm(1) || pk(1,1) > init.x_range_cm(2) || ...
+           pk(1,2) < init.y_range_cm(1) || pk(1,2) > init.y_range_cm(2)
+            outOfBounds = outOfBounds + 1;
+        end
+    end
     endX  (end+1) = pk(end,1); %#ok<AGROW>
     endY  (end+1) = pk(end,2);
+end
+
+if outOfBounds > 0
+    fprintf('[WARN] %d of %d start positions fall outside the configured init zone.\n', ...
+        outOfBounds, numCases+1);
 end
 
 % Define histogram axes sizes relative to overlay axis

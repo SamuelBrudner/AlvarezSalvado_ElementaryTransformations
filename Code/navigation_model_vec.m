@@ -273,6 +273,32 @@ switch environment
         x(1,:) = 20*rand(1,ntrials)-10;
         y(1,:) = 20*rand(1,ntrials)-10;
 end
+% -----------------------------------------------------------------
+% Diagnostic: ensure initial positions are inside the configured box
+% -----------------------------------------------------------------
+% Expected zone (cm)
+INIT_X_MIN = -8; INIT_X_MAX = 8;
+INIT_Y_MIN = -26.4; INIT_Y_MAX = -21.4;
+
+tol = 1e-3;  % tolerance in cm
+outOfBox = x(1,:) < INIT_X_MIN - tol | x(1,:) > INIT_X_MAX + tol | ...
+           y(1,:) < INIT_Y_MIN - tol | y(1,:) > INIT_Y_MAX + tol;
+
+if any(outOfBox)
+    fprintf('\n[ERROR] INIT_ZONE_VIOLATION – offending start positions (cm):\n');
+    disp([x(1,outOfBox); y(1,outOfBox)]');
+    error('INIT_ZONE_VIOLATION: some agents start outside the [%.1f, %.1f] × [%.1f, %.1f] cm box', ...
+          INIT_X_MIN, INIT_X_MAX, INIT_Y_MIN, INIT_Y_MAX);
+end
+
+% Log the first few start positions for convenience
+fprintf('Start positions (cm) – first min(5,ntrials):\n');
+if ntrials <= 5
+    disp([x(1,:)' y(1,:)']);
+else
+    disp([x(1,1:5)' y(1,1:5)']);
+end
+
 heading(1,:) = 360*rand(1,ntrials); % random initial heading
 
 
