@@ -170,17 +170,16 @@ end
 
 % Determine environment prefix (e.g., 'smoke' or 'crimaldi') from the file name
 envPrefix = regexprep(baseName, '_nav_results.*','');
-caseFiles = dir(fullfile('results', sprintf('%s_nav_results_*.mat', envPrefix)));
-% Exclude the primary file already shown in panel 1
-caseFiles = caseFiles(~strcmp({caseFiles.name}, [baseName '.mat']));
-numCases  = min(25, numel(caseFiles));
-if numCases==0
-    warning('No additional %s result files found – multi-trial overlay skipped.', envPrefix);
+
+% Use utility to grab up to 25 trajectories across files (excluding the primary file)
+trajs = load_multi_trajectories(envPrefix, 25, [baseName '.mat']);
+numCases = numel(trajs);
+if numCases == 0
+    warning('No additional %s trajectories found – multi-trial overlay skipped.', envPrefix);
 else
     colors = lines(numCases);
     for k = 1:numCases
-        S = load(fullfile(caseFiles(k).folder, caseFiles(k).name), 'out');
-        posK = extract_pos(S.out, 1);
+        posK = trajs{k};
         plot(posK(:,1), posK(:,2), '-', 'Color', colors(k,:), 'LineWidth', 0.8);
     end
 end
