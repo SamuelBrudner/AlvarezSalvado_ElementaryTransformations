@@ -194,7 +194,8 @@ for env_key = keys(by_env)
     fill(poly_t_dist, poly_y_dist, ...
          [0.8 0.5 0.2], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
     hold on;
-    plot(time_vec, mean_dist_time, 'r-', 'LineWidth', 1.5);
+    % Ensure matching lengths for plot
+    plot(t_trim, dist_low + (dist_up - dist_low)/2, 'r-', 'LineWidth', 1.5);
     xlabel(time_label); ylabel('Distance (cm)');
     title('Average distance vs time');
 
