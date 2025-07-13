@@ -184,13 +184,13 @@ for env_key = keys(by_env)
     % Build polygon vectors safely: ensure equal lengths
     npts = min(numel(time_vec), numel(mean_dist_time));
     t_trim = time_vec(1:npts).';              % column
-    lower  = mean_dist_time(1:npts) - sem_dist_time(1:npts);
-    upper  = mean_dist_time(1:npts) + sem_dist_time(1:npts);
-    lower  = lower(:); upper = upper(:);      % column vectors
+    dist_low = mean_dist_time(1:npts) - sem_dist_time(1:npts);
+    dist_up  = mean_dist_time(1:npts) + sem_dist_time(1:npts);
+    dist_low = dist_low(:); dist_up = dist_up(:);  % column vectors
     poly_t_dist = [t_trim; flipud(t_trim)];
-    poly_y_dist = [lower;  flipud(upper)];
+    poly_y_dist = [dist_low;  flipud(dist_up)];
     % Debug log sizes
-    fprintf('[QC] %s: t_trim=%d, lower=%d, upper=%d\n', env, numel(t_trim), numel(lower), numel(upper));
+    fprintf('[QC] %s: t_trim=%d, dist_low=%d, dist_up=%d\n', env, numel(t_trim), numel(dist_low), numel(dist_up));
     fill(poly_t_dist, poly_y_dist, ...
          [0.8 0.5 0.2], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
     hold on;
