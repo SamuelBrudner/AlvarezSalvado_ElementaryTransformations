@@ -181,11 +181,16 @@ for env_key = keys(by_env)
 
     % (3) Mean distance from source vs time -----------------------------
     nexttile;
-    % Build polygon vectors explicitly to guarantee matching lengths
-    poly_t_dist  = [time_vec, fliplr(time_vec)];
-    poly_y_dist  = [(mean_dist_time - sem_dist_time).', fliplr((mean_dist_time + sem_dist_time).')];
-    % Debug: log vector sizes for troubleshooting
-    fprintf('[QC] %s: poly_t_dist size = %s, poly_y_dist size = %s\n', env, mat2str(size(poly_t_dist)), mat2str(size(poly_y_dist)));
+    % Build polygon vectors safely: ensure equal lengths
+    npts = min(numel(time_vec), numel(mean_dist_time));
+    t_trim = time_vec(1:npts).';              % column
+    lower  = mean_dist_time(1:npts) - sem_dist_time(1:npts);
+    upper  = mean_dist_time(1:npts) + sem_dist_time(1:npts);
+    lower  = lower(:); upper = upper(:);      % column vectors
+    poly_t_dist = [t_trim; flipud(t_trim)];
+    poly_y_dist = [lower;  flipud(upper)];
+    % Debug log sizes
+    fprintf('[QC] %s: t_trim=%d, lower=%d, upper=%d\n', env, numel(t_trim), numel(lower), numel(upper));
     fill(poly_t_dist, poly_y_dist, ...
          [0.8 0.5 0.2], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
     hold on;
