@@ -184,6 +184,8 @@ for env_key = keys(by_env)
     % Build polygon vectors explicitly to guarantee matching lengths
     poly_t_dist  = [time_vec, fliplr(time_vec)];
     poly_y_dist  = [(mean_dist_time - sem_dist_time).', fliplr((mean_dist_time + sem_dist_time).')];
+    % Debug: log vector sizes for troubleshooting
+    fprintf('[QC] %s: poly_t_dist size = %s, poly_y_dist size = %s\n', env, mat2str(size(poly_t_dist)), mat2str(size(poly_y_dist)));
     fill(poly_t_dist, poly_y_dist, ...
          [0.8 0.5 0.2], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
     hold on;
