@@ -181,7 +181,10 @@ for env_key = keys(by_env)
 
     % (3) Mean distance from source vs time -----------------------------
     nexttile;
-    fill([time_vec fliplr(time_vec)], [mean_dist_time.' - sem_dist_time.' fliplr(mean_dist_time.' + sem_dist_time.')], ...
+    % Build polygon vectors explicitly to guarantee matching lengths
+    poly_t_dist  = [time_vec, fliplr(time_vec)];
+    poly_y_dist  = [(mean_dist_time - sem_dist_time).', fliplr((mean_dist_time + sem_dist_time).')];
+    fill(poly_t_dist, poly_y_dist, ...
          [0.8 0.5 0.2], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
     hold on;
     plot(time_vec, mean_dist_time, 'r-', 'LineWidth', 1.5);
