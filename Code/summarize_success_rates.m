@@ -85,6 +85,53 @@ for i = 1:numel(env_keys)
     fprintf('%-10s :  %d successes / %d failures  (%.1f %% success)\n', env_keys(i), success_sums(i), failure_counts(i), mean_rate);
 end
 
+%% Visualization: success proportions with standard errors
+prop = success_sums ./ agent_counts;
+se   = sqrt(prop .* (1 - prop) ./ agent_counts);
+
+% Create bar plot with error bars, following lab style guide
+fig = figure('Name', 'Success proportions', 'Color', 'w', ...
+             'Units', 'inches', 'Position', [0 0 3.25 1.9], ...
+             'Renderer', 'painters');
+ax = axes(fig);
+
+% Map each environment to its plume category colour
+colors = zeros(numel(env_keys), 3);
+for i = 1:numel(env_keys)
+    env_l = lower(env_keys(i));
+    if contains(env_l, 'crim') || contains(env_l, 'smooth')
+        colors(i, :) = [0.580, 0.404, 0.741];   % smooth (purple)
+    elseif contains(env_l, 'smoke') || contains(env_l, 'complex')
+        colors(i, :) = [0.737, 0.741, 0.133];   % complex (yellow-green)
+    else
+        colors(i, :) = [0.7, 0.7, 0.7];         % fallback grey
+    end
+end
+
+b = bar(ax, prop, 'FaceColor', 'flat', 'LineWidth', 1);
+b.CData = colors;
+
+hold(ax, 'on');
+errorbar(ax, 1:numel(prop), prop, se, 'k.', 'LineWidth', 1, 'CapSize', 8);
+
+set(ax, 'XTick', 1:numel(prop), 'XTickLabel', cellstr(env_keys), ...
+        'FontName', 'Arial', 'FontSize', 10, ...
+        'TickDir', 'in', 'LineWidth', 1.5, ...
+        'TickLength', [0.03 0]);
+
+ylabel(ax, 'Proportion of successes', 'FontName', 'Arial', 'FontSize', 10);
+
+title(ax, 'Success rate ± SE', 'FontName', 'Arial', 'FontSize', 12);
+
+ylim(ax, [0 1]);
+box(ax, 'off');
+
+
+% Save figure to logs for provenance (PDF)
+fig_file = fullfile(log_dir, ['success_proportions_' datestr(now, 'yyyymmdd_HHMMSS') '.pdf']);
+saveas(fig, fig_file);
+fprintf('✓ Saved success proportion plot to %s\n', fig_file);
+
 %% Additional QC: odor intensity diagnostics
 try
     qc_odor_traces();
