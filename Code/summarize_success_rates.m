@@ -86,6 +86,20 @@ for i = 1:numel(env_keys)
 end
 
 %% Visualization: success proportions with standard errors
+% Reorder so that the complex plume category (e.g. "smoke") is shown first on the x-axis
+is_complex = false(size(env_keys));
+for i = 1:numel(env_keys)
+    env_l = lower(env_keys(i));
+    is_complex(i) = contains(env_l, 'smoke') || contains(env_l, 'complex');
+end
+plot_order   = [find(is_complex) find(~is_complex)];  % complex first, then others
+
+% Apply the new ordering to all relevant arrays
+env_keys     = env_keys(plot_order);
+success_sums = success_sums(plot_order);
+agent_counts = agent_counts(plot_order);
+
+% Compute proportions and standard errors after reordering
 prop = success_sums ./ agent_counts;
 se   = sqrt(prop .* (1 - prop) ./ agent_counts);
 
