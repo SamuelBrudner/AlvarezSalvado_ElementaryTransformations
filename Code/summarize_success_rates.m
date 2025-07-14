@@ -114,7 +114,21 @@ b.CData = colors;
 hold(ax, 'on');
 errorbar(ax, 1:numel(prop), prop, se, 'k.', 'LineWidth', 1, 'CapSize', 8);
 
-set(ax, 'XTick', 1:numel(prop), 'XTickLabel', cellstr(env_keys), ...
+% Generate display labels ("smooth" / "complex")
+display_labels = strings(size(env_keys));
+for i = 1:numel(env_keys)
+    env_l = lower(env_keys(i));
+    if contains(env_l, 'crim') || contains(env_l, 'smooth')
+        display_labels(i) = "smooth";
+    elseif contains(env_l, 'smoke') || contains(env_l, 'complex')
+        display_labels(i) = "complex";
+    else
+        display_labels(i) = env_keys(i);
+    end
+end
+
+% Apply axis labelling with custom display labels
+set(ax, 'XTick', 1:numel(prop), 'XTickLabel', cellstr(display_labels), ...
         'FontName', 'Arial', 'FontSize', 10, ...
         'TickDir', 'in', 'LineWidth', 1.5, ...
         'TickLength', [0.03 0]);
